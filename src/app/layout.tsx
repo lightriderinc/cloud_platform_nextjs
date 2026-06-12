@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import Header from "@/components/Header";
+import Sidebar from "@/components/Sidebar";
 import "./globals.css";
 
 const ibmPlexSans = IBM_Plex_Sans({
@@ -28,7 +30,13 @@ export default function RootLayout({
       lang="en"
       className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Header />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 px-8 py-6">{children}</main>
+        </div>
+      </body>
     </html>
   );
 }
