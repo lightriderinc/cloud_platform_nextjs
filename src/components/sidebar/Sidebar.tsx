@@ -8,7 +8,7 @@ import SidebarNavItem from "./SidebarNavItem";
 export default function Sidebar() {
   return (
     <aside className="flex w-56 shrink-0 flex-col border-r border-gray-200">
-      <nav className="flex-1 px-3 py-4">
+      <nav className="flex-1 px-3 py-4 overflow-auto">
         <SidebarNavGroup label="Compute">
           <SidebarNavItem name="Overview" href="/" icon={MdDashboard} />
           <SidebarNavItem name="Jobs" href="/jobs" icon={MdBarChart} />

@@ -35,11 +35,11 @@ export default function RootLayout({
       lang="en"
       className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} ${scienceGothic.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="h-full flex flex-col overflow-hidden">
         <Header />
-        <div className="flex flex-1">
+        <div className="flex flex-1 min-h-0">
           <Sidebar />
-          <main className="flex-1 px-8 py-6">{children}</main>
+          <main className="flex-1 overflow-y-auto px-8 py-6">{children}</main>
         </div>
       </body>
     </html>
