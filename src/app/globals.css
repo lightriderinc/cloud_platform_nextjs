@@ -26,6 +26,6 @@ body {
 }
 
 h1 {
+  font-family: var(--font-science-gothic);
   font-size:1.5rem;
-
 }

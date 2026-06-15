@@ -1,10 +1,15 @@
+import Image from "next/image";
+
 export default function Header() {
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-200 px-4">
       <div className="flex items-center gap-2">
-        {/* Placeholder logo */}
-        <span className="h-6 w-6 rounded bg-gray-400" />
-        <span className="text-sm font-semibold">Lightrider Quantum Cloud</span>
+        <Image
+          src="/Lightrider-logo.svg"
+          alt="Lightrider logo"
+          width={190}
+          height={32}
+        />
       </div>
 
       <div className="flex items-center gap-3">

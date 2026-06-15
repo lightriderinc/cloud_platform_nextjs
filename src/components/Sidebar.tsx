@@ -11,8 +11,8 @@ const navSections: {
     label: "Compute",
     items: [
       { name: "Overview", href: "/" },
-      { name: "Backends", href: "/backends" },
       { name: "Jobs", href: "/jobs" },
+      { name: "Backends", href: "/backends" },
     ],
   },
   {
@@ -33,9 +33,9 @@ export default function Sidebar() {
       <nav className="flex-1 px-3 py-4">
         {navSections.map((section) => (
           <div key={section.label} className="mb-6">
-            <p className="mb-2 px-2 text-xs font-semibold uppercase text-gray-500">
+            <h3 className="mb-2 px-2 text-xs font-semibold uppercase text-gray-500">
               {section.label}
-            </p>
+            </h3>
             <ul>
               {section.items.map((item) => {
                 const active = pathname === item.href;
@@ -44,9 +44,7 @@ export default function Sidebar() {
                     <Link
                       href={item.href}
                       className={`mb-1 flex items-center gap-2 rounded px-2 py-1.5 text-sm ${
-                        active
-                          ? "bg-gray-200 font-medium"
-                          : "hover:bg-gray-100"
+                        active ? "bg-gray-200 font-medium" : "hover:bg-gray-100"
                       }`}
                     >
                       {/* Placeholder icon */}
@@ -81,3 +79,4 @@ export default function Sidebar() {
     </aside>
   );
 }
+
