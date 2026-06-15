@@ -2,17 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { MdBarChart, MdDashboard } from "react-icons/md";
+import { RiCpuFill } from "react-icons/ri";
 
 const navSections: {
   label: string;
-  items: { name: string; href: string }[];
+  items: { name: string; href: string; icon?: React.ComponentType }[];
 }[] = [
   {
     label: "Compute",
     items: [
-      { name: "Overview", href: "/" },
-      { name: "Jobs", href: "/jobs" },
-      { name: "Backends", href: "/backends" },
+      { name: "Overview", href: "/", icon: MdDashboard },
+      { name: "Jobs", href: "/jobs", icon: MdBarChart },
+      { name: "Backends", href: "/backends", icon: RiCpuFill },
     ],
   },
   {
@@ -47,8 +49,16 @@ export default function Sidebar() {
                         active ? "bg-gray-200 font-medium" : "hover:bg-gray-100"
                       }`}
                     >
-                      {/* Placeholder icon */}
-                      <span className="h-4 w-4 rounded-sm bg-gray-400" />
+                      {item.icon && (
+                        <item.icon
+                          className={`text-gray-500 ${
+                            active
+                              ? "text-gray-700"
+                              : ""
+                          }`}
+                        />
+                      )}
+
                       {item.name}
                     </Link>
                   </li>
@@ -79,4 +89,3 @@ export default function Sidebar() {
     </aside>
   );
 }
-
