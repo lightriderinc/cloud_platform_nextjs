@@ -1,0 +1,78 @@
+import type { Backend } from "@/types/backend";
+
+// Placeholder catalog so the grid renders during layout work.
+// Replace with live data from the backends API in a later step.
+export const placeholderBackends: Backend[] = [
+  {
+    id: "lr.qpu.aurora",
+    name: "Lightrider Aurora",
+    type: "QPU",
+    status: "online",
+    qubits: 64,
+    provider: "Lightrider",
+    queueDepth: 0,
+  },
+  {
+    id: "lr.qpu.vega",
+    name: "Lightrider Vega",
+    type: "QPU",
+    status: "online",
+    qubits: 32,
+    provider: "Lightrider",
+    queueDepth: 4,
+  },
+  {
+    id: "lr.qpu.nova",
+    name: "Lightrider Nova",
+    type: "QPU",
+    status: "maintenance",
+    qubits: 20,
+    provider: "Lightrider",
+    queueDepth: 0,
+  },
+  {
+    id: "lr.sim.statevector",
+    name: "Lightrider State Vector",
+    type: "Simulator",
+    status: "online",
+    qubits: 34,
+    provider: "Lightrider",
+    queueDepth: 0,
+  },
+  {
+    id: "lr.sim.density",
+    name: "Lightrider Density Matrix",
+    type: "Simulator",
+    status: "online",
+    qubits: 24,
+    provider: "Lightrider",
+    queueDepth: 1,
+  },
+  {
+    id: "partner.qpu.orion",
+    name: "Orion-1",
+    type: "QPU",
+    status: "paused",
+    qubits: 16,
+    provider: "Partner Network",
+    queueDepth: 2,
+  },
+  {
+    id: "partner.qpu.lyra",
+    name: "Lyra Photonic",
+    type: "QPU",
+    status: "offline",
+    qubits: 12,
+    provider: "Partner Network",
+    queueDepth: 0,
+  },
+  {
+    id: "partner.qpu.helios",
+    name: "Helios (coming soon)",
+    type: "QPU",
+    status: "unknown",
+    qubits: 128,
+    provider: "Partner Network",
+    queueDepth: null,
+  },
+];
