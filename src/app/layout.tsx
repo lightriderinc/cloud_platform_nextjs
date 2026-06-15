@@ -1,5 +1,5 @@
 import Header from "@/components/Header";
-import Sidebar from "@/components/Sidebar";
+import Sidebar from "@/components/sidebar/Sidebar";
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Science_Gothic } from "next/font/google";
 import "./globals.css";
