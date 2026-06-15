@@ -7,7 +7,7 @@ import { RiCpuFill } from "react-icons/ri";
 
 const navSections: {
   label: string;
-  items: { name: string; href: string; icon?: React.ComponentType }[];
+  items: { name: string; href: string; icon?: React.ComponentType< { className?: string } > }[];
 }[] = [
   {
     label: "Compute",
@@ -49,15 +49,15 @@ export default function Sidebar() {
                         active ? "bg-gray-200 font-medium" : "hover:bg-gray-100"
                       }`}
                     >
-                      {item.icon && (
-                        <item.icon
-                          className={`text-gray-500 ${
-                            active
-                              ? "text-gray-700"
-                              : ""
-                          }`}
-                        />
-                      )}
+                      {item.icon &&
+                        (() => {
+                          const Icon = item.icon;
+                          return (
+                            <Icon
+                              className={`text-gray-500 ${active ? "text-gray-700" : ""}`}
+                            />
+                          );
+                        })()}
 
                       {item.name}
                     </Link>
