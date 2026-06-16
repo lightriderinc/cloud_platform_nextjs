@@ -1,4 +1,4 @@
-import BackendGrid from "@/components/backends/BackendGrid";
+import BackendCatalog from "@/components/backends/BackendCatalog";
 import { placeholderBackends } from "@/data/backends";
 
 export default function BackendsPage() {
@@ -16,7 +16,7 @@ export default function BackendsPage() {
         {placeholderBackends.length} Backends, {onlineCount} Online
       </p>
 
-      <BackendGrid backends={placeholderBackends} />
+      <BackendCatalog backends={placeholderBackends} />
     </div>
   );
 }

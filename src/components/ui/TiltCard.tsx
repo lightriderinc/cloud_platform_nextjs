@@ -7,6 +7,7 @@ import { useRef, useState } from "react";
 // pressing it down), lifts and scales slightly, casts a shadow offset
 // toward the raised side, and shows a soft sheen that follows the cursor.
 // Honors prefers-reduced-motion by skipping the motion entirely.
+// When `onClick` is provided it also behaves as a button (keyboard + roles).
 
 const MAX_TILT = 9; // peak rotation in degrees
 
@@ -19,9 +20,11 @@ const RESET_STYLE: React.CSSProperties = {
 export default function TiltCard({
   children,
   className = "",
+  onClick,
 }: {
   children: React.ReactNode;
   className?: string;
+  onClick?: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [style, setStyle] = useState<React.CSSProperties>(RESET_STYLE);
@@ -60,11 +63,23 @@ export default function TiltCard({
     setSheen({ opacity: 0 });
   }
 
+  function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (!onClick) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onClick();
+    }
+  }
+
   return (
     <div
       ref={ref}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
       style={style}
       className={`relative overflow-hidden [transform-style:preserve-3d] ${className}`}
     >
