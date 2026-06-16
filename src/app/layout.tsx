@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import Sidebar from "@/components/sidebar/Sidebar";
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Science_Gothic } from "next/font/google";
+import Providers from "./providers";
 import "./globals.css";
 
 const ibmPlexSans = IBM_Plex_Sans({
@@ -36,11 +37,13 @@ export default function RootLayout({
       className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} ${scienceGothic.variable} h-full antialiased`}
     >
       <body className="h-full flex flex-col overflow-hidden">
-        <Header />
-        <div className="flex flex-1 min-h-0">
-          <Sidebar />
-          <main className="flex-1 overflow-y-auto px-8 py-6">{children}</main>
-        </div>
+        <Providers>
+          <Header />
+          <div className="flex flex-1 min-h-0">
+            <Sidebar />
+            <main className="flex-1 overflow-y-auto px-8 py-6">{children}</main>
+          </div>
+        </Providers>
       </body>
     </html>
   );

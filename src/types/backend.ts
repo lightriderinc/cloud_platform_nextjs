@@ -30,6 +30,8 @@ export interface BackendDetails {
   medianOneQubitFidelity?: number;
   /** Median two-qubit gate fidelity as a percent. */
   medianTwoQubitFidelity?: number;
+  /** Median single-shot readout fidelity as a percent. */
+  medianReadoutFidelity?: number;
   /** Coherence times in microseconds. */
   medianT1Us?: number;
   medianT2RamseyUs?: number;

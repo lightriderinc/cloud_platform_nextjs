@@ -56,6 +56,7 @@ export default function BackendModal({
       { label: "Max. circuits", value: d.maxCircuits },
       { label: "Median 1-qubit gate fidelity", value: pct(d.medianOneQubitFidelity) },
       { label: "Median 2-qubit gate fidelity", value: pct(d.medianTwoQubitFidelity) },
+      { label: "Median readout fidelity", value: pct(d.medianReadoutFidelity) },
       { label: "Median T1", value: us(d.medianT1Us) },
       { label: "Median T2 (Ramsey)", value: us(d.medianT2RamseyUs) },
       { label: "Median T2 (echo)", value: us(d.medianT2EchoUs) },
