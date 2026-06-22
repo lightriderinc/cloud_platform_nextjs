@@ -5,14 +5,17 @@ import type { Backend } from "@/types/backend";
 import BackendGrid from "./BackendGrid";
 import BackendModal from "./BackendModal";
 import { useIqmBackends } from "@/hooks/useIqmBackends";
+import { useRigettiBackends } from "@/hooks/useRigettiBackends";
 
-// Owns selection state and merges live IQM machines (fetched via React Query
-// through the /api/iqm proxy) ahead of the static placeholder catalog.
+// Owns selection state and merges live provider machines (IQM, Rigetti),
+// fetched via React Query through their proxies, ahead of the static
+// placeholder catalog. Adding a provider = one more hook + spread below.
 export default function BackendCatalog({ backends }: { backends: Backend[] }) {
   const [selected, setSelected] = useState<Backend | null>(null);
   const { data: iqmBackends = [] } = useIqmBackends();
+  const { data: rigettiBackends = [] } = useRigettiBackends();
 
-  const allBackends = [...iqmBackends, ...backends];
+  const allBackends = [...iqmBackends, ...rigettiBackends, ...backends];
   const onlineCount = allBackends.filter((b) => b.status === "online").length;
 
   return (

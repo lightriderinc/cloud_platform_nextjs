@@ -1,4 +1,5 @@
 import type { Backend } from "@/types/backend";
+import { asMicroseconds, asPercent, median } from "@/lib/metrics";
 
 // Live IQM Resonance integration. Fetches each machine's static architecture
 // and latest calibration metrics through the server-side /api/iqm proxy, then
@@ -30,21 +31,6 @@ async function getJson<T>(path: string): Promise<T> {
     throw new Error(`IQM request failed (${res.status}): ${path}`);
   }
   return (await res.json()) as T;
-}
-
-function median(values: number[]): number | undefined {
-  if (values.length === 0) return undefined;
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-}
-
-function asPercent(fraction: number | undefined): number | undefined {
-  return fraction === undefined ? undefined : Number((fraction * 100).toFixed(2));
-}
-
-function asMicroseconds(seconds: number | undefined): number | undefined {
-  return seconds === undefined ? undefined : Number((seconds * 1e6).toFixed(1));
 }
 
 function titleCase(value: string): string {
