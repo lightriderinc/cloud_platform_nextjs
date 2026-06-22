@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import type { Job } from "@/types/job";
 import { fetchJobDetail, fetchJobResult } from "@/lib/lr/client";
+import type { Job } from "@/types/job";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import JobStatusBadge from "./JobStatusBadge";
 
 const TERMINAL = new Set(["COMPLETED", "FAILED", "ABORTED"]);
@@ -49,7 +49,7 @@ export default function JobResultModal({
       aria-label="Job details"
     >
       <div
-        className="relative w-full max-w-lg rounded-xl bg-white p-8 shadow-xl"
+        className="relative w-full max-w-lg default-radius bg-white p-8 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -122,13 +122,13 @@ export default function JobResultModal({
         )}
 
         {(currentStatus === "WAITING" || currentStatus === "PROCESSING") && (
-          <div className="rounded-lg border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
+          <div className="default-radius border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
             Waiting for results…
           </div>
         )}
 
         {(currentStatus === "FAILED" || currentStatus === "ABORTED") && (
-          <div className="rounded-lg border border-dashed border-red-200 p-6 text-center text-sm text-red-500">
+          <div className="default-radius border border-dashed border-red-200 p-6 text-center text-sm text-red-500">
             Job {currentStatus.toLowerCase()}.
           </div>
         )}

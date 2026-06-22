@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MdContentCopy, MdCheck, MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { MdCheck, MdContentCopy, MdVisibility, MdVisibilityOff } from "react-icons/md";
 
 function maskToken(token: string): string {
   const prefix = "lr_";
@@ -24,9 +24,9 @@ export default function ApiTokenCard({ token }: { token: string }) {
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
+    <div className="default-radius border border-gray-200 bg-white p-4">
       <div className="flex items-center gap-3">
-        <code className="min-w-0 flex-1 truncate rounded bg-gray-50 px-3 py-2 font-mono text-sm text-gray-800">
+        <code className="min-w-0 flex-1 truncate  bg-gray-50 px-3 py-2 font-mono text-sm text-gray-800">
           {token ? (revealed ? token : maskToken(token)) : "—"}
         </code>
 
@@ -35,7 +35,7 @@ export default function ApiTokenCard({ token }: { token: string }) {
           onClick={() => setRevealed((v) => !v)}
           disabled={!token}
           aria-label={revealed ? "Hide token" : "Reveal token"}
-          className="flex shrink-0 items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-40"
+          className="flex shrink-0 items-center gap-1.5 border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-40"
         >
           {revealed ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
           {revealed ? "Hide" : "Reveal"}
@@ -46,7 +46,7 @@ export default function ApiTokenCard({ token }: { token: string }) {
           onClick={handleCopy}
           disabled={!token}
           aria-label="Copy token"
-          className="flex shrink-0 items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-40"
+          className="flex shrink-0 items-center gap-1.5 border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-40"
         >
           {copied ? (
             <MdCheck className="text-green-500" size={16} />

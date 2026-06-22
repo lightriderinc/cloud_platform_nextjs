@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import type { Backend } from "@/types/backend";
+import { useEffect } from "react";
 import BackendStatusBadge from "./BackendStatusBadge";
 
 function formatQueue(queueDepth: number | null): string {
@@ -73,7 +73,7 @@ export default function BackendModal({
       aria-label={`${name} details`}
     >
       <div
-        className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl bg-white p-8 shadow-xl"
+        className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto default-radius bg-white p-8 shadow-xl"
         onClick={(event) => event.stopPropagation()}
       >
         <button
@@ -116,7 +116,7 @@ export default function BackendModal({
           ))}
         </div>
 
-        <details className="mt-8 rounded-lg border border-gray-200 p-4">
+        <details className="mt-8 default-radius border border-gray-200 p-4">
           <summary className="cursor-pointer select-none text-lg font-medium">
             Connect to {name}
           </summary>

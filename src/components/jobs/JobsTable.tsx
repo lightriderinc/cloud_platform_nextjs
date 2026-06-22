@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import type { Job } from "@/types/job";
 import { fetchJobs } from "@/lib/lr/client";
-import JobStatusBadge from "./JobStatusBadge";
+import type { Job } from "@/types/job";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import JobResultModal from "./JobResultModal";
+import JobStatusBadge from "./JobStatusBadge";
 
 const ACTIVE = new Set(["WAITING", "PROCESSING"]);
 
@@ -21,7 +21,7 @@ export default function JobsTable() {
 
   if (isLoading) {
     return (
-      <div className="rounded border border-dashed border-gray-300 p-16 text-center text-sm text-gray-500">
+      <div className="default-radius border border-dashed border-gray-300 p-16 text-center text-sm text-gray-500">
         Loading jobs…
       </div>
     );
@@ -29,7 +29,7 @@ export default function JobsTable() {
 
   if (isError) {
     return (
-      <div className="rounded border border-dashed border-red-300 p-16 text-center text-sm text-red-500">
+      <div className="default-radius border border-dashed border-red-300 p-16 text-center text-sm text-red-500">
         Failed to load jobs.
       </div>
     );
@@ -37,7 +37,7 @@ export default function JobsTable() {
 
   if (jobs.length === 0) {
     return (
-      <div className="rounded border border-dashed border-gray-300 p-16 text-center text-sm text-gray-500">
+      <div className="default-radius border border-dashed border-gray-300 p-16 text-center text-sm text-gray-500">
         No jobs yet.
       </div>
     );
@@ -45,14 +45,14 @@ export default function JobsTable() {
 
   return (
     <>
-      <div className="overflow-hidden rounded-lg border border-gray-200">
+      <div className="overflow-hidden default-radius border border-gray-200">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-100">
             <tr>
               {["Job ID", "Gate", "Shots", "Status", "Submitted"].map((col) => (
                 <th
                   key={col}
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-800"
                 >
                   {col}
                 </th>

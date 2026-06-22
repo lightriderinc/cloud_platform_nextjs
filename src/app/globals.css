@@ -52,3 +52,7 @@ h1 {
   color: transparent;
   background-clip: text;
 }
+
+.default-radius{
+  border-radius: 2px;
+}

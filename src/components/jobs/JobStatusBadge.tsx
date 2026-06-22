@@ -11,7 +11,7 @@ const CONFIG: Record<JobStatus, { dot: string; label: string; text: string }> = 
 export default function JobStatusBadge({ status }: { status: JobStatus }) {
   const cfg = CONFIG[status] ?? CONFIG.ABORTED;
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.label}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded px-2.5 py-0.5 text-xs font-medium ${cfg.label}`}>
       {cfg.text}
     </span>
   );

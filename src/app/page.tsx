@@ -5,7 +5,7 @@ export default function Home() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Overview</h1>
+      <h1 className="text-2xl font-semibold">Dashboard</h1>
       <p className="mb-8 text-sm text-gray-600">
         Your gateway to quantum computing. Explore our backends, manage your account, and start
         running quantum circuits today.

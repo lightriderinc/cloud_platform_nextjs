@@ -23,7 +23,7 @@ export default function Header() {
           <MdNotifications />
         </button>
         {/* Placeholder user menu */}
-        <button className="flex items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-gray-100">
+        <button className="flex items-center gap-2 default-radius px-2 py-1.5 text-sm hover:bg-gray-100">
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-300">
             LR
           </span>
