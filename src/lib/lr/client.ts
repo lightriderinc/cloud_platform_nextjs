@@ -5,6 +5,16 @@ async function lrFetch(path: string): Promise<Response> {
   return res;
 }
 
+export async function submitJob(gate: string, shots: number): Promise<Job> {
+  const res = await fetch("/api/lr/jobs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ gate, shots }),
+  });
+  if (!res.ok) throw new Error(`Failed to submit job: ${res.status}`);
+  return res.json();
+}
+
 export async function fetchJobs(): Promise<Job[]> {
   const res = await lrFetch("jobs");
   if (!res.ok) throw new Error(`Failed to fetch jobs: ${res.status}`);
