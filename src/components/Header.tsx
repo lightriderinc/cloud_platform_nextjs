@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { MdNotifications } from "react-icons/md";
+
 
 export default function Header() {
   return (
@@ -15,15 +17,17 @@ export default function Header() {
         </Link>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1">
         {/* Placeholder notifications */}
-        <button className="h-8 w-8 rounded-full bg-gray-200 text-sm">!</button>
+        <button className="flex rounded-full items-center justify-center text-lg">
+          <MdNotifications />
+        </button>
         {/* Placeholder user menu */}
         <button className="flex items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-gray-100">
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-300">
-            U
+            LR
           </span>
-          User Name
+          Light Rider Inc.
         </button>
       </div>
     </header>
