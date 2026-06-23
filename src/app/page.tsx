@@ -1,20 +1,32 @@
-import Image from "next/image";
-
+import ApiTokenCard from "@/components/overview/ApiTokenCard";
+import DashboardOverview from "@/components/overview/DashboardOverview";
 
 export default function Home() {
+  const token = process.env.LR_TOKEN ?? "";
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center">
-      <main className="flex flex-1 w-full gap-5 flex-col items-center  py-32 px-16">
-        <Image
-          className="mb-5"
-          src="/Lightrider-centered-priamry.svg"
-          alt="Next.js logo"
-          width={500}
-          height={1000}
-          priority
-        />
-        <h1>This page is under construction</h1>
-      </main>
+    <div>
+      <h1 className="text-2xl font-semibold">Dashboard</h1>
+      <p className="mb-12 text-sm text-gray-600">
+        Your gateway to quantum computing. Explore our backends, manage your account, and start
+        running quantum circuits today.
+      </p>
+
+      <div className="flex gap-2 justify-between">
+        <div className="w-full min-w-50 bg-gray-100 p-4 rounded">
+          <DashboardOverview />
+        </div>
+
+        <div className="bg-gray-100 p-4 rounded">
+          <section>
+            <h2 className="mb-1 text-sm font-medium text-gray-700">API Access Token</h2>
+            <p className="mb-6 text-xs text-gray-500">
+              Use this token to authenticate requests to the LightRider API.
+            </p>
+            <ApiTokenCard token={token} />
+          </section>
+        </div>
+      </div>
     </div>
   );
 }

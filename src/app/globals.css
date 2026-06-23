@@ -3,6 +3,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  --brand-primary: #EF3B39;
+  --brand-secondary: #FFCD34;
+  --brand-tertiary: #F26739;
 }
 
 @theme inline {
@@ -26,6 +30,29 @@ body {
 }
 
 h1 {
+  font-family: var(--font-science-gothic);
   font-size:1.5rem;
+}
 
+.color-brand-primary {
+  color: var(--brand-primary);
+}
+
+.color-brand-secondary {
+  color: var(--brand-secondary);
+  }
+
+.color-brand-tertiary {
+  color: var(--brand-tertiary);
+
+}
+
+.text-brand-gradient {
+  background-image: linear-gradient( to top, var(--brand-secondary), var(--brand-tertiary), var(--brand-primary));
+  color: transparent;
+  background-clip: text;
+}
+
+.default-radius{
+  border-radius: 2px;
 }
