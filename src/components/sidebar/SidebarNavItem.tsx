@@ -16,7 +16,7 @@ export default function SidebarNavItem({
     <li>
       <Link
         href={href}
-        className={`mb-1 flex items-center gap-2 rounded px-2 py-1.5 text-sm ${
+        className={`mb-1 flex items-center gap-2 default-radius px-2 py-1.5 text-sm ${
           active ? "bg-gray-200 font-medium" : "hover:bg-gray-100"
         }`}
       >

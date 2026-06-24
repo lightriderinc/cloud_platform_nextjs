@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MdNotifications } from "react-icons/md";
 
 
 export default function Header() {
@@ -18,11 +17,11 @@ export default function Header() {
       </div>
 
       <div className="flex items-center gap-1">
-        {/* Placeholder notifications */}
-        <button className="flex rounded-full items-center justify-center text-lg">
+        
+        {/* <button className="flex rounded-full items-center justify-center text-lg">
           <MdNotifications />
-        </button>
-        {/* Placeholder user menu */}
+        </button> */}
+
         <button className="flex items-center gap-2 default-radius px-2 py-1.5 text-sm hover:bg-gray-100">
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-300">
             LR

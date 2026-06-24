@@ -1,5 +1,4 @@
 import BackendCatalog from "@/components/backends/BackendCatalog";
-import { placeholderBackends } from "@/data/backends";
 
 export default function BackendsPage() {
   return (
@@ -8,8 +7,10 @@ export default function BackendsPage() {
       <p className="text-sm text-gray-600">
         QPUs and simulators available to run your circuits.
       </p>
-
-      <BackendCatalog backends={placeholderBackends} />
+      
+      <div className="mt-6">
+        <BackendCatalog />
+      </div>
     </div>
   );
 }
