@@ -15,11 +15,20 @@ import BackendModal from "./BackendModal";
 
 export default function BackendCatalog() {
   const [selected, setSelected] = useState<Backend | null>(null);
-  const { data: iqmBackends = [] } = useIqmBackends();
-  const { data: rigettiBackends = [] } = useRigettiBackends();
+  const { data: iqmBackends = [], isLoading: iqmLoading } = useIqmBackends();
+  const { data: rigettiBackends = [], isLoading: rigettiLoading } = useRigettiBackends();
 
+  const isLoading = iqmLoading || rigettiLoading;
   const allBackends = [...iqmBackends, ...rigettiBackends];
   const onlineCount = allBackends.filter((b) => b.status === "online").length;
+
+  if (isLoading) {
+    return (
+      <div className="default-radius border border-dashed border-gray-300 p-16 text-center text-sm text-gray-500">
+        Loading backends…
+      </div>
+    );
+  }
 
   return (
     <>
