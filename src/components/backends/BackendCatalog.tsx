@@ -26,7 +26,6 @@ export default function BackendCatalog() {
       <p className="mb-6 text-md text-gray-950">
         {allBackends.length} Backends, {onlineCount} Online
       </p>
-      <h2 className="mb-4 text-lg font-semibold">Available QPUs</h2>
       <BackendGrid backends={allBackends} onSelect={setSelected} />
 
       {selected && (

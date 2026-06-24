@@ -49,7 +49,7 @@ export default function JobsTable() {
               {["Job ID", "Gate", "Shots / Results", "Status", "Submitted"].map((col) => (
                 <th
                   key={col}
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-800"
+                  className="px-4 py-3 text-left text-sm font-bold text-gray-600"
                 >
                   {col}
                 </th>
