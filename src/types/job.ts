@@ -1,4 +1,4 @@
-export type JobStatus = "WAITING" | "PROCESSING" | "COMPLETED" | "FAILED" | "ABORTED";
+export type JobStatus = "PENDING" | "WAITING" | "PROCESSING" | "COMPLETED" | "FAILED" | "ABORTED";
 
 // Shape returned by GET /jobs (list)
 export interface Job {
