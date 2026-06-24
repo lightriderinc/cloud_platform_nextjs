@@ -12,12 +12,12 @@ export default function Home() {
         running quantum circuits today.
       </p>
 
-      <div className="flex gap-2 justify-between">
+      <div className="flex flex-col-reverse gap-2 lg:flex-row md:justify-between">
         <div className="w-full min-w-50 bg-gray-100 p-4 rounded border border-gray-200">
           <DashboardOverview />
         </div>
 
-        <div className="bg-gray-100 p-4 rounded border border-gray-200">
+        <div className="w-full lg:w-auto bg-gray-100 p-4 rounded border border-gray-200">
           <section>
             <h2 className="mb-1 text-sm font-medium text-gray-700">API Access Token</h2>
             <p className="mb-6 text-xs text-gray-500">

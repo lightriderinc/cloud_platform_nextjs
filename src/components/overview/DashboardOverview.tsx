@@ -27,7 +27,7 @@ export default function DashboardOverview() {
           </p>
         </div>
 
-        <div className="flex flex-row justify-between mt-4">
+        <div className="flex flex-col gap-4 xl:flex-row xl:justify-between xl:items-center mt-4">
 
           <InfoBox>
             The Light Rider cloud quantum platform is currently under development. <br/>
@@ -38,7 +38,7 @@ export default function DashboardOverview() {
             type="button"
             onClick={() => setShowModal(true)}
             style={{ backgroundColor: "var(--brand-primary)" }}
-            className="default-radius pl-4 pr-3 py-2.5 text-sm font-medium text-white cursor-pointer transition-opacity hover:opacity-90"
+            className="default-radius pl-4 pr-3 py-2.5 text-sm font-medium text-white cursor-pointer transition-opacity hover:opacity-90 min-w-[110px]"
           >
             New Job <MdAdd className="inline-block ml-1 text-lg" />
           </button>
