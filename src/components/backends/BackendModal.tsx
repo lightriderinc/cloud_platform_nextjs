@@ -121,6 +121,7 @@ export default function BackendModal({
             Connect to {name}
           </summary>
           <p className="mt-3 text-sm text-gray-600">
+            Platform is currently under development. <br/>
             Connection instructions and API token setup will appear here.
           </p>
         </details>
