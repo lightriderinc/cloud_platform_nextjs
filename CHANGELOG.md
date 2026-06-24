@@ -1,3 +1,12 @@
+## [1.1.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.1.0...v1.1.1) (2026-06-24)
+
+
+### Bug Fixes
+
+* job table status live update ([5ccb83e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/5ccb83eba61659ba5bdf1c024789f3cf7023e40a))
+* jobs table status live update ([04eca97](https://github.com/lightriderinc/cloud_platform_nextjs/commit/04eca97bbce2a85b9cc2f5c7e75aa7b76ccd65a4))
+* title and favicon ([1e06274](https://github.com/lightriderinc/cloud_platform_nextjs/commit/1e0627489a52ff05bff72b952e9ce26d6e426e6f))
+
 # [1.1.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.0.0...v1.1.0) (2026-06-23)
 
 
