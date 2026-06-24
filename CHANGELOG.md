@@ -1,3 +1,17 @@
+## [1.1.2](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.1.1...v1.1.2) (2026-06-24)
+
+
+### Bug Fixes
+
+* backends page displays only real backends ([2d3b144](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2d3b14485825f22a9a733d3e656436a09fa02899))
+* dashboard half responsive ([affddeb](https://github.com/lightriderinc/cloud_platform_nextjs/commit/affddeb720fe596060ebea8476d4162f1978d944))
+* dashboard info box added ([e787fcf](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e787fcf3cef74106ae048a77a14d1cedd5dd3b1b))
+* loading placeholder for backends ([94f2826](https://github.com/lightriderinc/cloud_platform_nextjs/commit/94f2826ee096460008b3957574c47b17c3664d83))
+* modal close button style ([20806f4](https://github.com/lightriderinc/cloud_platform_nextjs/commit/20806f467be04761cafe394b19ffeee74adf26d2))
+* update for demo ([cc6f57d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/cc6f57d441fd0d60013c143599eafbc7219e8f90))
+* updated nav item styles ([13c3902](https://github.com/lightriderinc/cloud_platform_nextjs/commit/13c39021ce29c7c7773132c36f306c5cad463d13))
+* updated styles ([25972b7](https://github.com/lightriderinc/cloud_platform_nextjs/commit/25972b7dfbebb5b28fc8e6858005650a0c9b1022))
+
 ## [1.1.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.1.0...v1.1.1) (2026-06-24)
 
 
