@@ -4,6 +4,8 @@ import NewJobModal from "@/components/jobs/NewJobModal";
 import { fetchJobs } from "@/lib/lr/client";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { MdAdd } from "react-icons/md";
+import InfoBox from "../InfoBox";
 
 export default function DashboardOverview() {
   const [showModal, setShowModal] = useState(false);
@@ -25,14 +27,20 @@ export default function DashboardOverview() {
           </p>
         </div>
 
-        <div className="flex flex-row justify-end mt-4">
+        <div className="flex flex-row justify-between mt-4">
+
+          <InfoBox>
+            The Light Rider cloud quantum platform is currently under development. <br/>
+            You can use the &quot;New job&quot; button to submit sample circuits.
+          </InfoBox>
+
           <button
             type="button"
             onClick={() => setShowModal(true)}
             style={{ backgroundColor: "var(--brand-primary)" }}
-            className="default-radius px-4 py-2.5 text-sm font-medium text-white cursor-pointer transition-opacity hover:opacity-90"
+            className="default-radius pl-4 pr-3 py-2.5 text-sm font-medium text-white cursor-pointer transition-opacity hover:opacity-90"
           >
-            New Job
+            New Job <MdAdd className="inline-block ml-1 text-lg" />
           </button>
         </div>
       </div>
