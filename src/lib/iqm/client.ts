@@ -65,14 +65,20 @@ function mapMachine(
 
   const qubitErrors: Record<string, number> = {};
   for (const o of valid) {
-    if (o.dut_field.includes("metrics.rb.prx.drag_crf_sx")) {
+    if (o.dut_field.includes("metrics.rb.prx.drag_crf")) {
       const m = o.dut_field.match(/QB\d+/);
       if (m) qubitErrors[m[0]] = Number(((1 - o.value) * 100).toFixed(3));
     }
   }
   const qubitMap = arch?.qubits
     ? {
-        nodes: arch.qubits.map((q) => ({ id: q, label: q, error: qubitErrors[q] })),
+        nodes: [
+          ...arch.qubits.map((q) => ({ id: q, label: q, error: qubitErrors[q] })),
+          ...(arch.computational_resonators ?? []).map((r) => ({
+            id: r,
+            label: r,
+          })),
+        ],
         edges: (arch.connectivity ?? []).map(([a, b]) => ({ source: a, target: b })),
         errorLabel: "PRX gate error",
       }
@@ -93,7 +99,7 @@ function mapMachine(
       nativeGates,
       qubitMap,
       medianOneQubitFidelity: asPercent(
-        median(valuesWhere((f) => f.includes("metrics.rb.prx.drag_crf_sx"))),
+        median(valuesWhere((f) => f.includes("metrics.rb.prx.drag_crf"))),
       ),
       medianTwoQubitFidelity: asPercent(
         median(valuesWhere((f) => f.includes("metrics.irb.cz.slepian_crf"))),

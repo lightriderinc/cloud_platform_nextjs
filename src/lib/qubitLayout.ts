@@ -117,6 +117,20 @@ function circleLayout(ids: string[]): RawPositions {
   return out;
 }
 
+// One central hub connected to every other node (e.g. a resonator-coupled
+// star chip): hub in the middle, leaves evenly around it.
+function starLayout(ids: string[], adj: Record<string, string[]>): RawPositions {
+  const n = ids.length;
+  const hub = ids.find((id) => adj[id].length === n - 1) as string;
+  const leaves = ids.filter((id) => id !== hub);
+  const out: RawPositions = { [hub]: [0, 0] };
+  leaves.forEach((id, i) => {
+    const a = (2 * Math.PI * i) / leaves.length;
+    out[id] = [Math.cos(a), Math.sin(a)];
+  });
+  return out;
+}
+
 // Deterministic Fruchterman-Reingold force-directed layout.
 function forceLayout(ids: string[], edges: LayoutEdge[]): RawPositions {
   const n = ids.length;
@@ -211,6 +225,12 @@ export function computeLayout(
 
   // Square lattice -> grid rotated 45deg into a diamond.
   const adj = buildAdjacency(nodes, edges);
+
+  // Star: a single hub connected to every other node (e.g. a resonator).
+  if (edges.length === n - 1 && ids.some((id) => adj[id].length === n - 1)) {
+    return normalize(starLayout(ids, adj));
+  }
+
   const grid = gridEmbed(ids, adj, edges);
   if (grid) {
     const rotated: RawPositions = {};
