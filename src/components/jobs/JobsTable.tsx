@@ -5,18 +5,15 @@ import type { Job } from "@/types/job";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import JobResultModal from "./JobResultModal";
-import JobStatusBadge from "./JobStatusBadge";
-
-const ACTIVE = new Set(["WAITING", "PROCESSING"]);
+import JobTableRow from "./JobTableRow";
 
 export default function JobsTable() {
   const [selected, setSelected] = useState<Job | null>(null);
 
+  // Clean, single fetch. The rows will manage their own updates now.
   const { data: jobs = [], isLoading, isError } = useQuery({
     queryKey: ["lr-jobs"],
     queryFn: fetchJobs,
-    refetchInterval: (query) =>
-      (query.state.data ?? []).some((j: Job) => ACTIVE.has(j.status)) ? 5000 : false,
   });
 
   if (isLoading) {
@@ -49,10 +46,10 @@ export default function JobsTable() {
         <table className="w-full text-sm">
           <thead className="bg-gray-100">
             <tr>
-              {["Job ID", "Gate", "Shots", "Status", "Submitted"].map((col) => (
+              {["Job ID", "Gate", "Shots / Results", "Status", "Submitted"].map((col) => (
                 <th
                   key={col}
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-800"
+                  className="px-4 py-3 text-left text-sm font-bold text-gray-600"
                 >
                   {col}
                 </th>
@@ -61,32 +58,21 @@ export default function JobsTable() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {jobs.map((job) => (
-              <tr
-                key={job.uuid}
-                onClick={() => setSelected(job)}
-                className="cursor-pointer bg-white transition-colors hover:bg-gray-50"
-              >
-                <td className="px-4 py-3 font-mono text-xs text-gray-600">
-                  {job.uuid ? `${job.uuid.slice(0, 8)}…` : "—"}
-                </td>
-                <td className="px-4 py-3 text-gray-800">{job.gate ?? "—"}</td>
-                <td className="px-4 py-3 text-gray-800">
-                  {job.shots != null ? job.shots.toLocaleString() : "—"}
-                </td>
-                <td className="px-4 py-3">
-                  <JobStatusBadge status={job.status} />
-                </td>
-                <td className="px-4 py-3 text-xs text-gray-500">
-                  {job.created_at ? new Date(job.created_at).toLocaleString() : "—"}
-                </td>
-              </tr>
+              <JobTableRow 
+                key={job.uuid} 
+                job={job} 
+                onClick={() => setSelected(job)} 
+              />
             ))}
           </tbody>
         </table>
       </div>
 
       {selected && (
-        <JobResultModal job={selected} onClose={() => setSelected(null)} />
+        <JobResultModal 
+          job={selected} 
+          onClose={() => setSelected(null)} 
+        />
       )}
     </>
   );

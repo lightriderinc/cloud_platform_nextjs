@@ -9,8 +9,8 @@ export default function BackendSpec({
 }) {
   return (
     <div className="flex items-center justify-between text-sm">
-      <span className="text-gray-500">{label}</span>
-      <span className="font-medium text-gray-800">{value}</span>
+      <span className="text-gray-600">{label}</span>
+      <span className="font-semibold text-gray-800">{value}</span>
     </div>
   );
 }
