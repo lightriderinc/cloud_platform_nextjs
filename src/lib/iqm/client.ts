@@ -63,6 +63,21 @@ function mapMachine(
     .filter(([, match]) => valid.some((o) => match(o.dut_field)))
     .map(([gate]) => gate);
 
+  const qubitErrors: Record<string, number> = {};
+  for (const o of valid) {
+    if (o.dut_field.includes("metrics.rb.prx.drag_crf_sx")) {
+      const m = o.dut_field.match(/QB\d+/);
+      if (m) qubitErrors[m[0]] = Number(((1 - o.value) * 100).toFixed(3));
+    }
+  }
+  const qubitMap = arch?.qubits
+    ? {
+        nodes: arch.qubits.map((q) => ({ id: q, label: q, error: qubitErrors[q] })),
+        edges: (arch.connectivity ?? []).map(([a, b]) => ({ source: a, target: b })),
+        errorLabel: "PRX gate error",
+      }
+    : undefined;
+
   return {
     id: `iqm.qpu.${machine}`,
     name,
@@ -76,6 +91,7 @@ function mapMachine(
     details: {
       description: `${name} is a superconducting quantum processor, with calibration data pulled live from IQM Resonance.`,
       nativeGates,
+      qubitMap,
       medianOneQubitFidelity: asPercent(
         median(valuesWhere((f) => f.includes("metrics.rb.prx.drag_crf_sx"))),
       ),

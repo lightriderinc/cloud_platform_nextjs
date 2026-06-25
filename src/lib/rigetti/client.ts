@@ -11,6 +11,7 @@ interface RigettiCharacteristic {
 }
 
 interface RigettiOperationSite {
+  node_ids: number[];
   characteristics: RigettiCharacteristic[];
 }
 
@@ -73,6 +74,30 @@ function mapProcessor(id: string, isa: RigettiISA): Backend {
   const name = `Rigetti ${isa.name ?? id}`;
   const arch = isa.architecture;
 
+  const rb1q = (isa.benchmarks ?? []).find((o) => o.name === "randomized_benchmark_1q");
+  const nodeError: Record<string, number> = {};
+  if (rb1q) {
+    for (const site of rb1q.sites ?? []) {
+      const c = site.characteristics.find((ch) => ch.name === "fRB");
+      const nid = site.node_ids?.[0];
+      if (c && nid !== undefined) {
+        nodeError[`Q${nid}`] = Number(((1 - c.value) * 100).toFixed(3));
+      }
+    }
+  }
+  const qubitMap = {
+    nodes: (arch?.nodes ?? []).map((nd) => ({
+      id: `Q${nd.node_id}`,
+      label: `Q${nd.node_id}`,
+      error: nodeError[`Q${nd.node_id}`],
+    })),
+    edges: (arch?.edges ?? []).map((e) => ({
+      source: `Q${e.node_ids[0]}`,
+      target: `Q${e.node_ids[1]}`,
+    })),
+    errorLabel: "1-qubit gate error",
+  };
+
   return {
     id: `rigetti.qpu.${id}`,
     name,
@@ -87,6 +112,7 @@ function mapProcessor(id: string, isa: RigettiISA): Backend {
       description: `${name} is a superconducting quantum processor${arch?.family ? ` (Rigetti ${arch.family} family)` : ""}, with calibration data pulled live from Rigetti QCS.`,
       topology: arch?.family,
       nativeGates: (isa.instructions ?? []).map((o) => o.name),
+      qubitMap,
       medianOneQubitFidelity: asPercent(
         median(
           characteristicValues(isa.benchmarks, "randomized_benchmark_1q", "fRB"),

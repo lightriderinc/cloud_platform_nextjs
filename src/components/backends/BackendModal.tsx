@@ -3,6 +3,7 @@
 import type { Backend } from "@/types/backend";
 import { useEffect } from "react";
 import BackendStatusBadge from "./BackendStatusBadge";
+import QubitMap from "./QubitMap";
 
 function formatQueue(queueDepth: number | null): string {
   if (queueDepth === null) return "—";
@@ -115,6 +116,13 @@ export default function BackendModal({
             </div>
           ))}
         </div>
+
+        {d.qubitMap && d.qubitMap.nodes.length > 0 && (
+          <div className="mt-8">
+            <h2 className="mb-3 text-base font-semibold">Qubit map</h2>
+            <QubitMap data={d.qubitMap} />
+          </div>
+        )}
 
         <details className="mt-8 default-radius border border-gray-200 p-4">
           <summary className="cursor-pointer select-none text-lg font-medium">
