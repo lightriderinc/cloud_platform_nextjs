@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-
+import MobileMenu from "./MobileMenu";
+import UserCard from "./UserCard";
 
 export default function Header() {
   return (
@@ -17,17 +18,9 @@ export default function Header() {
       </div>
 
       <div className="flex items-center gap-1">
-        
-        {/* <button className="flex rounded-full items-center justify-center text-lg">
-          <MdNotifications />
-        </button> */}
-
-        <button className="flex items-center gap-2 default-radius px-2 py-1.5 text-sm hover:bg-gray-100">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-300">
-            LR
-          </span>
-          Light Rider Inc.
-        </button>
+        {/* Desktop: account button. Mobile: hamburger that opens the menu. */}
+        <UserCard className="hidden lg:flex" />
+        <MobileMenu />
       </div>
     </header>
   );

@@ -68,14 +68,14 @@ export default function BackendModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 animate-fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label={`${name} details`}
     >
       <div
-        className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto default-radius bg-white p-8 shadow-xl"
+        className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto default-radius bg-white p-8 shadow-xl animate-scale-in"
         onClick={(event) => event.stopPropagation()}
       >
         <button
