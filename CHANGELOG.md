@@ -1,3 +1,19 @@
+# [1.2.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.1.2...v1.2.0) (2026-06-29)
+
+
+### Bug Fixes
+
+* qubit map colors updated ([a77858a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/a77858a6c623260ff344737eeb3c4f137ceb5513))
+* render IQM star topologies (resonator hub) in qubit map ([9313e78](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9313e7800752e9ea749845f15ad0be120055a91b))
+
+
+### Features
+
+* add adaptive qubit connectivity map to backend detail modal ([e116eac](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e116eacfa353b3dc8a12dba173e59182967a4154))
+* add IQM mock simulators as hardcoded backend cards ([4d22208](https://github.com/lightriderinc/cloud_platform_nextjs/commit/4d22208df9ad7d0813d87f4934c0e14a361bafc0))
+* responsive layout + qubit map ([6c879bc](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6c879bcdfcaaa50f694dc8bd4b271daf1a2e719c))
+* responsive layout, UI animations, and horizontal scroll for jobs table ([2d263ce](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2d263ce4f954a1ebfa12dc63573c6489e2c6ea75))
+
 ## [1.1.2](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.1.1...v1.1.2) (2026-06-24)
 
 
