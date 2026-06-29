@@ -4,6 +4,7 @@ import type { Backend } from "@/types/backend";
 import { useEffect } from "react";
 import { MdClose } from "react-icons/md";
 import BackendStatusBadge from "./BackendStatusBadge";
+import QubitMap from "./QubitMap";
 
 function formatQueue(queueDepth: number | null): string {
   if (queueDepth === null) return "—";
@@ -67,14 +68,14 @@ export default function BackendModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 animate-fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label={`${name} details`}
     >
       <div
-        className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto default-radius bg-white p-8 shadow-xl"
+        className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto default-radius bg-white p-8 shadow-xl animate-scale-in"
         onClick={(event) => event.stopPropagation()}
       >
         <button
@@ -116,6 +117,13 @@ export default function BackendModal({
             </div>
           ))}
         </div>
+
+        {d.qubitMap && d.qubitMap.nodes.length > 0 && (
+          <div className="mt-8">
+            <h2 className="mb-3 text-base font-semibold">Qubit map</h2>
+            <QubitMap data={d.qubitMap} />
+          </div>
+        )}
 
         <details className="mt-8 default-radius border border-gray-200 p-4">
           <summary className="cursor-pointer select-none text-lg font-medium">

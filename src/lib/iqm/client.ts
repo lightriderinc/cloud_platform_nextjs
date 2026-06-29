@@ -1,13 +1,30 @@
-import type { Backend } from "@/types/backend";
+import type { Backend, BackendType } from "@/types/backend";
 import { asMicroseconds, asPercent, median } from "@/lib/metrics";
 
 // Live IQM Resonance integration. Fetches each machine's static architecture
 // and latest calibration metrics through the server-side /api/iqm proxy, then
 // maps them into our Backend shape. All field paths below were derived from
 // real Cocos responses.
+//
+// The list is intentionally hardcoded (not auto-discovered) so IQM adding or
+// experimenting with backends never surfaces unexpected cards on our frontend.
+// `alias` is the IQM identifier used in API paths (mock aliases include a colon,
+// e.g. "garnet:mock", which the proxy URL-encodes).
 
-const IQM_MACHINES = ["garnet", "emerald", "sirius"] as const;
-type IqmMachine = (typeof IQM_MACHINES)[number];
+interface IqmMachine {
+  alias: string;
+  name: string;
+  type: BackendType;
+}
+
+const IQM_MACHINES: IqmMachine[] = [
+  { alias: "garnet", name: "IQM Garnet", type: "QPU" },
+  { alias: "emerald", name: "IQM Emerald", type: "QPU" },
+  { alias: "sirius", name: "IQM Sirius", type: "QPU" },
+  { alias: "garnet:mock", name: "IQM Garnet (mock)", type: "Simulator" },
+  { alias: "emerald:mock", name: "IQM Emerald (mock)", type: "Simulator" },
+  { alias: "sirius:mock", name: "IQM Sirius (mock)", type: "Simulator" },
+];
 
 interface StaticArchitecture {
   qubits: string[];
@@ -33,10 +50,6 @@ async function getJson<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-function titleCase(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
 function mapMachine(
   machine: IqmMachine,
   architecture: StaticArchitecture[] | StaticArchitecture,
@@ -50,7 +63,11 @@ function mapMachine(
   const valuesWhere = (match: (field: string) => boolean): number[] =>
     valid.filter((o) => match(o.dut_field)).map((o) => o.value);
 
-  const name = `IQM ${titleCase(machine)}`;
+  const { name } = machine;
+  const kind =
+    machine.type === "Simulator"
+      ? "noise-model simulator"
+      : "superconducting quantum processor";
 
   const nativeGates = (
     [
@@ -63,10 +80,31 @@ function mapMachine(
     .filter(([, match]) => valid.some((o) => match(o.dut_field)))
     .map(([gate]) => gate);
 
+  const qubitErrors: Record<string, number> = {};
+  for (const o of valid) {
+    if (o.dut_field.includes("metrics.rb.prx.")) {
+      const m = o.dut_field.match(/QB\d+/);
+      if (m) qubitErrors[m[0]] = Number(((1 - o.value) * 100).toFixed(3));
+    }
+  }
+  const qubitMap = arch?.qubits
+    ? {
+        nodes: [
+          ...arch.qubits.map((q) => ({ id: q, label: q, error: qubitErrors[q] })),
+          ...(arch.computational_resonators ?? []).map((r) => ({
+            id: r,
+            label: r,
+          })),
+        ],
+        edges: (arch.connectivity ?? []).map(([a, b]) => ({ source: a, target: b })),
+        errorLabel: "PRX gate error",
+      }
+    : undefined;
+
   return {
-    id: `iqm.qpu.${machine}`,
+    id: `iqm.${machine.alias}`,
     name,
-    type: "QPU",
+    type: machine.type,
     // These endpoints report calibration, not live availability. Reaching this
     // map means the calls succeeded, so we treat the machine as online.
     status: "online",
@@ -74,13 +112,14 @@ function mapMachine(
     provider: "IQM",
     queueDepth: null,
     details: {
-      description: `${name} is a superconducting quantum processor, with calibration data pulled live from IQM Resonance.`,
+      description: `${name} is a ${kind}, with calibration data pulled live from IQM Resonance.`,
       nativeGates,
+      qubitMap,
       medianOneQubitFidelity: asPercent(
-        median(valuesWhere((f) => f.includes("metrics.rb.prx.drag_crf_sx"))),
+        median(valuesWhere((f) => f.includes("metrics.rb.prx."))),
       ),
       medianTwoQubitFidelity: asPercent(
-        median(valuesWhere((f) => f.includes("metrics.irb.cz.slepian_crf"))),
+        median(valuesWhere((f) => f.includes("metrics.irb.cz."))),
       ),
       medianReadoutFidelity: asPercent(
         median(
@@ -105,16 +144,16 @@ function mapMachine(
 }
 
 // Fetches all IQM machines in parallel. A machine that fails (offline, auth,
-// etc.) is dropped rather than failing the whole list.
+// no architecture, etc.) is dropped rather than failing the whole list.
 export async function fetchIqmBackends(): Promise<Backend[]> {
   const settled = await Promise.allSettled(
     IQM_MACHINES.map(async (machine) => {
       const [architecture, metrics] = await Promise.all([
         getJson<StaticArchitecture[]>(
-          `/api/iqm/api/v1/quantum-computers/${machine}/artifacts/static-quantum-architectures`,
+          `/api/iqm/api/v1/quantum-computers/${machine.alias}/artifacts/static-quantum-architectures`,
         ),
         getJson<MetricsResponse>(
-          `/api/iqm/api/v1/calibration-sets/${machine}/default/metrics`,
+          `/api/iqm/api/v1/calibration-sets/${machine.alias}/default/metrics`,
         ),
       ]);
       return mapMachine(machine, architecture, metrics);

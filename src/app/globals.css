@@ -56,3 +56,34 @@ h1 {
 .default-radius{
   border-radius: 2px;
 }
+/* --- UI animations (reusable) --- */
+@keyframes lr-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes lr-fade-in-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes lr-scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in {
+  animation: lr-fade-in 200ms ease-out both;
+}
+.animate-fade-in-up {
+  animation: lr-fade-in-up 320ms ease-out both;
+}
+.animate-scale-in {
+  animation: lr-scale-in 180ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-fade-in-up,
+  .animate-scale-in {
+    animation: none;
+  }
+}

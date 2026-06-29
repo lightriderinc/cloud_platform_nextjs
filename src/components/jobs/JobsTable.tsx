@@ -11,7 +11,11 @@ export default function JobsTable() {
   const [selected, setSelected] = useState<Job | null>(null);
 
   // Clean, single fetch. The rows will manage their own updates now.
-  const { data: jobs = [], isLoading, isError } = useQuery({
+  const {
+    data: jobs = [],
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["lr-jobs"],
     queryFn: fetchJobs,
   });
@@ -42,26 +46,28 @@ export default function JobsTable() {
 
   return (
     <>
-      <div className="overflow-hidden default-radius border border-gray-200">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto default-radius border border-gray-200">
+        <table className="w-full min-w-[720px] text-sm">
           <thead className="bg-gray-100">
             <tr>
-              {["Job ID", "Gate", "Shots / Results", "Status", "Submitted"].map((col) => (
-                <th
-                  key={col}
-                  className="px-4 py-3 text-left text-sm font-bold text-gray-600"
-                >
-                  {col}
-                </th>
-              ))}
+              {["Job ID", "Gate", "Shots / Results", "Status", "Submitted"].map(
+                (col) => (
+                  <th
+                    key={col}
+                    className="px-4 py-3 text-left text-sm font-bold text-gray-600"
+                  >
+                    {col}
+                  </th>
+                ),
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {jobs.map((job) => (
-              <JobTableRow 
-                key={job.uuid} 
-                job={job} 
-                onClick={() => setSelected(job)} 
+              <JobTableRow
+                key={job.uuid}
+                job={job}
+                onClick={() => setSelected(job)}
               />
             ))}
           </tbody>
@@ -69,10 +75,7 @@ export default function JobsTable() {
       </div>
 
       {selected && (
-        <JobResultModal 
-          job={selected} 
-          onClose={() => setSelected(null)} 
-        />
+        <JobResultModal job={selected} onClose={() => setSelected(null)} />
       )}
     </>
   );

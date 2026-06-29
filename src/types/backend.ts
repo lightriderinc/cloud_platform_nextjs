@@ -17,6 +17,25 @@ export interface BackendPricing {
   creditsPerHour: number;
 }
 
+export interface QubitNode {
+  id: string;
+  label: string;
+  /** Per-qubit error as a percent (e.g. 0.05), or undefined if unknown. */
+  error?: number;
+}
+
+export interface QubitEdge {
+  source: string;
+  target: string;
+}
+
+export interface QubitMapData {
+  nodes: QubitNode[];
+  edges: QubitEdge[];
+  /** Tooltip label for the error metric, e.g. "PRX gate error". */
+  errorLabel: string;
+}
+
 export interface BackendDetails {
   /** Short prose summary shown at the top of the modal. */
   description?: string;
@@ -38,6 +57,8 @@ export interface BackendDetails {
   medianT2EchoUs?: number;
   /** Names of the natively supported gates. */
   nativeGates?: string[];
+  /** Per-qubit connectivity map with error data, for the modal visual. */
+  qubitMap?: QubitMapData;
 }
 
 export interface Backend {
