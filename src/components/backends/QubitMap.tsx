@@ -1,14 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import type { QubitMapData } from "@/types/backend";
 import { computeLayout } from "@/lib/qubitLayout";
+import type { QubitMapData } from "@/types/backend";
+import { useMemo, useState } from "react";
 
 // Brand gradient stops, low error -> high error: yellow, orange, red.
 const STOPS: [number, number, number][] = [
-  [255, 205, 52],
-  [242, 103, 57],
-  [239, 59, 57],
+  [122, 209, 81],
+  [190, 143, 57],
+  [174, 57, 82],
 ];
 
 const NO_DATA_STROKE = "#9ca3af"; // gray-400, used for the "no data" outline
@@ -174,7 +174,7 @@ export default function QubitMap({ data }: { data: QubitMapData }) {
               width: 60,
               height: 10,
               borderRadius: 4,
-              background: "linear-gradient(90deg, #FFCD34, #F26739, #EF3B39)",
+              background: "linear-gradient(90deg, #7AD151, #BE8F39, #AE3952)",
             }}
           />
           high error
@@ -185,7 +185,7 @@ export default function QubitMap({ data }: { data: QubitMapData }) {
               width: 12,
               height: 12,
               borderRadius: "50%",
-              border: `2px dashed ${NO_DATA_STROKE}`,
+              border: `1px dashed ${NO_DATA_STROKE}`,
             }}
           />
           no data
