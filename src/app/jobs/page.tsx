@@ -1,7 +1,7 @@
 export default function JobsPage() {
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Jobs</h1>
+      <h1 className="text-2xl font-semibold text-gray-700">Jobs</h1>
       <p className="mb-6 text-sm text-gray-600">
         Track and manage your submitted jobs.
       </p>
