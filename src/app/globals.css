@@ -115,3 +115,12 @@ h1 {
   transition: border 150ms ease-out;
 
 }
+
+.btn-outline-brand {
+  border: 2px solid #f87c56;
+  color: var(--brand-primary);
+
+  &:hover {
+    background-color: rgba(248, 124, 86, 0.07);
+  }
+}

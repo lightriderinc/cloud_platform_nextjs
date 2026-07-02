@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import MobileMenu from "./MobileMenu";
-import UserCard from "./UserCard";
 
 export default function Header() {
   return (
@@ -19,7 +18,13 @@ export default function Header() {
 
       <div className="flex items-center gap-1">
         {/* Desktop: account button. Mobile: hamburger that opens the menu. */}
-        <UserCard className="hidden lg:flex" />
+        {/* <UserCard className="hidden lg:flex" /> */}
+        <button
+          type="button"
+          className="hidden lg:flex default-radius px-3 py-2 text-sm font-semibold text-brand-primary cursor-pointer btn-outline-brand transition-opacity min-w-[110px]"
+        >
+          Get early access
+        </button>
         <MobileMenu />
       </div>
     </header>

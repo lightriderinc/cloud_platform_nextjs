@@ -22,7 +22,7 @@ export default function DashboardDemoEntropy() {
             <button
               type="button"
               style={{ backgroundColor: "var(--brand-primary)" }}
-              className="default-radius pl-4 pr-3 py-2.5 text-sm font-medium text-white cursor-pointer transition-opacity hover:opacity-90 min-w-[110px]"
+              className="default-radius pl-4 pr-3 py-2.5 text-sm font-medium text-white cursor-pointer transition-opacity hover:opacity-80 min-w-[110px]"
             >
               Try it out{" "}
               <MdArrowForward className="inline-block ml-1 text-lg" />

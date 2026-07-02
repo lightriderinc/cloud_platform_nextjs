@@ -111,7 +111,7 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
               type="submit"
               disabled={isPending}
               style={{ backgroundColor: "var(--brand-primary)" }}
-              className="default-radius px-4 py-2 text-sm font-medium text-white transition-opacity cursor-pointer hover:opacity-90 disabled:opacity-50"
+              className="default-radius px-4 py-2 text-sm font-medium text-white transition-opacity cursor-pointer hover:opacity-80 disabled:opacity-50"
             >
               {isPending ? "Submitting…" : "Submit Job"}
             </button>
