@@ -1,4 +1,5 @@
 import BackendCatalog from "@/components/backends/BackendCatalog";
+import InfoBox from "@/components/InfoBox";
 
 export default function BackendsPage() {
   return (
@@ -7,7 +8,11 @@ export default function BackendsPage() {
       <p className="text-sm text-gray-600">
         QPUs and simulators available to run your circuits.
       </p>
-      
+      <div className="mt-6">
+        <InfoBox>
+          Custom access to backends will be available at launch.
+        </InfoBox>
+      </div>
       <div className="mt-6">
         <BackendCatalog />
       </div>
