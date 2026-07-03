@@ -63,12 +63,18 @@ export default function MobileMenu() {
 
           <div className="border-t border-gray-200 p-3">
             {/* <UserCard className="w-full" /> */}
-            <button
-              type="button"
-              className="default-radius px-3 py-2 text-sm font-semibold text-brand-primary cursor-pointer btn-outline-brand transition-opacity min-w-[110px] w-full"
+            <a
+              href="https://lightriderinc.com/early-access"
+              target="_blank"
+              rel="noreferrer"
             >
-              Get early access
-            </button>
+              <button
+                type="button"
+                className="default-radius px-3 py-2 text-sm font-semibold text-brand-primary cursor-pointer btn-outline-brand transition-opacity min-w-[110px] w-full"
+              >
+                Get early access
+              </button>
+            </a>
           </div>
         </div>
       </div>

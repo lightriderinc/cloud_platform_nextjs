@@ -19,12 +19,18 @@ export default function Header() {
       <div className="flex items-center gap-1">
         {/* Desktop: account button. Mobile: hamburger that opens the menu. */}
         {/* <UserCard className="hidden lg:flex" /> */}
-        <button
-          type="button"
-          className="hidden lg:flex default-radius px-3 py-2 text-sm font-semibold text-brand-primary cursor-pointer btn-outline-brand transition-opacity min-w-[110px]"
+        <a
+          href="https://lightriderinc.com/early-access"
+          target="_blank"
+          rel="noreferrer"
         >
-          Get early access
-        </button>
+          <button
+            type="button"
+            className="hidden lg:flex default-radius px-3 py-2 text-sm font-semibold text-brand-primary cursor-pointer btn-outline-brand transition-opacity min-w-[110px]"
+          >
+            Get early access
+          </button>
+        </a>
         <MobileMenu />
       </div>
     </header>
