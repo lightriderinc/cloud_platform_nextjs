@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { FaMicrochip } from "react-icons/fa";
 import {
   MdArrowBack,
   MdArrowForward,
@@ -12,7 +13,6 @@ import {
   MdDeviceHub,
   MdEqualizer,
 } from "react-icons/md";
-import { FaMicrochip } from "react-icons/fa";
 import EntropySourceCard from "./EntropySourceCard";
 
 const SOURCES = [
@@ -79,7 +79,7 @@ const STEP_LABELS = ["Source", "Configure", "Results"];
 
 function StepIndicator({ step }: { step: Step }) {
   return (
-    <div className="flex items-center px-6 py-3 border-b border-gray-100">
+    <div className="flex items-center pt-5">
       {STEP_LABELS.map((label, i) => {
         const num = i + 1;
         const isActive = step === num;
@@ -89,12 +89,12 @@ function StepIndicator({ step }: { step: Step }) {
             <div className="flex items-center gap-1.5">
               <div
                 className={[
-                  "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-semibold transition-colors",
+                  "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium transition-colors",
                   isDone
                     ? "bg-[var(--brand-primary)] text-white"
                     : isActive
-                      ? "border-2 border-[var(--brand-primary)] text-[var(--brand-primary)]"
-                      : "border-2 border-gray-200 text-gray-400",
+                      ? "border-1 border-[var(--brand-primary)] text-[var(--brand-primary)]"
+                      : "border-1 border-gray-200 text-gray-400",
                 ].join(" ")}
               >
                 {isDone ? (
@@ -113,7 +113,7 @@ function StepIndicator({ step }: { step: Step }) {
               </div>
               <span
                 className={[
-                  "text-xs font-medium",
+                  "text-xs",
                   isActive ? "text-gray-800" : "text-gray-400",
                 ].join(" ")}
               >
@@ -198,20 +198,19 @@ export default function EntropyModal({ onClose }: { onClose: () => void }) {
       aria-label="Get Entropy"
     >
       <div
-        className="relative default-radius w-full max-w-xl bg-white shadow-xl animate-scale-in"
+        className="relative default-radius w-full max-w-xl bg-white shadow-xl animate-scale-in p-8"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+        <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base font-semibold text-gray-900">Get Entropy</h2>
-            <p className="text-xs text-gray-500 mt-0.5">{subtitles[step]}</p>
+            <h2 className="text-lg font-semibold text-gray-900">Get Entropy</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="flex h-8 w-8 items-center justify-center default-radius cursor-pointer text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center cursor-pointer rounded-full text-lg text-gray-500 hover:text-gray-700"
           >
             <MdClose className="text-lg" />
           </button>
@@ -221,13 +220,13 @@ export default function EntropyModal({ onClose }: { onClose: () => void }) {
         <StepIndicator step={step} />
 
         {/* Body */}
-        <div className="px-6 py-5 min-h-[300px]">
+        <div className="py-5 min-h-[300px]">
 
           {/* Step 1 — Source selection */}
           {step === 1 && (
             <div className="animate-fade-in-up">
-              <p className="text-sm text-gray-500 mb-4">
-                Choose a certified entropy source for your request.
+              <p className="text-sm mb-4">
+                Choose an entropy source for your request.
               </p>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {SOURCES.map((source) => (
@@ -311,7 +310,7 @@ export default function EntropyModal({ onClose }: { onClose: () => void }) {
 
               {/* Overview */}
               <div className="default-radius border border-gray-100 bg-gray-50 p-4">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-3">
+                <p className="text-md font-bold text-gray-500 mb-3">
                   Overview
                 </p>
                 <div className="grid grid-cols-2 gap-y-3 gap-x-6 text-sm">
@@ -349,7 +348,7 @@ export default function EntropyModal({ onClose }: { onClose: () => void }) {
             <div className="animate-fade-in-up space-y-4">
               {/* Request summary */}
               <div className="default-radius border border-gray-100 bg-gray-50 p-4">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-3">
+                <p className="text-md font-semibold text-gray-500 mb-3">
                   Request
                 </p>
                 <div className="grid grid-cols-2 gap-y-3 gap-x-6 text-sm">
@@ -375,22 +374,22 @@ export default function EntropyModal({ onClose }: { onClose: () => void }) {
               {/* Entropy output */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium text-gray-700">Entropy Output</p>
+                  <p className="text-sm font-bold text-gray-700">Entropy Output</p>
                   <button
                     type="button"
                     onClick={handleCopy}
                     className="flex items-center gap-1.5 px-2.5 py-1 default-radius border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 cursor-pointer transition-colors"
                   >
                     {copied ? (
-                      <MdCheck className="text-green-500" />
+                      <MdCheck className="text-green-700" />
                     ) : (
                       <MdContentCopy />
                     )}
                     {copied ? "Copied" : "Copy"}
                   </button>
                 </div>
-                <div className="default-radius border border-gray-800 bg-gray-900 p-4 overflow-x-auto">
-                  <p className="font-mono text-xs text-green-400 break-all leading-relaxed">
+                <div className="default-radius border border-gray-800 bg-gray-800 p-4 overflow-x-auto">
+                  <p className="font-mono text-xs text-green-300 break-all leading-relaxed">
                     {result.hex}
                   </p>
                 </div>
@@ -400,7 +399,7 @@ export default function EntropyModal({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-gray-100 px-6 py-4">
+        <div className="flex items-center justify-between py-4">
           {step === 1 && (
             <>
               <div />
