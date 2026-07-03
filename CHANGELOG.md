@@ -1,3 +1,25 @@
+# [1.3.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.2.0...v1.3.0) (2026-07-03)
+
+
+### Bug Fixes
+
+* backend card styles updated + info added ([6383d72](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6383d7290dd91af585ed9f2c944b720c326953bb))
+* buttons + get access btn ([fe3924b](https://github.com/lightriderinc/cloud_platform_nextjs/commit/fe3924b9b455654be288fd3fa5802a0e02a7a423))
+* demo circuit styles ([22fc060](https://github.com/lightriderinc/cloud_platform_nextjs/commit/22fc060770f4cb1f97fbcc625d0a0850fb74a040))
+* demo dashboard init ([155d17f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/155d17f7da90f73814a7c227f2c182a964b07824))
+* early access link ([f8a328b](https://github.com/lightriderinc/cloud_platform_nextjs/commit/f8a328be55e68fed4c6d81709cedf5c993b41d15))
+* entropy demo styles ([e6c95f5](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e6c95f5f7d0674b375eda4ae597947631d15e02a))
+* jobs info added ([546dbe4](https://github.com/lightriderinc/cloud_platform_nextjs/commit/546dbe47db56b7983a26d030d32d1e6b13fd2a01))
+* sidenav bottom links to website ([e10195d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e10195d54fe74c24c24a9bcc34ac4cd2ba40a5b0))
+* skeleton load for Backend catalog ([c69c9d9](https://github.com/lightriderinc/cloud_platform_nextjs/commit/c69c9d9fdea6cb3e1e305ecd11a968ca5ee57fd7))
+
+
+### Features
+
+* dashboard ready for demo ([ffbb8f8](https://github.com/lightriderinc/cloud_platform_nextjs/commit/ffbb8f8caac2007ccf1ee53cf568549fd12989a1))
+* entropy demo init ([8014b20](https://github.com/lightriderinc/cloud_platform_nextjs/commit/8014b20b4a474fe0a960a6d068a58b77d2e06aa1))
+* sample circuit demo added ([5812493](https://github.com/lightriderinc/cloud_platform_nextjs/commit/5812493d4b7590893b1de87f8a6a8df77230d231))
+
 # [1.2.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.1.2...v1.2.0) (2026-06-29)
 
 
