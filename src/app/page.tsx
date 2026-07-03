@@ -1,18 +1,19 @@
-import ApiTokenCard from "@/components/overview/ApiTokenCard";
-import DashboardOverview from "@/components/overview/DashboardOverview";
+import DashboardDemoCircuit from "@/components/dashboard/DashboardDemoCircuit";
+import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntopy";
+import InfoBox from "@/components/InfoBox";
 
 export default function Home() {
-  const token = process.env.LR_TOKEN ?? "";
+  // const token = process.env.LR_TOKEN ?? "";
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
+      <h1 className="text-2xl font-semibold text-gray-700">Dashboard</h1>
       <p className="mb-12 text-sm text-gray-600">
-        Your gateway to quantum computing. Explore our backends, and start
-        running quantum circuits today.
+        Your gateway to quantum computing. Explore our services and
+        applications, and start running quantum circuits today.
       </p>
 
-      <div className="flex flex-col-reverse gap-2 lg:flex-row md:justify-between">
+      {/* <div className="flex flex-col-reverse gap-2 lg:flex-row md:justify-between">
         <div className="w-full min-w-50 bg-gray-100 p-4 rounded border border-gray-200">
           <DashboardOverview />
         </div>
@@ -26,6 +27,22 @@ export default function Home() {
             <ApiTokenCard token={token} />
           </section>
         </div>
+      </div> */}
+
+      <div>
+        <h2 className="mb-3 text-xl font-bold text-gray-600">
+          Getting started
+        </h2>
+        <InfoBox>
+          The Light Rider cloud quantum platform is currently in active
+          development. <br />
+          All features will be fully available upon official launch. Below is a
+          limited demo intended to provide a preview of select functionality.
+        </InfoBox>
+      </div>
+      <div className="flex flex-row gap-4 mt-6">
+        <DashboardDemoEntropy />
+        <DashboardDemoCircuit />
       </div>
     </div>
   );

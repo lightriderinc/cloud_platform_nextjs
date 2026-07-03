@@ -24,8 +24,23 @@ export default function BackendCatalog() {
 
   if (isLoading) {
     return (
-      <div className="default-radius border border-dashed border-gray-300 p-16 text-center text-sm text-gray-500">
-        Loading backends…
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex h-full animate-pulse flex-col gap-3 default-radius border border-gray-200 bg-gray-100 p-4"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="h-4 w-32 rounded bg-gray-300" />
+              <div className="h-5 w-14 rounded-full bg-gray-300" />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <div className="h-3.5 w-24 rounded bg-gray-300" />
+              <div className="h-3.5 w-20 rounded bg-gray-300" />
+            </div>
+            <div className="mt-auto h-5 w-16 rounded bg-gray-300" />
+          </div>
+        ))}
       </div>
     );
   }

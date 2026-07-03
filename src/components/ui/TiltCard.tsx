@@ -44,16 +44,17 @@ export default function TiltCard({
     const rotateY = (px - 0.5) * 2 * MAX_TILT; // pointer right -> right dips
 
     // Shadow falls toward the raised side to sell the "weighed down" tilt.
-    const shadowX = (0.5 - px) * 22;
-    const shadowY = (0.5 - py) * 22 + 14;
+    const shadowX = (0.5 - px) * 10 + 5;
+    const shadowY = (0.5 - py) * 10 + 5;
 
     setStyle({
+      border: `1px solid #F87C56`,
       transform: `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`,
-      boxShadow: `${shadowX}px ${shadowY}px 32px rgba(0, 0, 0, 0.18)`,
+      boxShadow: `${shadowX}px ${shadowY}px 16px rgba(0, 0, 0, 0.15)`,
       transition: "transform 90ms ease-out, box-shadow 90ms ease-out",
     });
     setSheen({
-      opacity: 1,
+      opacity: 0,
       background: `radial-gradient(circle at ${px * 100}% ${py * 100}%, rgba(255, 255, 255, 0.28), transparent 45%)`,
     });
   }

@@ -23,7 +23,7 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const { mutate, isPending, isError } = useMutation({
+  const { mutate, isPending, isError, error } = useMutation({
     mutationFn: () => submitJob(circuit, shots),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lr-jobs"] });
@@ -95,7 +95,9 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
 
           {isError && (
             <p className="text-sm text-red-500">
-              Failed to submit job. Please try again.
+              {error instanceof Error && error.message
+                ? error.message
+                : "Failed to submit job. Please try again."}
             </p>
           )}
 
@@ -111,7 +113,7 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
               type="submit"
               disabled={isPending}
               style={{ backgroundColor: "var(--brand-primary)" }}
-              className="default-radius px-4 py-2 text-sm font-medium text-white transition-opacity cursor-pointer hover:opacity-90 disabled:opacity-50"
+              className="default-radius px-4 py-2 text-sm font-medium text-white transition-opacity cursor-pointer hover:opacity-80 disabled:opacity-50"
             >
               {isPending ? "Submitting…" : "Submit Job"}
             </button>

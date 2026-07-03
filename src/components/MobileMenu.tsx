@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { MdClose, MdMenu } from "react-icons/md";
 import SidebarNav from "./sidebar/SidebarNav";
-import UserCard from "./UserCard";
 
 // Below the lg breakpoint, replaces the header user card with a hamburger that
 // opens an animated drawer (slide-in panel + backdrop fade) holding the
@@ -63,7 +62,19 @@ export default function MobileMenu() {
           <SidebarNav onNavigate={() => setOpen(false)} />
 
           <div className="border-t border-gray-200 p-3">
-            <UserCard className="w-full" />
+            {/* <UserCard className="w-full" /> */}
+            <a
+              href="https://lightriderinc.com/early-access"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <button
+                type="button"
+                className="default-radius px-3 py-2 text-sm font-semibold text-brand-primary cursor-pointer btn-outline-brand transition-opacity min-w-[110px] w-full"
+              >
+                Get early access
+              </button>
+            </a>
           </div>
         </div>
       </div>

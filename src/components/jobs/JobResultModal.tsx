@@ -24,9 +24,10 @@ export default function JobResultModal({
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const { data: detail } = useQuery({
+  const { data: detail, isRefetching: isPolling } = useQuery({
     queryKey: ["lr-job-detail", job.uuid],
     queryFn: () => fetchJobDetail(job.uuid),
+    retry: 0,
     refetchInterval: (query) =>
       TERMINAL.has(query.state.data?.status ?? job.status) ? false : 2000,
   });
@@ -69,6 +70,9 @@ export default function JobResultModal({
               {job.gate ? `${job.gate.toUpperCase()} gate` : "Quantum Job"}
             </h2>
             <JobStatusBadge status={currentStatus} />
+            {isPolling && (
+              <span className="inline-block h-2 w-2 animate-ping rounded-full bg-gray-400 opacity-75" />
+            )}
           </div>
         </div>
 
@@ -130,7 +134,9 @@ export default function JobResultModal({
             </div>
           )}
 
-        {(currentStatus === "WAITING" || currentStatus === "PROCESSING") && (
+        {(currentStatus === "PENDING" ||
+          currentStatus === "WAITING" ||
+          currentStatus === "PROCESSING") && (
           <div className="default-radius border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
             Waiting for results…
           </div>
