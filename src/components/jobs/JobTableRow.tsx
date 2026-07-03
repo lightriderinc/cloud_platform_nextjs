@@ -17,11 +17,9 @@ export default function JobTableRow({ job, onClick }: JobTableRowProps) {
   const { data: detail } = useQuery({
     queryKey: ["lr-job-detail", job.uuid],
     queryFn: () => fetchJobDetail(job.uuid),
-    // Skip this entirely if the list fetch already told us it's terminal
     enabled: !TERMINAL.has(job.status),
-    // Check status dynamically: stop polling the moment it hits a terminal state
+    retry: 0,
     refetchInterval: (query) => {
-      // Safely access data depending on React Query version, fallback to list status
       const status = query?.state?.data?.status ?? job.status;
       return TERMINAL.has(status) ? false : 5000;
     },
