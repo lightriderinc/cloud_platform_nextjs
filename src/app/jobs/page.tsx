@@ -1,3 +1,5 @@
+import InfoBox from "@/components/InfoBox";
+
 export default function JobsPage() {
   return (
     <div>
@@ -6,9 +8,16 @@ export default function JobsPage() {
         Track and manage your submitted jobs.
       </p>
       {/* <JobsTable /> */}
-
-      <div className="default-radius border border-dashed border-gray-300 p-16 text-center text-sm text-gray-500">
-        Jobs you submit will appear here. You can track their status and view results once they complete.
+      <InfoBox>
+        Users can access their Light Rider access token from the
+        dashboard after launch.
+        <br />
+        All jobs submitted using the personal access token can be tracked
+        here.
+      </InfoBox>
+      <div className="default-radius border border-dashed border-gray-300 p-16 text-center mt-5 text-sm text-gray-500">
+        Jobs you submit will appear here. You can track their status and view
+        results once they complete.
       </div>
     </div>
   );
