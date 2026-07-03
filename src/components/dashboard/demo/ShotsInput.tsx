@@ -14,7 +14,7 @@ export default function ShotsInput({ value, onChange }: Props) {
         Shots
         <span className="relative group">
           <MdHelpOutline className="cursor-help text-base text-gray-400" />
-          <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-64 -translate-x-1/2 rounded bg-gray-800 px-3 py-2 text-xs leading-relaxed text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+          <span className="pointer-events-none absolute bottom-full left-20 z-20 mb-2 w-64 -translate-x-1/2 rounded bg-gray-800 px-3 py-2 text-xs leading-relaxed text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
             The number of times the circuit is executed. The more shots you use
             the higher the accuracy of your results.
           </span>

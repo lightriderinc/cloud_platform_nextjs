@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { MdClose } from "react-icons/md";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { submitJob } from "@/lib/lr/client";
 import type { Job } from "@/types/job";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { MdClose } from "react-icons/md";
 import CircuitSchematic, { type CircuitType } from "./CircuitSchematic";
-import ShotsInput from "./ShotsInput";
 import DemoJobResult from "./DemoJobResult";
+import ShotsInput from "./ShotsInput";
 
 const CIRCUITS: { value: CircuitType; label: string; description: string }[] =
   [
