@@ -1,3 +1,25 @@
+# [1.4.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.3.0...v1.4.0) (2026-07-06)
+
+
+### Bug Fixes
+
+* application demos added ([99700e4](https://github.com/lightriderinc/cloud_platform_nextjs/commit/99700e4a28e6666f0c2286de0b98b2e9a819512b))
+* application result styles ([b57e93f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b57e93f73f80f0405b59d88b5e1530466e7b3d4f))
+* h3 style in md fixed ([8a2b3bf](https://github.com/lightriderinc/cloud_platform_nextjs/commit/8a2b3bffe980fb93a343bad719a0c306b8be58cf))
+* legal page + sidebar ([7d31cfc](https://github.com/lightriderinc/cloud_platform_nextjs/commit/7d31cfc7f21419150b62e6ee079ed62510955930))
+* privacy police updated ([b97853a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b97853a8aa8cb0a5d5cf38a7ff7842101c1b722d))
+* privacy policy + ToS pages added ([6dcf11a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6dcf11a6fa68dcb20c29cc4a87b9805f191ac942))
+* updated md packages for table rendering ([672701a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/672701aa2d5c3b7cd15ec84f3a68b62b86033b43))
+* welcome modal added ([7a6c391](https://github.com/lightriderinc/cloud_platform_nextjs/commit/7a6c391b45d1c99eb493ccf5991fd99fc6237301))
+
+
+### Features
+
+* application and legal for demo ([879eaf8](https://github.com/lightriderinc/cloud_platform_nextjs/commit/879eaf86a92788987561c8f758f0f120ed862d12))
+* applications page init ([ad8d7ec](https://github.com/lightriderinc/cloud_platform_nextjs/commit/ad8d7ec4cc0f8fac0bd121a222325ed4c218daab))
+* derive IQM machine status from health endpoint ([62ab497](https://github.com/lightriderinc/cloud_platform_nextjs/commit/62ab49720ad33f818fd80ab350fc6f0fa3b1f5f9))
+* Privacy & ToS pages init ([0a2e237](https://github.com/lightriderinc/cloud_platform_nextjs/commit/0a2e2371e66814218fce38218cc4fe5a9bf42940))
+
 # [1.3.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.2.0...v1.3.0) (2026-07-03)
 
 
