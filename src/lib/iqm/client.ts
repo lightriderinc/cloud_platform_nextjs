@@ -1,4 +1,4 @@
-import type { Backend, BackendType } from "@/types/backend";
+import type { Backend, BackendStatus, BackendType } from "@/types/backend";
 import { asMicroseconds, asPercent, median } from "@/lib/metrics";
 
 // Live IQM Resonance integration. Fetches each machine's static architecture
@@ -42,6 +42,29 @@ interface MetricsResponse {
   observations: MetricObservation[];
 }
 
+interface HealthResponse {
+  healthy: boolean;
+  updated_at: string;
+}
+
+// IQM's health endpoint refreshes about every 15s. If the newest reading is
+// older than this, its data has gone stale.
+const HEALTH_STALE_MS = 60_000;
+
+// Derives availability from a health reading:
+//   unhealthy flag                -> offline
+//   healthy + fresh timestamp     -> online
+//   healthy + stale timestamp     -> unknown (still reporting healthy, but the
+//                                    data has gone stale, so we can't confirm)
+//   no reading / unparseable time -> unknown (couldn't tell)
+function deriveStatus(health: HealthResponse | null): BackendStatus {
+  if (!health) return "unknown";
+  if (!health.healthy) return "offline";
+  const updatedMs = Date.parse(health.updated_at);
+  if (Number.isNaN(updatedMs)) return "unknown";
+  return Date.now() - updatedMs > HEALTH_STALE_MS ? "unknown" : "online";
+}
+
 async function getJson<T>(path: string): Promise<T> {
   const res = await fetch(path, { headers: { Accept: "application/json" } });
   if (!res.ok) {
@@ -54,6 +77,7 @@ function mapMachine(
   machine: IqmMachine,
   architecture: StaticArchitecture[] | StaticArchitecture,
   metrics: MetricsResponse,
+  status: BackendStatus,
 ): Backend {
   const arch = Array.isArray(architecture) ? architecture[0] : architecture;
   const valid = metrics.observations.filter(
@@ -105,9 +129,7 @@ function mapMachine(
     id: `iqm.${machine.alias}`,
     name,
     type: machine.type,
-    // These endpoints report calibration, not live availability. Reaching this
-    // map means the calls succeeded, so we treat the machine as online.
-    status: "online",
+    status,
     qubits: arch?.qubits?.length ?? 0,
     provider: "IQM",
     queueDepth: null,
@@ -148,15 +170,30 @@ function mapMachine(
 export async function fetchIqmBackends(): Promise<Backend[]> {
   const settled = await Promise.allSettled(
     IQM_MACHINES.map(async (machine) => {
-      const [architecture, metrics] = await Promise.all([
+      // Health only applies to real hardware; simulators are software and
+      // always available. Fetch it best-effort so a health failure yields an
+      // "unknown" status rather than dropping the whole machine.
+      const healthPromise =
+        machine.type === "QPU"
+          ? getJson<HealthResponse>(
+              `/api/iqm/api/v1/quantum-computers/${machine.alias}/health`,
+            ).catch(() => null)
+          : Promise.resolve<HealthResponse | null>(null);
+
+      const [architecture, metrics, health] = await Promise.all([
         getJson<StaticArchitecture[]>(
           `/api/iqm/api/v1/quantum-computers/${machine.alias}/artifacts/static-quantum-architectures`,
         ),
         getJson<MetricsResponse>(
           `/api/iqm/api/v1/calibration-sets/${machine.alias}/default/metrics`,
         ),
+        healthPromise,
       ]);
-      return mapMachine(machine, architecture, metrics);
+
+      const status: BackendStatus =
+        machine.type === "Simulator" ? "online" : deriveStatus(health);
+
+      return mapMachine(machine, architecture, metrics, status);
     }),
   );
 
