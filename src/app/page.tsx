@@ -48,8 +48,8 @@ export default function Home() {
         </div>
       </div>
       <div className="flex flex-row gap-3 w-full justify-end pt-6 pb-2">
-        <a className="text-xs text-gray-700 hover:text-gray-500" href="/privacy">Privacy policy</a>
-        <a className="text-xs text-gray-700 hover:text-gray-500" href="/terms-of-use">Terms of Use</a>
+        <a className="text-xs text-gray-700 hover:text-gray-500" href="/legal/privacy">Privacy policy</a>
+        <a className="text-xs text-gray-700 hover:text-gray-500" href="/legal/terms-of-use">Terms of Use</a>
       </div>
     </div>
   );
