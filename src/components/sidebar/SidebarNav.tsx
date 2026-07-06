@@ -1,6 +1,6 @@
 "use client";
 
-import { MdArrowOutward, MdBarChart, MdDashboard } from "react-icons/md";
+import { MdApps, MdArrowOutward, MdBarChart, MdDashboard } from "react-icons/md";
 import { RiCpuFill } from "react-icons/ri";
 import SidebarNavGroup from "./SidebarNavGroup";
 import SidebarNavItem from "./SidebarNavItem";
@@ -26,6 +26,15 @@ export default function SidebarNav({
             name="Jobs"
             href="/jobs"
             icon={MdBarChart}
+            onNavigate={onNavigate}
+          />
+        </SidebarNavGroup>
+
+        <SidebarNavGroup label="Explore">
+          <SidebarNavItem
+            name="Applications"
+            href="/applications"
+            icon={MdApps}
             onNavigate={onNavigate}
           />
           <SidebarNavItem
