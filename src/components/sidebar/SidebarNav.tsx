@@ -1,6 +1,14 @@
 "use client";
 
-import { MdArrowOutward, MdBarChart, MdDashboard } from "react-icons/md";
+import { usePathname } from "next/navigation";
+import {
+  MdApps,
+  MdArrowOutward,
+  MdBarChart,
+  MdDashboard, // Added for legal
+  MdGavel,
+  MdPolicy, // Added for legal
+} from "react-icons/md";
 import { RiCpuFill } from "react-icons/ri";
 import SidebarNavGroup from "./SidebarNavGroup";
 import SidebarNavItem from "./SidebarNavItem";
@@ -12,29 +20,63 @@ export default function SidebarNav({
 }: {
   onNavigate?: () => void;
 }) {
+  const pathname = usePathname();
+
+  const isLegalRoute = pathname?.startsWith("/legal");
+
   return (
     <>
       <nav className="flex-1 overflow-auto px-3 py-4">
-        <SidebarNavGroup label="Compute">
-          <SidebarNavItem
-            name="Dashboard"
-            href="/"
-            icon={MdDashboard}
-            onNavigate={onNavigate}
-          />
-          <SidebarNavItem
-            name="Jobs"
-            href="/jobs"
-            icon={MdBarChart}
-            onNavigate={onNavigate}
-          />
-          <SidebarNavItem
-            name="Backends"
-            href="/backends"
-            icon={RiCpuFill}
-            onNavigate={onNavigate}
-          />
-        </SidebarNavGroup>
+        {isLegalRoute ? (
+          /* --- LEGAL NAVIGATION --- */
+          <SidebarNavGroup label="Legal">
+            <SidebarNavItem
+              name="Privacy Policy"
+              href="/legal/privacy"
+              icon={MdPolicy}
+              onNavigate={onNavigate}
+            />
+            <SidebarNavItem
+              name="Terms of Use"
+              href="/legal/terms-of-use"
+              icon={MdGavel}
+              onNavigate={onNavigate}
+            />
+          </SidebarNavGroup>
+        ) : (
+          /* --- DEFAULT NAVIGATION --- */
+          <>
+            <SidebarNavGroup label="Compute">
+              <SidebarNavItem
+                name="Dashboard"
+                href="/"
+                icon={MdDashboard}
+                onNavigate={onNavigate}
+              />
+              <SidebarNavItem
+                name="Jobs"
+                href="/jobs"
+                icon={MdBarChart}
+                onNavigate={onNavigate}
+              />
+            </SidebarNavGroup>
+
+            <SidebarNavGroup label="Explore">
+              <SidebarNavItem
+                name="Applications"
+                href="/applications"
+                icon={MdApps}
+                onNavigate={onNavigate}
+              />
+              <SidebarNavItem
+                name="Backends"
+                href="/backends"
+                icon={RiCpuFill}
+                onNavigate={onNavigate}
+              />
+            </SidebarNavGroup>
+          </>
+        )}
       </nav>
 
       {/* Placeholder: docs/support links */}
