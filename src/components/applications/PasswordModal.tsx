@@ -330,7 +330,7 @@ export default function PasswordModal({ onClose }: { onClose: () => void }) {
               <button
                 type="button"
                 onClick={handleRegenerate}
-                className="flex items-center gap-1.5 default-radius border border-gray-200 px-4 py-2 text-sm text-gray-600 cursor-pointer hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1.5 default-radius border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-50 transition-colors"
               >
                 <MdRefresh className="text-base" /> Regenerate
               </button>
