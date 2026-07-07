@@ -1,5 +1,6 @@
 "use client";
 
+import { useIbmBackends } from "@/hooks/useIbmBackends";
 import { useIqmBackends } from "@/hooks/useIqmBackends";
 import { useRigettiBackends } from "@/hooks/useRigettiBackends";
 import type { Backend } from "@/types/backend";
@@ -17,9 +18,10 @@ export default function BackendCatalog() {
   const [selected, setSelected] = useState<Backend | null>(null);
   const { data: iqmBackends = [], isLoading: iqmLoading } = useIqmBackends();
   const { data: rigettiBackends = [], isLoading: rigettiLoading } = useRigettiBackends();
+  const { data: ibmBackends = [], isLoading: ibmLoading } = useIbmBackends();
 
-  const isLoading = iqmLoading || rigettiLoading;
-  const allBackends = [...iqmBackends, ...rigettiBackends];
+  const isLoading = iqmLoading || rigettiLoading || ibmLoading;
+  const allBackends = [...iqmBackends, ...rigettiBackends, ...ibmBackends];
   const onlineCount = allBackends.filter((b) => b.status === "online").length;
 
   if (isLoading) {

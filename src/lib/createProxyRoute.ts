@@ -1,39 +1,63 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // Builds a GET route handler that forwards /api/<provider>/<path> to an
-// upstream base URL, optionally attaching a server-side bearer token so it
-// never reaches the browser. Shared by every provider proxy (IQM, Rigetti, ...).
+// upstream base URL, attaching server-side credentials so they never reach the
+// browser. Shared by every provider proxy (IQM, Rigetti, IBM, ...).
+//
+// Auth is supplied one of two ways:
+//   - `token`: a single static bearer token (IQM's model; Rigetti sets
+//     requireToken:false to make it optional).
+//   - `authHeaders`: an async provider returning the full set of auth headers.
+//     Use this when a static token is insufficient — e.g. IBM, which needs a
+//     short-lived IAM bearer token plus a Service-CRN and API-version header.
 export function createProxyRoute(options: {
   baseUrl: string;
   token?: string;
   /** When true (default), respond 500 if no token is configured. */
   requireToken?: boolean;
+  /** Async provider for auth headers; takes precedence over `token`. */
+  authHeaders?: () => Promise<Record<string, string>> | Record<string, string>;
 }) {
-  const { baseUrl, token, requireToken = true } = options;
+  const { baseUrl, token, requireToken = true, authHeaders } = options;
 
   return async function GET(
     request: NextRequest,
     context: { params: Promise<{ path: string[] }> },
   ) {
-    if (requireToken && !token) {
-      return NextResponse.json(
-        { error: "Upstream API token is not configured on the server." },
-        { status: 500 },
-      );
+    const headers: Record<string, string> = { Accept: "application/json" };
+
+    if (authHeaders) {
+      try {
+        Object.assign(headers, await authHeaders());
+      } catch (err) {
+        const detail = err instanceof Error ? err.message : String(err);
+        console.error("[proxy] failed to obtain upstream credentials:", detail);
+        return NextResponse.json(
+          { error: "Failed to obtain upstream credentials.", detail },
+          { status: 500 },
+        );
+      }
+    } else {
+      if (requireToken && !token) {
+        return NextResponse.json(
+          { error: "Upstream API token is not configured on the server." },
+          { status: 500 },
+        );
+      }
+      if (token) headers.Authorization = `Bearer ${token}`;
     }
 
     const { path } = await context.params;
     const target = `${baseUrl}/${path.map(encodeURIComponent).join("/")}${request.nextUrl.search}`;
 
-    const headers: Record<string, string> = { Accept: "application/json" };
-    if (token) headers.Authorization = `Bearer ${token}`;
-
     let upstream: Response;
     try {
       upstream = await fetch(target, { headers, cache: "no-store" });
-    } catch {
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : String(err);
+      console.error(`[proxy] failed to reach upstream (${target}):`, detail);
       return NextResponse.json(
-        { error: "Failed to reach upstream API." },
+        { error: "Failed to reach upstream API.", detail, target },
         { status: 502 },
       );
     }
