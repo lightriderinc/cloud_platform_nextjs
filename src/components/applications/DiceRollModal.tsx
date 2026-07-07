@@ -155,7 +155,7 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
             </div>
 
             <div className="flex flex-col items-center justify-center py-4 gap-2">
-              <p className="text-xs text-gray-400 uppercase tracking-wider">Result</p>
+              <p className="text-sm font-bold text-gray-500">Result</p>
               <div
                 className="flex items-center justify-center w-24 h-24 default-radius border-2 bg-red-50"
                 style={{ borderColor: "var(--brand-primary)" }}
@@ -219,7 +219,7 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
               <button
                 type="button"
                 onClick={handleRollAgain}
-                className="flex items-center gap-1.5 default-radius border border-gray-200 px-4 py-2 text-sm text-gray-600 cursor-pointer hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1.5 default-radius border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-50 transition-colors"
               >
                 <MdRefresh className="text-base" /> Roll Again
               </button>
