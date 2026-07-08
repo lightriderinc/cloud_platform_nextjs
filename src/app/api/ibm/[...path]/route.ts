@@ -14,4 +14,5 @@ export const dynamic = "force-dynamic";
 export const GET = createProxyRoute({
   baseUrl: process.env.IBM_QUANTUM_BASE_URL || "https://quantum.cloud.ibm.com",
   authHeaders: getIbmAuthHeaders,
+  cacheTtlMs: 30_000,
 });

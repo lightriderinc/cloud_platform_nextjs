@@ -7,9 +7,23 @@ import { NextRequest, NextResponse } from "next/server";
 // Auth is supplied one of two ways:
 //   - `token`: a single static bearer token (IQM's model; Rigetti sets
 //     requireToken:false to make it optional).
-//   - `authHeaders`: an async provider returning the full set of auth headers.
-//     Use this when a static token is insufficient — e.g. IBM, which needs a
-//     short-lived IAM bearer token plus a Service-CRN and API-version header.
+//   - `authHeaders`: an async provider returning the full set of auth headers
+//     (e.g. IBM's rotating IAM token + Service-CRN + API-version).
+//
+// `cacheTtlMs` optionally caches successful responses in memory so repeat loads
+// reuse a recent upstream response instead of re-paying slow third-party calls.
+
+interface CacheEntry {
+  expires: number;
+  status: number;
+  body: string;
+  contentType: string;
+}
+
+// Per-process response cache keyed by resolved target URL. Bounded in practice
+// by the small, fixed set of backend endpoints we proxy.
+const responseCache = new Map<string, CacheEntry>();
+
 export function createProxyRoute(options: {
   baseUrl: string;
   token?: string;
@@ -17,13 +31,35 @@ export function createProxyRoute(options: {
   requireToken?: boolean;
   /** Async provider for auth headers; takes precedence over `token`. */
   authHeaders?: () => Promise<Record<string, string>> | Record<string, string>;
+  /** If > 0, cache successful (2xx) responses in memory for this many ms. */
+  cacheTtlMs?: number;
 }) {
-  const { baseUrl, token, requireToken = true, authHeaders } = options;
+  const {
+    baseUrl,
+    token,
+    requireToken = true,
+    authHeaders,
+    cacheTtlMs = 0,
+  } = options;
 
   return async function GET(
     request: NextRequest,
     context: { params: Promise<{ path: string[] }> },
   ) {
+    const { path } = await context.params;
+    const target = `${baseUrl}/${path.map(encodeURIComponent).join("/")}${request.nextUrl.search}`;
+
+    // Serve a fresh cached response if we have one, skipping auth + upstream.
+    if (cacheTtlMs > 0) {
+      const hit = responseCache.get(target);
+      if (hit && hit.expires > Date.now()) {
+        return new NextResponse(hit.body, {
+          status: hit.status,
+          headers: { "Content-Type": hit.contentType, "X-Proxy-Cache": "HIT" },
+        });
+      }
+    }
+
     const headers: Record<string, string> = { Accept: "application/json" };
 
     if (authHeaders) {
@@ -47,9 +83,6 @@ export function createProxyRoute(options: {
       if (token) headers.Authorization = `Bearer ${token}`;
     }
 
-    const { path } = await context.params;
-    const target = `${baseUrl}/${path.map(encodeURIComponent).join("/")}${request.nextUrl.search}`;
-
     let upstream: Response;
     try {
       upstream = await fetch(target, { headers, cache: "no-store" });
@@ -63,11 +96,23 @@ export function createProxyRoute(options: {
     }
 
     const body = await upstream.text();
+    const contentType =
+      upstream.headers.get("Content-Type") ?? "application/json";
+
+    if (cacheTtlMs > 0 && upstream.ok) {
+      responseCache.set(target, {
+        expires: Date.now() + cacheTtlMs,
+        status: upstream.status,
+        body,
+        contentType,
+      });
+    }
+
     return new NextResponse(body, {
       status: upstream.status,
       headers: {
-        "Content-Type":
-          upstream.headers.get("Content-Type") ?? "application/json",
+        "Content-Type": contentType,
+        ...(cacheTtlMs > 0 ? { "X-Proxy-Cache": "MISS" } : {}),
       },
     });
   };
