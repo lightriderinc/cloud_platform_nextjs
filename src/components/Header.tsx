@@ -1,8 +1,15 @@
+import { getLogtoContext, signIn } from "@logto/next/server-actions";
 import Image from "next/image";
 import Link from "next/link";
+import { logtoConfig } from "@/app/logto";
+import LoginButton from "./auth/LoginButton";
 import MobileMenu from "./MobileMenu";
 
-export default function Header() {
+// Server component: reads Logto auth state on the server so the Log in
+// button renders only for signed-out visitors, with no client-side flash.
+export default async function Header() {
+  const { isAuthenticated } = await getLogtoContext(logtoConfig);
+
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-200 px-4">
       <div className="flex items-center gap-2">
@@ -31,6 +38,15 @@ export default function Header() {
             Get early access
           </button>
         </a>
+        {!isAuthenticated && (
+          <LoginButton
+            onSignIn={async () => {
+              "use server";
+
+              await signIn(logtoConfig);
+            }}
+          />
+        )}
         <MobileMenu />
       </div>
     </header>
