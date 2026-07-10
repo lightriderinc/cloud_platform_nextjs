@@ -124,11 +124,14 @@ function medianUs(values: number[]): number | undefined {
   return m === undefined ? undefined : Number(m.toFixed(1));
 }
 
+// `props` is the heavy calibration payload; when omitted (summary phase) the
+// props-derived fields (fidelities, qubit map) are simply left out and the
+// full fetch fills them in later.
 function mapBackend(
   alias: string,
   device: IbmDevice | undefined,
   config: IbmConfiguration,
-  props: IbmProperties,
+  props?: IbmProperties,
 ): Backend {
   const short = alias.replace(/^ibm_/, "");
   const displayName = `IBM ${short.charAt(0).toUpperCase()}${short.slice(1)}`;
@@ -148,10 +151,10 @@ function mapBackend(
   const coords = config.coords ?? [];
 
   // Per-qubit single-qubit (sx) gate error, used to color the map nodes.
-  const sxByQubit = singleQubitGateErrors(props, "sx");
-  const czErrors = twoQubitGateErrors(props, "cz");
+  const sxByQubit = props ? singleQubitGateErrors(props, "sx") : {};
+  const czErrors = props ? twoQubitGateErrors(props, "cz") : [];
   const sxErrors = Object.values(sxByQubit);
-  const readoutErrors = qubitValues(props, "readout_error");
+  const readoutErrors = props ? qubitValues(props, "readout_error") : [];
 
   const nodes = Array.from({ length: qubits }, (_, i) => {
     const err = sxByQubit[i];
@@ -193,22 +196,25 @@ function mapBackend(
       maxShotsPerCircuit: config.max_shots,
       maxCircuits: config.max_experiments,
       nativeGates: config.basis_gates,
-      qubitMap: { nodes, edges, errorLabel: "SX gate error" },
+      qubitMap: props
+        ? { nodes, edges, errorLabel: "SX gate error" }
+        : undefined,
       medianOneQubitFidelity: asPercent(median(sxErrors.map((e) => 1 - e))),
       medianTwoQubitFidelity: asPercent(median(czErrors.map((e) => 1 - e))),
       medianReadoutFidelity: asPercent(
         median(readoutErrors.map((e) => 1 - e)),
       ),
-      medianT1Us: medianUs(qubitValues(props, "T1")),
-      medianT2EchoUs: medianUs(qubitValues(props, "T2")),
+      medianT1Us: props ? medianUs(qubitValues(props, "T1")) : undefined,
+      medianT2EchoUs: props ? medianUs(qubitValues(props, "T2")) : undefined,
     },
   };
 }
 
 // Fetches the hardcoded IBM machines in parallel. The backends list (for
 // status/queue) is best-effort; a machine whose configuration/properties fail
-// is dropped rather than failing the whole list.
-export async function fetchIbmBackends(): Promise<Backend[]> {
+// is dropped rather than failing the whole list. `withProps` decides whether
+// the heavy per-qubit properties payload is included.
+async function fetchMachines(withProps: boolean): Promise<Backend[]> {
   const list = await getJson<IbmBackendsList>("api/v1/backends").catch(
     () => ({ devices: [] as IbmDevice[] }),
   );
@@ -218,7 +224,9 @@ export async function fetchIbmBackends(): Promise<Backend[]> {
     IBM_MACHINES.map(async (alias) => {
       const [config, props] = await Promise.all([
         getJson<IbmConfiguration>(`api/v1/backends/${alias}/configuration`),
-        getJson<IbmProperties>(`api/v1/backends/${alias}/properties`),
+        withProps
+          ? getJson<IbmProperties>(`api/v1/backends/${alias}/properties`)
+          : Promise.resolve(undefined),
       ]);
       return mapBackend(alias, deviceByName.get(alias), config, props);
     }),
@@ -229,4 +237,15 @@ export async function fetchIbmBackends(): Promise<Backend[]> {
       (r): r is PromiseFulfilledResult<Backend> => r.status === "fulfilled",
     )
     .map((r) => r.value);
+}
+
+// Light first phase: everything the catalog cards need (name, status, queue
+// depth, qubit count) without the heavy calibration properties.
+export async function fetchIbmSummaries(): Promise<Backend[]> {
+  return fetchMachines(false);
+}
+
+// Full second phase: includes calibration (fidelities and the qubit map).
+export async function fetchIbmBackends(): Promise<Backend[]> {
+  return fetchMachines(true);
 }

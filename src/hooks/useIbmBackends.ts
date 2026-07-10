@@ -1,12 +1,19 @@
 "use client";
 
-import { useBackendSource } from "./useBackendSource";
-import { fetchIbmBackends } from "@/lib/ibm/client";
+import { useTwoPhaseBackendSource } from "./useTwoPhaseBackendSource";
+import { fetchIbmBackends, fetchIbmSummaries } from "@/lib/ibm/client";
 
-// IBM exposes live status + queue length via its backends list, so poll once a
-// minute (like IQM) to keep the card's status and queue current.
+// IBM cards paint from the cheap configuration/status endpoints first; the
+// heavy per-qubit properties payload (fidelities, qubit map) arrives as a
+// second phase behind the scenes and upgrades the same cards in place.
+// IBM exposes live status + queue length, so keep polling once a minute.
 const ONE_MINUTE = 60 * 1000;
 
 export function useIbmBackends() {
-  return useBackendSource("ibm", fetchIbmBackends, ONE_MINUTE);
+  return useTwoPhaseBackendSource(
+    "ibm",
+    fetchIbmSummaries,
+    fetchIbmBackends,
+    ONE_MINUTE,
+  );
 }
