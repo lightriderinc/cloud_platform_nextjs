@@ -82,6 +82,14 @@ export default function SidebarNav({
       {/* Placeholder: docs/support links */}
       <div className="border-t border-gray-200 px-3 py-4 text-sm">
         <a
+          href="https://lightriderinc.github.io/docs/"
+          target="_blank"
+          rel="noreferrer"
+          className="mb-1 flex items-center gap-2 default-radius px-2 py-1.5 transition-colors hover:bg-gray-100"
+        >
+          Documentation <MdArrowOutward />
+        </a>
+        <a
           href="https://www.lightriderinc.com/"
           target="_blank"
           rel="noreferrer"

@@ -1,15 +1,31 @@
 // Account button shown in the header on desktop and at the bottom of the
+
+import Link from "next/link";
+import { MdAccountCircle } from "react-icons/md";
+
+type Props = {
+  name: string;
+  email?: string;
+};
+
 // mobile menu drawer.
-export default function UserCard({ className = "" }: { className?: string }) {
+export default function UserCard({ name, email }: Props) {
   return (
-    <button
-      type="button"
-      className={`flex items-center gap-2 default-radius px-2 py-1.5 text-sm transition-colors hover:bg-gray-100 ${className}`}
-    >
-      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-300">
-        LR
-      </span>
-      Light Rider Inc.
-    </button>
+    <div>
+      <Link
+        href="/profile"
+        className="flex items-center gap-2 default-radius pl-2 pr-5 py-1.5 transition-colors hover:bg-gray-100"
+      >
+        <MdAccountCircle className="h-8 w-8 shrink-0 text-gray-400" />
+        <span className="flex min-w-0 flex-col">
+          <span className="truncate text-sm font-medium text-gray-700">
+            {name}
+          </span>
+          {email && (
+            <span className="truncate text-xs text-gray-500">{email}</span>
+          )}
+        </span>
+      </Link>
+    </div>
   );
 }

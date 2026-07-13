@@ -13,7 +13,8 @@ export default function LoginButton({ onSignIn }: Props) {
     <button
       type="button"
       onClick={() => onSignIn()}
-      className="hidden lg:block default-radius bg-gradient-to-r from-[#f26739] to-[#ef3b39] px-3 py-2 text-sm font-semibold text-white cursor-pointer transition-[filter] hover:brightness-105 min-w-[90px]"
+      style={{ backgroundColor: "var(--brand-primary)" }}
+      className="w-full default-radius px-4 py-2.5 text-sm font-medium text-white cursor-pointer transition-opacity hover:opacity-80 min-w-[110px]"
     >
       Log in
     </button>
