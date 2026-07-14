@@ -1,5 +1,6 @@
 import { logtoConfig } from "@/app/logto";
 import LogoutButton from "@/components/auth/LogoutButton";
+import { isPro } from "@/lib/auth";
 import {
   getMyProfile,
   sendEmailCode,
@@ -58,7 +59,7 @@ export default async function AccountPage() {
   }
   const email = userInfo?.email ?? null;
   const avatarUrl = userInfo?.picture ?? null;
-  const role = (claims?.roles as string[] | undefined)?.[0] ?? null;
+  const userIsPro = await isPro();
 
   const initials = name
     ? name
@@ -153,7 +154,7 @@ export default async function AccountPage() {
               {name}
             </p>
           )}
-          <span className="text-sm text-gray-500">{role} user</span>
+          <span className="text-sm text-gray-500">{userIsPro ? "Pro user" : "Basic user"}</span>
         </div>
       </div>
 

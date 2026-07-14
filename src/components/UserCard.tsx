@@ -22,7 +22,7 @@ export default function UserCard({ name, role }: Props) {
             {name}
           </span>
           {role && (
-            <span className="truncate text-xs text-gray-500">{role} user</span>
+            <span className="truncate text-xs text-gray-500">{role}</span>
           )}
         </span>
       </Link>

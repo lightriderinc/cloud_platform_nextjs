@@ -1,5 +1,6 @@
 import { handleSignIn } from "@/app/actions/auth";
 import { logtoConfig } from "@/app/logto";
+import { isPro } from "@/lib/auth";
 import { getLogtoContext } from "@logto/next/server-actions";
 import LoginButton from "./auth/LoginButton";
 import UserCard from "./UserCard";
@@ -8,6 +9,9 @@ export default async function AuthenticationSection() {
   const { isAuthenticated, claims, userInfo } = await getLogtoContext(logtoConfig, {
     fetchUserInfo: true,
   });
+
+  const userIsPro = await isPro();
+
 
   return (
     <>
@@ -19,7 +23,7 @@ export default async function AuthenticationSection() {
       {isAuthenticated && (
         <UserCard
           name={userInfo?.name ?? claims?.name ?? "Account"}
-          role={claims?.roles ?? undefined}
+          role={userIsPro ? "Pro user" : "Basic user"}
         />
       )}
     </>
