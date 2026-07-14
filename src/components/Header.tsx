@@ -19,7 +19,7 @@ export default async function Header() {
         </Link>
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 mr-2">
         {/* Desktop: account button. Mobile: hamburger that opens the menu. */}
         {/* <UserCard className="hidden lg:flex" /> */}
         <div className="hidden lg:block">
