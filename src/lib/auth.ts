@@ -10,8 +10,11 @@ export function resolveAccessTier(roles: string[] | undefined): AccessTier {
 }
 
 export async function getAccessTier(): Promise<AccessTier> {
-  const { claims } = await getLogtoContext(logtoConfig);
-  return resolveAccessTier(claims?.roles as string[] | undefined);
+  const { userInfo, claims } = await getLogtoContext(logtoConfig, { fetchUserInfo: true });
+  const roles =
+    (userInfo?.roles as string[] | undefined) ??
+    (claims?.roles as string[] | undefined);
+  return resolveAccessTier(roles);
 }
 
 export async function isPro(): Promise<boolean> {
