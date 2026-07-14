@@ -11,7 +11,7 @@ async function throwOnError(res: Response): Promise<void> {
 
 export async function getMyProfile(
   accessToken: string
-): Promise<{ profile?: { birthdate?: string } } | null> {
+): Promise<{ profile?: { birthdate?: string; givenName?: string; familyName?: string } } | null> {
   const res = await fetch(`${BASE}/api/my-account`, {
     headers: { Authorization: `Bearer ${accessToken}` },
     cache: 'no-store',
@@ -28,6 +28,18 @@ export async function updateBirthdate(accessToken: string, birthdate: string): P
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ birthdate }),
+  });
+  await throwOnError(res);
+}
+
+export async function updateName(accessToken: string, name: string): Promise<void> {
+  const res = await fetch(`${BASE}/api/my-account`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name }),
   });
   await throwOnError(res);
 }

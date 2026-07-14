@@ -5,7 +5,9 @@ import LoginButton from "./auth/LoginButton";
 import UserCard from "./UserCard";
 
 export default async function AuthenticationSection() {
-  const { isAuthenticated, claims } = await getLogtoContext(logtoConfig);
+  const { isAuthenticated, claims, userInfo } = await getLogtoContext(logtoConfig, {
+    fetchUserInfo: true,
+  });
 
   return (
     <>
@@ -16,8 +18,8 @@ export default async function AuthenticationSection() {
       )}
       {isAuthenticated && (
         <UserCard
-          name={claims?.name ?? "Account"}
-          email={claims?.email ?? undefined}
+          name={userInfo?.name ?? claims?.name ?? "Account"}
+          email={userInfo?.email ?? claims?.email ?? undefined}
         />
       )}
     </>

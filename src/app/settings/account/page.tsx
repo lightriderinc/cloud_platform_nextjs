@@ -4,6 +4,7 @@ import {
   getMyProfile,
   sendEmailCode,
   updateBirthdate,
+  updateName,
   updatePassword,
   updatePrimaryEmail,
   verifyEmailCode,
@@ -30,17 +31,31 @@ export default async function AccountPage() {
   if (!isAuthenticated) redirect("/");
 
   let birthdate: string | null = null;
+  let name = userInfo?.name ?? claims?.name ?? null;
+
   try {
     const token = await getAccessToken(logtoConfig);
     if (token) {
       const extended = await getMyProfile(token);
       birthdate = extended?.profile?.birthdate ?? null;
+
+      if (!name) {
+        const given = extended?.profile?.givenName;
+        const family = extended?.profile?.familyName;
+        if (given || family) {
+          const fullName = [given, family].filter(Boolean).join(" ");
+          try {
+            await updateName(token, fullName);
+          } catch {
+            // best-effort
+          }
+          name = fullName;
+        }
+      }
     }
   } catch {
     // Account API not enabled or token unavailable
   }
-
-  const name = userInfo?.name ?? claims?.name ?? null;
   const email = userInfo?.email ?? null;
   const avatarUrl = userInfo?.picture ?? null;
 
