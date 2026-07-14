@@ -5,11 +5,11 @@ import { MdAccountCircle } from "react-icons/md";
 
 type Props = {
   name: string;
-  email?: string;
+  role?: string;
 };
 
 // mobile menu drawer.
-export default function UserCard({ name, email }: Props) {
+export default function UserCard({ name, role }: Props) {
   return (
     <div>
       <Link
@@ -21,8 +21,8 @@ export default function UserCard({ name, email }: Props) {
           <span className="truncate text-sm font-medium text-gray-700">
             {name}
           </span>
-          {email && (
-            <span className="truncate text-xs text-gray-500">{email}</span>
+          {role && (
+            <span className="truncate text-xs text-gray-500">{role} user</span>
           )}
         </span>
       </Link>

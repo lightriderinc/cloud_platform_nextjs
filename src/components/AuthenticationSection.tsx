@@ -19,7 +19,7 @@ export default async function AuthenticationSection() {
       {isAuthenticated && (
         <UserCard
           name={userInfo?.name ?? claims?.name ?? "Account"}
-          email={userInfo?.email ?? claims?.email ?? undefined}
+          role={claims?.roles ?? undefined}
         />
       )}
     </>

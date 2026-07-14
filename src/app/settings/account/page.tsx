@@ -15,7 +15,7 @@ import {
   getLogtoContext,
   signOut,
 } from "@logto/next/server-actions";
-import { revalidatePath, refresh } from "next/cache";
+import { refresh, revalidatePath } from "next/cache";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import ProfileActions from "./ProfileActions";
@@ -58,6 +58,7 @@ export default async function AccountPage() {
   }
   const email = userInfo?.email ?? null;
   const avatarUrl = userInfo?.picture ?? null;
+  const role = (claims?.roles as string[] | undefined)?.[0] ?? null;
 
   const initials = name
     ? name
@@ -152,7 +153,7 @@ export default async function AccountPage() {
               {name}
             </p>
           )}
-          <span className="text-sm text-gray-500">{email}</span>
+          <span className="text-sm text-gray-500">{role} user</span>
         </div>
       </div>
 

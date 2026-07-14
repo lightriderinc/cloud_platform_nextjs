@@ -5,5 +5,5 @@ export const logtoConfig = {
   baseUrl: 'http://localhost:3000', // Change to your own base URL
   cookieSecret: 'E3mO9dzSVAyoFCvgHzY1Z8DbvNH2TlEg', // Auto-generated 32 digit secret
   cookieSecure: process.env.NODE_ENV === 'production',
-  scopes: ['email', 'profile'],
+  scopes: ['email', 'profile', 'roles'],
 };
