@@ -124,8 +124,8 @@ export default async function AccountPage() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-gray-700 animate-fade-in-up">
+    <div className="animate-fade-in-up">
+      <h1 className="text-2xl font-semibold text-gray-700">
         Account
       </h1>
       <p className="mb-12 text-sm text-gray-500">
