@@ -4,23 +4,27 @@ import { useState } from 'react';
 
 type Props = {
   currentEmail: string;
+  onVerifyPassword: (password: string) => Promise<string>;
   onSendCode: (email: string) => Promise<string>;
   onVerifyCode: (email: string, code: string, verificationRecordId: string) => Promise<void>;
   onUpdateEmail: (currentVerifId: string, newVerifId: string) => Promise<void>;
   onClose: () => void;
 };
 
-type Step = 'send-current' | 'verify-current' | 'enter-new' | 'verify-new' | 'done';
+type Step = 'verify-password' | 'enter-new' | 'verify-new' | 'done';
+
+const STEPS: Step[] = ['verify-password', 'enter-new', 'verify-new'];
 
 export default function EditEmailModal({
   currentEmail,
+  onVerifyPassword,
   onSendCode,
   onVerifyCode,
   onUpdateEmail,
   onClose,
 }: Props) {
-  const [step, setStep] = useState<Step>('send-current');
-  const [currentCode, setCurrentCode] = useState('');
+  const [step, setStep] = useState<Step>('verify-password');
+  const [password, setPassword] = useState('');
   const [currentVerifId, setCurrentVerifId] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newCode, setNewCode] = useState('');
@@ -28,28 +32,15 @@ export default function EditEmailModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  async function sendCurrentCode() {
+  async function handleVerifyPassword() {
     setError('');
     setLoading(true);
     try {
-      const id = await onSendCode(currentEmail);
+      const id = await onVerifyPassword(password);
       setCurrentVerifId(id);
-      setStep('verify-current');
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to send code');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function verifyCurrentCode() {
-    setError('');
-    setLoading(true);
-    try {
-      await onVerifyCode(currentEmail, currentCode, currentVerifId);
       setStep('enter-new');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Invalid code');
+      setError(e instanceof Error ? e.message : 'Incorrect password');
     } finally {
       setLoading(false);
     }
@@ -111,15 +102,14 @@ export default function EditEmailModal({
 
         <h2 className="text-lg font-semibold text-gray-800 mb-1">Change Email</h2>
 
-        {/* Step indicator */}
         <div className="flex gap-1.5 mb-4">
-          {(['send-current', 'verify-current', 'enter-new', 'verify-new'] as Step[]).map((s, i) => (
+          {STEPS.map((s, i) => (
             <div
               key={s}
               className="h-1 flex-1 default-radius"
               style={{
                 backgroundColor:
-                  step === 'done' || ['send-current', 'verify-current', 'enter-new', 'verify-new'].indexOf(step) >= i
+                  step === 'done' || STEPS.indexOf(step) >= i
                     ? 'var(--brand-primary)'
                     : '#e5e7eb',
               }}
@@ -127,36 +117,23 @@ export default function EditEmailModal({
           ))}
         </div>
 
-        {step === 'send-current' && (
+        {step === 'verify-password' && (
           <>
             <p className="text-sm text-gray-500 mb-4">
-              We&apos;ll send a verification code to your current email{' '}
+              Confirm your password to change the email for{' '}
               <span className="font-medium text-gray-700">{currentEmail}</span>.
             </p>
-            {error && <p className="text-xs text-red-500 mb-3">{error}</p>}
-            {btn(loading ? 'Sending…' : 'Send code', sendCurrentCode, loading)}
-          </>
-        )}
-
-        {step === 'verify-current' && (
-          <>
-            <p className="text-sm text-gray-500 mb-4">
-              Enter the code sent to <span className="font-medium text-gray-700">{currentEmail}</span>.
-            </p>
-            <label className="block text-xs text-gray-500 mb-1">Verification code</label>
+            <label className="block text-xs text-gray-500 mb-1">Current password</label>
             <input
-              type="text"
-              inputMode="numeric"
-              value={currentCode}
-              onChange={(e) => setCurrentCode(e.target.value.replace(/\D/g, ''))}
-              onKeyDown={(e) => e.key === 'Enter' && verifyCurrentCode()}
-              maxLength={6}
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleVerifyPassword()}
               autoFocus
-              className="w-full default-radius border border-gray-300 px-3 py-2 text-sm tracking-widest focus:outline-none focus:border-gray-400 mb-4"
-              placeholder="000000"
+              className="w-full default-radius border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-gray-400 mb-4"
             />
             {error && <p className="text-xs text-red-500 mb-3">{error}</p>}
-            {btn(loading ? 'Verifying…' : 'Verify', verifyCurrentCode, loading || currentCode.length < 6)}
+            {btn(loading ? 'Verifying…' : 'Continue', handleVerifyPassword, loading || !password)}
           </>
         )}
 

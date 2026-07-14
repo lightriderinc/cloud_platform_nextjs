@@ -11,13 +11,25 @@ async function throwOnError(res: Response): Promise<void> {
 
 export async function getMyProfile(
   accessToken: string
-): Promise<{ birthdate?: string } | null> {
-  const res = await fetch(`${BASE}/api/my-account/profile`, {
+): Promise<{ profile?: { birthdate?: string } } | null> {
+  const res = await fetch(`${BASE}/api/my-account`, {
     headers: { Authorization: `Bearer ${accessToken}` },
     cache: 'no-store',
   });
   if (!res.ok) return null;
   return res.json();
+}
+
+export async function updateBirthdate(accessToken: string, birthdate: string): Promise<void> {
+  const res = await fetch(`${BASE}/api/my-account/profile`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ birthdate }),
+  });
+  await throwOnError(res);
 }
 
 export async function updateAvatar(accessToken: string, avatarUrl: string): Promise<void> {
