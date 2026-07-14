@@ -6,8 +6,8 @@ type Props = {
   currentEmail: string;
   onVerifyPassword: (password: string) => Promise<string>;
   onSendCode: (email: string) => Promise<string>;
-  onVerifyCode: (email: string, code: string, verificationRecordId: string) => Promise<void>;
-  onUpdateEmail: (currentVerifId: string, newVerifId: string) => Promise<void>;
+  onVerifyCode: (email: string, code: string, verificationRecordId: string) => Promise<string>;
+  onUpdateEmail: (currentVerifId: string, newVerifId: string, email: string) => Promise<void>;
   onClose: () => void;
 };
 
@@ -65,8 +65,8 @@ export default function EditEmailModal({
     setError('');
     setLoading(true);
     try {
-      await onVerifyCode(newEmail, newCode, newVerifId);
-      await onUpdateEmail(currentVerifId, newVerifId);
+      const verifiedRecordId = await onVerifyCode(newEmail, newCode, newVerifId);
+      await onUpdateEmail(currentVerifId, verifiedRecordId, newEmail);
       setStep('done');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to update email');

@@ -14,8 +14,8 @@ type Props = {
   onVerifyPassword: (password: string) => Promise<string>;
   onUpdatePassword: (verificationId: string, newPassword: string) => Promise<void>;
   onSendEmailCode: (email: string) => Promise<string>;
-  onVerifyEmailCode: (email: string, code: string, verificationRecordId: string) => Promise<void>;
-  onUpdateEmail: (currentVerifId: string, newVerifId: string) => Promise<void>;
+  onVerifyEmailCode: (email: string, code: string, verificationRecordId: string) => Promise<string>;
+  onUpdateEmail: (currentVerifId: string, newVerifId: string, email: string) => Promise<void>;
   onUpdateBirthdate: (birthdate: string) => Promise<void>;
 };
 

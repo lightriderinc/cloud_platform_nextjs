@@ -106,7 +106,7 @@ export async function verifyEmailCode(
   email: string,
   code: string,
   verificationRecordId: string
-): Promise<void> {
+): Promise<string> {
   const res = await fetch(`${BASE}/api/verifications/verification-code/verify`, {
     method: 'POST',
     headers: {
@@ -116,16 +116,19 @@ export async function verifyEmailCode(
     body: JSON.stringify({
       identifier: { type: 'email', value: email },
       code,
-      verificationRecordId,
+      verificationId: verificationRecordId,
     }),
   });
   await throwOnError(res);
+  const data = (await res.json()) as { verificationRecordId: string };
+  return data.verificationRecordId;
 }
 
 export async function updatePrimaryEmail(
   accessToken: string,
   identityVerificationRecordId: string,
-  newEmailVerificationRecordId: string
+  newEmailVerificationRecordId: string,
+  newEmail: string
 ): Promise<void> {
   const res = await fetch(`${BASE}/api/my-account/primary-email`, {
     method: 'POST',
@@ -135,6 +138,7 @@ export async function updatePrimaryEmail(
       'logto-verification-id': identityVerificationRecordId,
     },
     body: JSON.stringify({
+      email: newEmail,
       newIdentifierVerificationRecordId: newEmailVerificationRecordId,
     }),
   });

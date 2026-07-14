@@ -95,19 +95,20 @@ export default async function AccountPage() {
     emailAddr: string,
     code: string,
     verificationRecordId: string,
-  ): Promise<void> {
+  ): Promise<string> {
     "use server";
     const token = await getAccessToken(logtoConfig);
-    await verifyEmailCode(token, emailAddr, code, verificationRecordId);
+    return verifyEmailCode(token, emailAddr, code, verificationRecordId);
   }
 
   async function doUpdateEmail(
     currentVerifId: string,
     newVerifId: string,
+    emailAddr: string,
   ): Promise<void> {
     "use server";
     const token = await getAccessToken(logtoConfig);
-    await updatePrimaryEmail(token, currentVerifId, newVerifId);
+    await updatePrimaryEmail(token, currentVerifId, newVerifId, emailAddr);
   }
 
   async function doUpdateBirthdate(birthdate: string): Promise<void> {
