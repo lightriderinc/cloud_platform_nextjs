@@ -13,7 +13,7 @@ export default function UserCard({ name, email }: Props) {
   return (
     <div>
       <Link
-        href="/settings/profile"
+        href="/settings/account"
         className="flex items-center gap-2 default-radius pl-2 pr-5 py-1.5 transition-colors hover:bg-gray-100"
       >
         <MdAccountCircle className="h-8 w-8 shrink-0 text-gray-400" />

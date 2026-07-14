@@ -124,3 +124,7 @@ h1 {
     background-color: rgba(248, 124, 86, 0.07);
   }
 }
+
+.border-color-brand {
+  border-color: var(--brand-tertiary);
+}

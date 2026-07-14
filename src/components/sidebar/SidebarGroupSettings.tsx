@@ -12,8 +12,8 @@ export default function SidebarGroupSettings({
     <>
       <SidebarNavGroup label="Settings">
         <SidebarNavItem
-          name="Profile"
-          href="#"
+          name="Account"
+          href="/settings/account"
           icon={MdAccountCircle}
           onNavigate={onNavigate}
         />
