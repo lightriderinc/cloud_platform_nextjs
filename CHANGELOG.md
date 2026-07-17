@@ -1,3 +1,14 @@
+## [1.4.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.4.0...v1.4.1) (2026-07-17)
+
+
+### Bug Fixes
+
+* demo pipeline ([b6eea08](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b6eea08a0044e30a277c80c6366bbf74c3640840))
+* dice icon added to results ([9e7b9b3](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9e7b9b3ddee0f4dbfc40a357c6e192000bb5391e))
+* dice icons added to selection modal ([c9b90f0](https://github.com/lightriderinc/cloud_platform_nextjs/commit/c9b90f05ff8c114029e99cd4f82b051cff466511))
+* updated grays palette and associated styles ([63ef82f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/63ef82f0a087047d42f3b0911e68a2d0e71624bf))
+* updated styles & added dice illustrations ([6fbba09](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6fbba09ec68d0b3b6e32603fcd1b6f9b9ae631f3))
+
 # [1.4.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.3.0...v1.4.0) (2026-07-06)
 
 
