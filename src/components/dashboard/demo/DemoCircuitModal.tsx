@@ -103,7 +103,7 @@ export default function DemoCircuitModal({ onClose }: { onClose: () => void }) {
                       onChange={(e) =>
                         setCircuit(e.target.value as CircuitType)
                       }
-                      className="default-radius w-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                      className="default-radius w-full border border-gray-100 bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300"
                     >
                       {CIRCUITS.map((c) => (
                         <option key={c.value} value={c.value}>
@@ -127,7 +127,7 @@ export default function DemoCircuitModal({ onClose }: { onClose: () => void }) {
                     <button
                       type="button"
                       onClick={onClose}
-                      className="default-radius cursor-pointer border border-gray-200 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                      className="default-radius cursor-pointer border border-gray-100 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
                     >
                       Cancel
                     </button>

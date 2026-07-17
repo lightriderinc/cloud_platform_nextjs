@@ -47,7 +47,7 @@ export default function MobileMenu() {
             open ? "translate-x-0" : "translate-x-full"
           }`}
         >
-          <div className="flex h-14 shrink-0 items-center justify-between border-b border-gray-200 px-4">
+          <div className="flex h-14 shrink-0 items-center justify-between border-b border-gray-100 px-4">
             <span className="text-sm font-semibold">Menu</span>
             <button
               type="button"
@@ -61,7 +61,7 @@ export default function MobileMenu() {
 
           <SidebarNav onNavigate={() => setOpen(false)} />
 
-          <div className="border-t border-gray-200 p-3">
+          <div className="border-t border-gray-100 p-3">
             {/* <UserCard className="w-full" /> */}
             <a
               href="https://lightriderinc.com/early-access"

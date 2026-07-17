@@ -10,7 +10,7 @@ export default function DashboardDemoEntropy() {
 
   return (
     <>
-      <div className="flex flex-col w-full gap-10 min-w-50 bg-gray-100 p-4 rounded border border-gray-200 card-hover-primary">
+      <div className="flex flex-col w-full gap-10 min-w-50 bg-gray-100 p-4 default-radius border border-gray-100 card-hover-primary">
         <div className="flex flex-row gap-4">
           <div>
             <FaDice className="text-2xl text-gray-400" />

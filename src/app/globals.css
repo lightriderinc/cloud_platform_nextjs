@@ -7,6 +7,18 @@
   --brand-primary: #ef3b39;
   --brand-secondary: #ffcd34;
   --brand-tertiary: #f26739;
+
+  --gray-50: #f3f3f3;
+  --gray-100: #eaeaea;
+  --gray-200: #b0b0b0;
+  --gray-300: #919191;
+  --gray-400: #666666;
+  --gray-500: #535353;
+  --gray-600: #3f3f3f;
+  --gray-700: #2b2b2b;
+  --gray-800: #1a1a1a;
+  --gray-900: #0b0b0b;
+  --gray-950: #090909;
 }
 
 @theme inline {
@@ -14,6 +26,18 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-ibm-plex-sans);
   --font-mono: var(--font-ibm-plex-mono);
+
+  --color-gray-50: var(--gray-50);
+  --color-gray-100: var(--gray-100);
+  --color-gray-200: var(--gray-200);
+  --color-gray-300: var(--gray-300);
+  --color-gray-400: var(--gray-400);
+  --color-gray-500: var(--gray-500);
+  --color-gray-600: var(--gray-600);
+  --color-gray-700: var(--gray-700);
+  --color-gray-800: var(--gray-800);
+  --color-gray-900: var(--gray-900);
+  --color-gray-950: var(--gray-950);
 }
 
 @media (prefers-color-scheme: light) {

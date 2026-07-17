@@ -137,7 +137,7 @@ export default function JobResultModal({
         {(currentStatus === "PENDING" ||
           currentStatus === "WAITING" ||
           currentStatus === "PROCESSING") && (
-          <div className="default-radius border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
+          <div className="default-radius border border-dashed border-gray-100 p-6 text-center text-sm text-gray-500">
             Waiting for results…
           </div>
         )}

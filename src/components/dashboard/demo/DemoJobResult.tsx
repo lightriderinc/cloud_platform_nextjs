@@ -1,9 +1,9 @@
 "use client";
 
+import JobStatusBadge from "@/components/jobs/JobStatusBadge";
 import { fetchJobDetail, fetchJobResult } from "@/lib/lr/client";
 import type { Job } from "@/types/job";
 import { useQuery } from "@tanstack/react-query";
-import JobStatusBadge from "@/components/jobs/JobStatusBadge";
 
 const TERMINAL = new Set(["COMPLETED", "FAILED", "ABORTED"]);
 
@@ -99,7 +99,7 @@ export default function DemoJobResult({ job, onTryAnother }: Props) {
       {(currentStatus === "PENDING" ||
         currentStatus === "WAITING" ||
         currentStatus === "PROCESSING") && (
-        <div className="default-radius border border-dashed border-gray-200 p-5 text-center text-sm text-gray-500">
+        <div className="default-radius border border-dashed border-gray-100 p-5 text-center text-sm text-gray-500">
           Waiting for results…
         </div>
       )}
@@ -113,7 +113,7 @@ export default function DemoJobResult({ job, onTryAnother }: Props) {
       <button
         type="button"
         onClick={onTryAnother}
-        className="default-radius mt-1 w-fit cursor-pointer border border-gray-200 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+        className="default-radius mt-1 w-fit cursor-pointer border border-gray-100 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
       >
         ← Try Another
       </button>
