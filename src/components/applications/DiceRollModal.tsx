@@ -96,8 +96,20 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
                 >
                   {selectedSides === die.sides && (
                     <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 rounded-full flex items-center justify-center bg-[var(--brand-primary)]">
-                      <svg width="7" height="5" viewBox="0 0 8 6" fill="none" aria-hidden="true">
-                        <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <svg
+                        width="7"
+                        height="5"
+                        viewBox="0 0 8 6"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M1 3L3 5L7 1"
+                          stroke="white"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                     </span>
                   )}
@@ -138,7 +150,9 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
                 {dieData?.label}
               </span>
             </div>
-            <p className="text-sm mb-4">Choose an entropy source for your roll.</p>
+            <p className="text-sm mb-4">
+              Choose an entropy source for your roll.
+            </p>
             <EntropySourceSelector
               selectedId={selectedSourceId}
               onSelect={setSelectedSourceId}
@@ -150,7 +164,9 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
         {step === 3 && result && (
           <div className="animate-fade-in-up space-y-4">
             <div className="default-radius border border-gray-100 bg-gray-50 p-4">
-              <p className="text-sm font-semibold text-gray-500 mb-3">Roll Details</p>
+              <p className="text-sm font-semibold text-gray-500 mb-3">
+                Roll Details
+              </p>
               <div className="grid grid-cols-2 gap-y-3 gap-x-6 text-sm">
                 <div>
                   <p className="text-xs text-gray-400 mb-0.5">Die</p>
@@ -158,21 +174,37 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
                 </div>
                 <div>
                   <p className="text-xs text-gray-400 mb-0.5">Entropy Source</p>
-                  <p className="font-medium text-gray-800">{result.sourceName}</p>
+                  <p className="font-medium text-gray-800">
+                    {result.sourceName}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-400 mb-0.5">Range</p>
-                  <p className="font-medium text-gray-800">1 – {result.sides}</p>
+                  <p className="font-medium text-gray-800">
+                    1 – {result.sides}
+                  </p>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col items-center justify-center py-4 gap-2">
               <p className="text-sm font-bold text-gray-500">Result</p>
+
               <div
-                className="flex items-center justify-center w-24 h-24 default-radius border-2 bg-red-50"
+                className="relative flex w-32 h-32 default-radius border-2 bg-red-50 items-center justify-center"
                 style={{ borderColor: "var(--brand-primary)" }}
               >
+                <div className="absolute top-1 left-1 z-10 flex items-center justify-center">
+                  <DiceIcon
+                    sides={result.sides as DiceSides}
+                    size={20}
+                    selected
+                    selectedColor="var(--brand-primary)"
+                  />
+                </div>
+                <div className="absolute top-1 right-1 z-10 flex items-center justify-center">
+                  <span className="text-xs font-semibold" style={{ color: "var(--brand-primary)" }}>d{result.sides}</span>
+                </div>
                 <span
                   className="text-5xl font-bold"
                   style={{ color: "var(--brand-primary)" }}
