@@ -1,4 +1,4 @@
-import { MdApps, MdBarChart, MdDashboard } from "react-icons/md";
+import { MdApps, MdBarChart, MdDashboard, MdPayments } from "react-icons/md";
 import { RiCpuFill } from "react-icons/ri";
 import SidebarNavGroup from "./SidebarNavGroup";
 import SidebarNavItem from "./SidebarNavItem";
@@ -36,6 +36,15 @@ export default function SidebarGroupDefault({
           name="Backends"
           href="/backends"
           icon={RiCpuFill}
+          onNavigate={onNavigate}
+        />
+      </SidebarNavGroup>
+
+      <SidebarNavGroup label="Platform">
+        <SidebarNavItem
+          name="Pricing"
+          href="/pricing"
+          icon={MdPayments}
           onNavigate={onNavigate}
         />
       </SidebarNavGroup>
