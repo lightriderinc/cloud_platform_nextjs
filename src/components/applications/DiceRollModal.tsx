@@ -1,12 +1,13 @@
 "use client";
 
+import DiceIcon, { type DiceSides } from "@/components/dice/DiceIcon";
 import { useState } from "react";
 import { MdArrowBack, MdArrowForward, MdRefresh } from "react-icons/md";
 import EntropySourceSelector, { SOURCES } from "./EntropySourceSelector";
 import ModalShell from "./ModalShell";
 import StepIndicator from "./StepIndicator";
 
-const DICE = [
+const DICE: { sides: DiceSides; label: string; desc: string }[] = [
   { sides: 2, label: "d2", desc: "Coin flip" },
   { sides: 3, label: "d3", desc: "3-sided" },
   { sides: 4, label: "d4", desc: "Tetrahedron" },
@@ -36,6 +37,7 @@ function rollDie(sides: number): number {
 export default function DiceRollModal({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState<Step>(1);
   const [selectedSides, setSelectedSides] = useState<number | null>(null);
+  const [hoveredSides, setHoveredSides] = useState<number | null>(null);
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
   const [result, setResult] = useState<RollResult | null>(null);
 
@@ -83,8 +85,10 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
                   key={die.sides}
                   type="button"
                   onClick={() => setSelectedSides(die.sides)}
+                  onMouseEnter={() => setHoveredSides(die.sides)}
+                  onMouseLeave={() => setHoveredSides(null)}
                   className={[
-                    "relative flex flex-col items-center justify-center py-4 px-2 default-radius border transition-all duration-150 cursor-pointer",
+                    "relative flex flex-col items-center justify-center gap-1 py-4 px-2 default-radius border transition-all duration-150 cursor-pointer",
                     selectedSides === die.sides
                       ? "border-[var(--brand-primary)] bg-red-50"
                       : "border-gray-100 bg-white card-hover-primary",
@@ -97,9 +101,18 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
                       </svg>
                     </span>
                   )}
+                  <DiceIcon
+                    sides={die.sides}
+                    size={30}
+                    hovered={hoveredSides === die.sides}
+                    selected={selectedSides === die.sides}
+                    color="var(--gray-500)"
+                    hoverColor="#f87c56"
+                    selectedColor="var(--brand-primary)"
+                  />
                   <span
                     className={[
-                      "text-lg font-bold leading-tight",
+                      "text-lg font-bold leading-tight mt-2",
                       selectedSides === die.sides
                         ? "text-[var(--brand-primary)]"
                         : "text-gray-700",
