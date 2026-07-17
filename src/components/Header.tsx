@@ -4,7 +4,7 @@ import MobileMenu from "./MobileMenu";
 
 export default function Header() {
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-200 px-4">
+    <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-100 px-4">
       <div className="flex items-center gap-2">
         <Link href="/">
           <Image

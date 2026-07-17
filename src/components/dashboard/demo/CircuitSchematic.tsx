@@ -16,7 +16,7 @@ export default function CircuitSchematic({ circuit, className = "" }: Props) {
   const meta = META[circuit];
   return (
     <div
-      className={`flex flex-col items-center gap-3 border border-gray-200 bg-gray-100 p-4 ${className}`}
+      className={`flex flex-col items-center gap-3 border border-gray-100 bg-gray-100 p-4 ${className}`}
     >
       <p className="text-sm font-bold text-gray-700">
         Circuit Diagram

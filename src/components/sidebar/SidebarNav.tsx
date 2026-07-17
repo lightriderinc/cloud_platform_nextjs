@@ -80,7 +80,7 @@ export default function SidebarNav({
       </nav>
 
       {/* Placeholder: docs/support links */}
-      <div className="border-t border-gray-200 px-3 py-4 text-sm">
+      <div className="border-t border-gray-100 px-3 py-4 text-sm">
         <a
           href="https://www.lightriderinc.com/"
           target="_blank"

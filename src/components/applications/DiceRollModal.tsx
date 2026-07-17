@@ -87,7 +87,7 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
                     "relative flex flex-col items-center justify-center py-4 px-2 default-radius border transition-all duration-150 cursor-pointer",
                     selectedSides === die.sides
                       ? "border-[var(--brand-primary)] bg-red-50"
-                      : "border-gray-200 bg-white card-hover-primary",
+                      : "border-gray-100 bg-white card-hover-primary",
                   ].join(" ")}
                 >
                   {selectedSides === die.sides && (
@@ -196,7 +196,7 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="flex items-center gap-1 default-radius border border-gray-200 px-4 py-2 text-sm text-gray-600 cursor-pointer hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-1 default-radius border border-gray-100 px-4 py-2 text-sm text-gray-600 cursor-pointer hover:bg-gray-50 transition-colors"
             >
               <MdArrowBack className="text-base" /> Back
             </button>
@@ -219,14 +219,14 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
               <button
                 type="button"
                 onClick={handleRollAgain}
-                className="flex items-center gap-1.5 default-radius border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1.5 default-radius border border-gray-100 px-4 py-2 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-50 transition-colors"
               >
                 <MdRefresh className="text-base" /> Roll Again
               </button>
               <button
                 type="button"
                 onClick={handleReset}
-                className="default-radius border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors"
+                className="default-radius border border-gray-100 px-4 py-2 text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors"
               >
                 New Roll
               </button>

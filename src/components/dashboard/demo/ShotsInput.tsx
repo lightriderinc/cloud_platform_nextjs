@@ -25,7 +25,7 @@ export default function ShotsInput({ value, onChange }: Props) {
         value={value}
         onChange={(e) => onChange(Math.max(1, parseInt(e.target.value) || 1))}
         min={1}
-        className="default-radius w-full border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300"
+        className="default-radius w-full border border-gray-100 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300"
       />
     </div>
   );

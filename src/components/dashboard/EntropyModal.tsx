@@ -94,7 +94,7 @@ function StepIndicator({ step }: { step: Step }) {
                     ? "bg-[var(--brand-primary)] text-white"
                     : isActive
                       ? "border-1 border-[var(--brand-primary)] text-[var(--brand-primary)]"
-                      : "border-1 border-gray-200 text-gray-400",
+                      : "border-1 border-gray-100 text-gray-400",
                 ].join(" ")}
               >
                 {isDone ? (
@@ -275,7 +275,7 @@ export default function EntropyModal({ onClose }: { onClose: () => void }) {
                         "px-3 py-1.5 default-radius text-sm font-medium border transition-colors cursor-pointer",
                         !useCustom && selectedPreset === b
                           ? "border-[var(--brand-primary)] bg-red-50 text-[var(--brand-primary)]"
-                          : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50",
+                          : "border-gray-100 text-gray-600 hover:border-gray-300 hover:bg-gray-50",
                       ].join(" ")}
                     >
                       {b}B
@@ -288,7 +288,7 @@ export default function EntropyModal({ onClose }: { onClose: () => void }) {
                       "px-3 py-1.5 default-radius text-sm font-medium border transition-colors cursor-pointer",
                       useCustom
                         ? "border-[var(--brand-primary)] bg-red-50 text-[var(--brand-primary)]"
-                        : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50",
+                        : "border-gray-100 text-gray-600 hover:border-gray-300 hover:bg-gray-50",
                     ].join(" ")}
                   >
                     Custom
@@ -303,7 +303,7 @@ export default function EntropyModal({ onClose }: { onClose: () => void }) {
                     value={customInput}
                     onChange={(e) => setCustomInput(e.target.value)}
                     autoFocus
-                    className="default-radius w-full border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                    className="default-radius w-full border border-gray-100 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300"
                   />
                 )}
               </div>
@@ -378,7 +378,7 @@ export default function EntropyModal({ onClose }: { onClose: () => void }) {
                   <button
                     type="button"
                     onClick={handleCopy}
-                    className="flex items-center gap-1.5 px-2.5 py-1 default-radius border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="flex items-center gap-1.5 px-2.5 py-1 default-radius border border-gray-100 text-xs text-gray-600 hover:bg-gray-50 cursor-pointer transition-colors"
                   >
                     {copied ? (
                       <MdCheck className="text-green-700" />
@@ -421,7 +421,7 @@ export default function EntropyModal({ onClose }: { onClose: () => void }) {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="flex items-center gap-1 default-radius border border-gray-200 px-4 py-2 text-sm text-gray-600 cursor-pointer hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1 default-radius border border-gray-100 px-4 py-2 text-sm text-gray-600 cursor-pointer hover:bg-gray-50 transition-colors"
               >
                 <MdArrowBack className="text-base" /> Back
               </button>
@@ -443,7 +443,7 @@ export default function EntropyModal({ onClose }: { onClose: () => void }) {
               <button
                 type="button"
                 onClick={handleNewRequest}
-                className="default-radius border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors"
+                className="default-radius border border-gray-100 px-4 py-2 text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors"
               >
                 New Request
               </button>

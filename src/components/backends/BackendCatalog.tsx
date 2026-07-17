@@ -28,7 +28,7 @@ export default function BackendCatalog() {
         {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={i}
-            className="flex h-full animate-pulse flex-col gap-3 default-radius border border-gray-200 bg-gray-100 p-4"
+            className="flex h-full animate-pulse flex-col gap-3 default-radius border border-gray-100 bg-gray-100 p-4"
           >
             <div className="flex items-start justify-between gap-2">
               <div className="h-4 w-32 rounded bg-gray-300" />

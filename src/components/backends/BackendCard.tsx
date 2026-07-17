@@ -20,7 +20,7 @@ export default function BackendCard({
   return (
     <TiltCard
       onClick={onSelect ? () => onSelect(backend) : undefined}
-      className="flex h-full cursor-pointer flex-col gap-3 default-radius bg-gray-100 border border-gray-200 p-4"
+      className="flex h-full cursor-pointer flex-col gap-3 default-radius bg-gray-100 border border-gray-100 p-4"
     >
       <div className="flex items-start justify-between gap-2">
         <h2 className="text-base font-semibold leading-tight">{name}</h2>

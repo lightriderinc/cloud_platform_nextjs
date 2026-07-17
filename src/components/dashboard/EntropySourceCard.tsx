@@ -28,14 +28,14 @@ export default function EntropySourceCard({
       className={[
         "relative text-left w-full p-4 default-radius border transition-all duration-150",
         disabled
-          ? "cursor-not-allowed bg-gray-50 border-gray-200"
+          ? "cursor-not-allowed bg-gray-50 border-gray-100"
           : selected
             ? "cursor-pointer border-[var(--brand-primary)] bg-red-50 shadow-sm"
-            : "cursor-pointer border-gray-200 bg-white card-hover-primary",
+            : "cursor-pointer border-gray-100 bg-white card-hover-primary",
       ].join(" ")}
     >
       {disabled && (
-        <span className="absolute top-2 right-2 text-[10px] font-medium text-gray-600 bg-gray-100 border border-gray-200 px-1.5 py-0.5 default-radius leading-tight">
+        <span className="absolute top-2 right-2 text-[10px] font-medium text-gray-600 bg-gray-100 border border-gray-100 px-1.5 py-0.5 default-radius leading-tight">
           Available at Launch
         </span>
       )}
