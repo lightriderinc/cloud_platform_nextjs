@@ -137,7 +137,6 @@ h1 {
     border: 1px solid #f87c56;
   }
   transition: border 150ms ease-out;
-
 }
 
 .btn-outline-brand {
@@ -146,5 +145,14 @@ h1 {
 
   &:hover {
     background-color: rgba(248, 124, 86, 0.07);
+  }
+}
+
+.brand-link {
+  color: var(--brand-primary);
+
+  &:hover {
+    color: #f87c56;
+    text-decoration: underline;
   }
 }

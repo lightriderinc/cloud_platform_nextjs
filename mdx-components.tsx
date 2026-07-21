@@ -12,7 +12,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       <h3 className="mb-3 text-lg font-bold text-gray-600" {...props} />
     ),
     a: (props) => (
-      <a className="text-blue-600 hover:text-blue-500" {...props} />
+      <a className="brand-link font-medium" {...props} />
     ),
     ul: ({ children }) => <ul className="list-disc list-inside">{children}</ul>,
     table: ({ children }) => (
