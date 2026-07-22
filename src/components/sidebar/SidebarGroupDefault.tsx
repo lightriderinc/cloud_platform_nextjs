@@ -1,4 +1,4 @@
-import { MdApps, MdBarChart, MdDashboard, MdPayments } from "react-icons/md";
+import { MdApps, MdBarChart, MdCasino, MdDashboard, MdPayments } from "react-icons/md";
 import { RiCpuFill } from "react-icons/ri";
 import SidebarNavGroup from "./SidebarNavGroup";
 import SidebarNavItem from "./SidebarNavItem";
@@ -24,6 +24,16 @@ export default function SidebarGroupDefault({
           icon={MdBarChart}
           onNavigate={onNavigate}
           tourId="sidebar-jobs"
+        />
+      </SidebarNavGroup>
+
+      <SidebarNavGroup label="Entropy">
+        <SidebarNavItem
+          name="Get Entropy"
+          href="/entropy"
+          icon={MdCasino}
+          onNavigate={onNavigate}
+          tourId="sidebar-entropy"
         />
       </SidebarNavGroup>
 

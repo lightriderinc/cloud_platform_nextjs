@@ -1,5 +1,5 @@
 import DashboardDemoCircuit from "@/components/dashboard/DashboardDemoCircuit";
-import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntopy";
+import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntropy";
 import InfoBox from "@/components/InfoBox";
 import GettingStartedChecklist from "@/components/onboarding/GettingStartedChecklist";
 
