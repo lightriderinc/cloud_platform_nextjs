@@ -26,6 +26,7 @@ model Customer {
   logtoUserId     String   @unique // Logto `sub` claim — the anchor identity
   email           String?
   stripeCustomerId String  @unique
+  creditsBalanceCents Int  @default(0) // cached sum of CreditLedgerEntry.amountCents — kept in sync via db.$transaction alongside every ledger insert
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -43,7 +44,9 @@ model Subscription {
   stripeSubscriptionId String   @unique
   stripePriceId        String
   kind                 SubscriptionKind
+  tier                 String?  // e.g. "starter" / "developer" / "professional" (User); "free" / "starter" / "developer" / "business" (API)
   status               String   // Stripe subscription status, stored verbatim
+  currentPeriodStart   DateTime?
   currentPeriodEnd     DateTime?
   cancelAtPeriodEnd    Boolean  @default(false)
   createdAt            DateTime @default(now())

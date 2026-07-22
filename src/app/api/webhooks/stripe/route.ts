@@ -1,4 +1,5 @@
 import { db } from "@/lib/billing/db";
+import { findApiPlanByPriceId, findUserPlanByPriceId } from "@/lib/billing/plans";
 import { assignRoleToUser, revokeRoleFromUser } from "@/lib/logto/management";
 import { stripe } from "@/lib/stripe/client";
 import { NextRequest, NextResponse } from "next/server";
@@ -69,10 +70,18 @@ async function handleEvent(event: Stripe.Event) {
       break;
     }
 
-    case "customer.subscription.created":
+    case "customer.subscription.created": {
+      const subscription = event.data.object as Stripe.Subscription;
+      await upsertSubscription(subscription);
+      await grantIncludedCreditsIfApplicable(subscription, event.id);
+      await syncProRoleForActiveSubscription(subscription);
+      break;
+    }
+
     case "customer.subscription.updated": {
       const subscription = event.data.object as Stripe.Subscription;
       await upsertSubscription(subscription);
+      await syncProRoleForActiveSubscription(subscription);
       break;
     }
 
@@ -95,6 +104,21 @@ async function handleEvent(event: Stripe.Event) {
           );
           break;
         }
+
+        // A customer can hold more than one active plan (e.g. a User Pricing
+        // plan alongside the validation subscription) — only revoke Pro if
+        // nothing else keeps it earned.
+        const otherActiveSubscription = await db.subscription.findFirst({
+          where: {
+            customerId: customer.id,
+            stripeSubscriptionId: { not: subscription.id },
+            status: { in: ["active", "trialing"] },
+          },
+        });
+        if (otherActiveSubscription) {
+          break;
+        }
+
         try {
           await revokeRoleFromUser(
             customer.logtoUserId,
@@ -140,14 +164,20 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   // Quantum Compute Pricing: one-time payment -> credit the ledger.
   if (kind === "credits" && session.mode === "payment") {
     const amountCents = session.amount_total ?? 0;
-    await db.creditLedgerEntry.create({
-      data: {
-        customerId: customer.id,
-        amountCents,
-        reason: `checkout:${session.id}`,
-        stripeEventId: session.id,
-      },
-    });
+    await db.$transaction([
+      db.creditLedgerEntry.create({
+        data: {
+          customerId: customer.id,
+          amountCents,
+          reason: `checkout:${session.id}`,
+          stripeEventId: session.id,
+        },
+      }),
+      db.customer.update({
+        where: { id: customer.id },
+        data: { creditsBalanceCents: { increment: amountCents } },
+      }),
+    ]);
     return;
   }
 
@@ -171,7 +201,12 @@ async function upsertSubscription(subscription: Stripe.Subscription) {
   }
 
   const priceId = subscription.items.data[0]?.price.id ?? "";
+  const currentPeriodStart = subscription.items.data[0]?.current_period_start;
   const currentPeriodEnd = subscription.items.data[0]?.current_period_end;
+  const resolvedTier =
+    kind === "API_PLAN"
+      ? findApiPlanByPriceId(priceId)
+      : findUserPlanByPriceId(priceId);
 
   await db.subscription.upsert({
     where: { stripeSubscriptionId: subscription.id },
@@ -180,7 +215,11 @@ async function upsertSubscription(subscription: Stripe.Subscription) {
       stripeSubscriptionId: subscription.id,
       stripePriceId: priceId,
       kind,
+      tier: resolvedTier?.tier ?? null,
       status: subscription.status,
+      currentPeriodStart: currentPeriodStart
+        ? new Date(currentPeriodStart * 1000)
+        : null,
       currentPeriodEnd: currentPeriodEnd
         ? new Date(currentPeriodEnd * 1000)
         : null,
@@ -188,32 +227,97 @@ async function upsertSubscription(subscription: Stripe.Subscription) {
     },
     update: {
       stripePriceId: priceId,
+      tier: resolvedTier?.tier ?? null,
       status: subscription.status,
+      currentPeriodStart: currentPeriodStart
+        ? new Date(currentPeriodStart * 1000)
+        : null,
       currentPeriodEnd: currentPeriodEnd
         ? new Date(currentPeriodEnd * 1000)
         : null,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
     },
   });
+}
 
-  // Validation flow: once the throwaway validation subscription is
-  // active/trialing, grant the Logto Pro role. Rethrow on failure so
-  // Stripe retries the webhook instead of us silently dropping the grant.
-  if (
-    subscription.metadata?.kind === "validation" &&
-    (subscription.status === "active" || subscription.status === "trialing")
-  ) {
-    try {
-      await assignRoleToUser(
-        customer.logtoUserId,
-        process.env.LOGTO_PRO_ROLE_ID as string,
-      );
-    } catch (err) {
-      console.error(
-        `[stripe-webhook] failed to assign Logto role to ${customer.logtoUserId}:`,
-        err,
-      );
-      throw err;
-    }
+/**
+ * User Pricing plans include a bucket of Quantum Compute credits on
+ * subscription creation. Only called from customer.subscription.created, so
+ * this fires once per subscription; the ledger's unique stripeEventId column
+ * (keyed to the webhook event, not the subscription) makes it idempotent
+ * against Stripe retries on top of the outer webhook dedup.
+ */
+async function grantIncludedCreditsIfApplicable(
+  subscription: Stripe.Subscription,
+  stripeEventId: string,
+) {
+  if (subscription.metadata?.kind !== "user_plan") {
+    return;
+  }
+
+  const priceId = subscription.items.data[0]?.price.id ?? "";
+  const plan = findUserPlanByPriceId(priceId);
+  if (!plan || plan.includedCreditsUsd <= 0) {
+    return;
+  }
+
+  const customer = await db.customer.findUnique({
+    where: { stripeCustomerId: subscription.customer as string },
+  });
+  if (!customer) {
+    console.warn(
+      `[stripe-webhook] no local Customer for stripeCustomerId=${subscription.customer}; skipping credit grant.`,
+    );
+    return;
+  }
+
+  const amountCents = plan.includedCreditsUsd * 100;
+  await db.$transaction([
+    db.creditLedgerEntry.create({
+      data: {
+        customerId: customer.id,
+        amountCents,
+        reason: `plan_credit:${subscription.id}`,
+        stripeEventId,
+      },
+    }),
+    db.customer.update({
+      where: { id: customer.id },
+      data: { creditsBalanceCents: { increment: amountCents } },
+    }),
+  ]);
+}
+
+/**
+ * Keeps the Logto Pro role in sync with subscription status. Rethrow on
+ * failure so Stripe retries the webhook instead of us silently dropping the
+ * grant.
+ */
+async function syncProRoleForActiveSubscription(subscription: Stripe.Subscription) {
+  if (subscription.status !== "active" && subscription.status !== "trialing") {
+    return;
+  }
+
+  const customer = await db.customer.findUnique({
+    where: { stripeCustomerId: subscription.customer as string },
+  });
+  if (!customer) {
+    console.warn(
+      `[stripe-webhook] no local Customer for stripeCustomerId=${subscription.customer}; skipping role grant.`,
+    );
+    return;
+  }
+
+  try {
+    await assignRoleToUser(
+      customer.logtoUserId,
+      process.env.LOGTO_PRO_ROLE_ID as string,
+    );
+  } catch (err) {
+    console.error(
+      `[stripe-webhook] failed to assign Logto role to ${customer.logtoUserId}:`,
+      err,
+    );
+    throw err;
   }
 }

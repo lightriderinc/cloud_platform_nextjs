@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 type Subscription = {
   id: string;
   kind: string;
+  tier: string | null;
   status: string;
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
@@ -15,6 +16,13 @@ async function fetchSubscriptions(): Promise<Subscription[]> {
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
   return data.subscriptions;
+}
+
+function planLabel(subscription: Subscription): string {
+  if (subscription.tier) {
+    return subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1);
+  }
+  return subscription.kind === "API_PLAN" ? "API" : "User";
 }
 
 export default function SubscriptionsList() {
@@ -71,7 +79,7 @@ export default function SubscriptionsList() {
           >
             <div>
               <p className="text-sm font-medium text-gray-800">
-                {subscription.status}
+                {planLabel(subscription)} plan — {subscription.status}
                 {subscription.cancelAtPeriodEnd && " (cancels at period end)"}
               </p>
               <p className="text-xs text-gray-500">

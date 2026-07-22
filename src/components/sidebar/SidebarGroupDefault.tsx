@@ -16,12 +16,14 @@ export default function SidebarGroupDefault({
           href="/"
           icon={MdDashboard}
           onNavigate={onNavigate}
+          tourId="sidebar-dashboard"
         />
         <SidebarNavItem
           name="Jobs"
           href="/jobs"
           icon={MdBarChart}
           onNavigate={onNavigate}
+          tourId="sidebar-jobs"
         />
       </SidebarNavGroup>
 
@@ -31,12 +33,14 @@ export default function SidebarGroupDefault({
           href="/applications"
           icon={MdApps}
           onNavigate={onNavigate}
+          tourId="sidebar-applications"
         />
         <SidebarNavItem
           name="Backends"
           href="/backends"
           icon={RiCpuFill}
           onNavigate={onNavigate}
+          tourId="sidebar-backends"
         />
       </SidebarNavGroup>
 
@@ -46,6 +50,7 @@ export default function SidebarGroupDefault({
           href="/pricing"
           icon={MdPayments}
           onNavigate={onNavigate}
+          tourId="sidebar-pricing"
         />
       </SidebarNavGroup>
     </>

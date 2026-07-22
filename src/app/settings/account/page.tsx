@@ -1,5 +1,6 @@
 import { logtoConfig } from "@/app/logto";
 import LogoutButton from "@/components/auth/LogoutButton";
+import CurrentPlanBadge from "@/components/billing/CurrentPlanBadge";
 import { isPro } from "@/lib/auth";
 import {
   getMyProfile,
@@ -156,6 +157,7 @@ export default async function AccountPage() {
             </p>
           )}
           <span className="text-sm text-gray-500">{userIsPro ? "Pro user" : "Basic user"}</span>
+          <CurrentPlanBadge />
         </div>
       </div>
 
