@@ -21,7 +21,7 @@ export default function StepIndicator({
                     ? "bg-[var(--brand-primary)] text-white"
                     : isActive
                       ? "border-1 border-[var(--brand-primary)] text-[var(--brand-primary)]"
-                      : "border-1 border-gray-200 text-gray-400",
+                      : "border-1 border-gray-100 text-gray-400",
                 ].join(" ")}
               >
                 {isDone ? (

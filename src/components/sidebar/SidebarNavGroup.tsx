@@ -7,7 +7,7 @@ export default function SidebarNavGroup({
 }) {
   return (
     <div className="mb-6">
-      <h3 className="mb-2 px-2 text-xs font-semibold uppercase text-gray-500">
+      <h3 className="mb-2 px-2 text-xs font-semibold uppercase text-gray-300">
         {label}
       </h3>
       <ul>{children}</ul>

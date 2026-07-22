@@ -125,7 +125,7 @@ export default function BackendModal({
           </div>
         )}
 
-        <details className="mt-8 default-radius border border-gray-200 p-4">
+        <details className="mt-8 default-radius border border-gray-100 p-4">
           <summary className="cursor-pointer select-none text-lg font-medium">
             Connect to {name}
           </summary>

@@ -16,7 +16,7 @@ export default function ApplicationCard({
 }) {
   return (
     <div>
-      <TiltCard onClick={onClick} className="flex h-full cursor-pointer flex-col gap-3 default-radius bg-gray-100 border border-gray-200 p-4">
+      <TiltCard onClick={onClick} className="flex h-full cursor-pointer flex-col gap-3 default-radius bg-gray-100 border border-gray-100 p-4">
         <div className="flex flex-col justify-between h-full">
           <div className="flex flex-row gap-4">
             <div>

@@ -47,7 +47,7 @@ export default function MobileMenu({ children }: { children?: React.ReactNode })
             open ? "translate-x-0" : "translate-x-full"
           }`}
         >
-          <div className="flex h-14 shrink-0 items-center justify-between border-b border-gray-200 px-4">
+          <div className="flex h-14 shrink-0 items-center justify-between border-b border-gray-100 px-4">
             <span className="text-sm font-semibold">Menu</span>
             <button
               type="button"
@@ -61,8 +61,20 @@ export default function MobileMenu({ children }: { children?: React.ReactNode })
 
           <SidebarNav onNavigate={() => setOpen(false)} />
 
-          <div className="border-t border-gray-200 p-3">
-            {children}
+          <div className="border-t border-gray-100 p-3">
+            {/* <UserCard className="w-full" /> */}
+            <a
+              href="https://lightriderinc.com/early-access"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <button
+                type="button"
+                className="default-radius px-3 py-2 text-sm font-semibold text-brand-primary cursor-pointer btn-outline-brand transition-opacity min-w-[110px] w-full"
+              >
+                Get early access
+              </button>
+            </a>
           </div>
         </div>
       </div>

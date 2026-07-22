@@ -46,7 +46,7 @@ export default function JobsTable() {
 
   return (
     <>
-      <div className="overflow-x-auto default-radius border border-gray-200">
+      <div className="overflow-x-auto default-radius border border-gray-100">
         <table className="w-full min-w-[720px] text-sm">
           <thead className="bg-gray-100">
             <tr>

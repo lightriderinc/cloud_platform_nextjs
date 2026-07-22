@@ -68,7 +68,7 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
             <select
               value={circuit}
               onChange={(e) => setCircuit(e.target.value)}
-              className="default-radius w-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300"
+              className="default-radius w-full border border-gray-100 bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300"
             >
               {CIRCUITS.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -89,7 +89,7 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
                 setShots(Math.max(1, parseInt(e.target.value) || 1))
               }
               min={1}
-              className="default-radius w-full border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300"
+              className="default-radius w-full border border-gray-100 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300"
             />
           </div>
 
@@ -105,7 +105,7 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={onClose}
-              className="default-radius border border-gray-200 px-4 py-2 text-sm text-gray-600 cursor-pointer hover:bg-gray-50"
+              className="default-radius border border-gray-100 px-4 py-2 text-sm text-gray-600 cursor-pointer hover:bg-gray-50"
             >
               Cancel
             </button>

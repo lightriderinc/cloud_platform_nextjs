@@ -24,7 +24,7 @@ export default function SidebarNavItem({
         href={href}
         onClick={onNavigate}
         className={`mb-1 flex items-center gap-2 default-radius px-2 py-1.5 text-sm transition-colors ${
-          active ? "bg-gray-200 font-medium" : "hover:bg-gray-100"
+          active ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
         }`}
       >
         {icon &&
