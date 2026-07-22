@@ -1,16 +1,13 @@
 import DashboardDemoCircuit from "@/components/dashboard/DashboardDemoCircuit";
 import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntopy";
 import InfoBox from "@/components/InfoBox";
-import GettingStartedChecklist from "@/components/onboarding/GettingStartedChecklist";
 
-export default async function Home() {
+export default function Home() {
   // const token = process.env.LR_TOKEN ?? "";
 
   return (
-    <div className="flex flex-col h-full justify-between animate-fade-in-up">
+    <div className="flex flex-col h-full justify-between">
       <div>
-        <GettingStartedChecklist />
-
         <h1 className="text-2xl font-semibold text-gray-700">Dashboard</h1>
         <p className="mb-12 text-sm text-gray-600">
           Your gateway to quantum computing. Explore our services and
@@ -51,18 +48,8 @@ export default async function Home() {
         </div>
       </div>
       <div className="flex flex-row gap-3 w-full justify-end pt-6 pb-2">
-        <a
-          className="text-xs text-gray-700 hover:text-gray-500"
-          href="/legal/privacy"
-        >
-          Privacy policy
-        </a>
-        <a
-          className="text-xs text-gray-700 hover:text-gray-500"
-          href="/legal/terms-of-use"
-        >
-          Terms of Use
-        </a>
+        <a className="text-xs text-gray-700 hover:text-gray-500" href="/legal/privacy">Privacy policy</a>
+        <a className="text-xs text-gray-700 hover:text-gray-500" href="/legal/terms-of-use">Terms of Use</a>
       </div>
     </div>
   );

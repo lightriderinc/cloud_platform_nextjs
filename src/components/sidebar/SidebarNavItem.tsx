@@ -8,18 +8,16 @@ export default function SidebarNavItem({
   href,
   icon,
   onNavigate,
-  tourId,
 }: {
   name: string;
   href: string;
   icon?: React.ComponentType<{ className?: string }>;
   onNavigate?: () => void;
-  tourId?: string;
 }) {
   const pathname = usePathname();
   const active = pathname === href;
   return (
-    <li data-tour={tourId}>
+    <li>
       <Link
         href={href}
         onClick={onNavigate}

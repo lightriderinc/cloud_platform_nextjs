@@ -22,11 +22,6 @@ export interface QubitNode {
   label: string;
   /** Per-qubit error as a percent (e.g. 0.05), or undefined if unknown. */
   error?: number;
-  /** Optional physical layout coordinates from the provider (e.g. IBM's
-   *  heavy-hex `coords`). When present, the map uses them directly instead of
-   *  inferring a layout from the connectivity graph. */
-  x?: number;
-  y?: number;
 }
 
 export interface QubitEdge {

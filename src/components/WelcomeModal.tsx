@@ -8,18 +8,14 @@ const TTL_MS = 12 * 60 * 60 * 1000;
 
 let listeners: Array<() => void> = [];
 
-// Exported so other client components (e.g. the onboarding WelcomeModal)
-// can wait on the same acceptance state instead of duplicating the
-// TTL/localStorage logic.
-export function subscribe(callback: () => void) {
+function subscribe(callback: () => void) {
   listeners.push(callback);
   return () => {
     listeners = listeners.filter((l) => l !== callback);
   };
 }
 
-/** True while the welcome/terms modal still needs to be shown or accepted. */
-export function getSnapshot() {
+function getSnapshot() {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored) {
     const acceptedAt = parseInt(stored, 10);
@@ -28,11 +24,11 @@ export function getSnapshot() {
   return true;
 }
 
-export function getServerSnapshot() {
+function getServerSnapshot() {
   return false;
 }
 
-export default function TermsGateModal() {
+export default function WelcomeModal() {
   const pathname = usePathname();
   const show = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 

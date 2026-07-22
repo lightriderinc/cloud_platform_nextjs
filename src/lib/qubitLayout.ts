@@ -11,8 +11,6 @@ export type LayoutPositions = Record<string, { x: number; y: number }>;
 
 interface LayoutNode {
   id: string;
-  x?: number;
-  y?: number;
 }
 interface LayoutEdge {
   source: string;
@@ -219,14 +217,6 @@ export function computeLayout(
   const n = ids.length;
   if (n === 0) return {};
   if (n === 1) return { [ids[0]]: { x: 0.5, y: 0.5 } };
-
-  // Explicit coordinates from the API (e.g. IBM's heavy-hex layout) take
-  // precedence over inferring a layout from the connectivity graph.
-  if (nodes.every((nd) => typeof nd.x === "number" && typeof nd.y === "number")) {
-    const raw: RawPositions = {};
-    for (const nd of nodes) raw[nd.id] = [nd.x as number, nd.y as number];
-    return normalize(raw);
-  }
 
   // Fully connected (all-to-all) -> circle.
   if (edges.length === (n * (n - 1)) / 2) {

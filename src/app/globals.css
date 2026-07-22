@@ -118,7 +118,7 @@ h1 {
   animation: lr-fade-in 200ms ease-out both;
 }
 .animate-fade-in-up {
-  animation: lr-fade-in-up 320ms ease-out backwards !important;
+  animation: lr-fade-in-up 320ms ease-out both;
 }
 .animate-scale-in {
   animation: lr-scale-in 180ms ease-out both;
@@ -147,8 +147,4 @@ h1 {
   &:hover {
     background-color: rgba(248, 124, 86, 0.07);
   }
-}
-
-.border-color-brand {
-  border-color: var(--brand-tertiary);
 }
