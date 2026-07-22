@@ -1,9 +1,14 @@
 import type { Backend } from "@/types/backend";
 import { asMicroseconds, asPercent, median } from "@/lib/metrics";
 
-// Live Rigetti QCS integration. Discovers the available processors, then maps
-// each one's Instruction Set Architecture (ISA) into our Backend shape. Field
-// names below were derived from a real ISA response (Cepheus-1-108Q / Ankaa).
+// Live Rigetti QCS integration. Maps each hardcoded processor's Instruction
+// Set Architecture (ISA) into our Backend shape. Field names below were
+// derived from a real ISA response (Cepheus-1-108Q / Ankaa).
+
+// Hardcoded machine list, like IQM and IBM (project convention: no
+// auto-discovery). Skipping the processor-list round trip lets the cards
+// paint after a single parallel ISA fetch.
+const RIGETTI_MACHINES = ["Cepheus-1-108Q"];
 
 interface RigettiCharacteristic {
   name: string;
@@ -32,10 +37,6 @@ interface RigettiISA {
   architecture: RigettiArchitecture;
   instructions: RigettiOperation[];
   benchmarks: RigettiOperation[];
-}
-
-interface RigettiProcessorList {
-  quantumProcessors: { id: string }[];
 }
 
 async function getJson<T>(path: string): Promise<T> {
@@ -134,16 +135,17 @@ function mapProcessor(id: string, isa: RigettiISA): Backend {
   };
 }
 
-// Lists Rigetti processors and maps each in parallel. A processor that fails
-// is dropped rather than failing the whole list.
+// Fetches the hardcoded Rigetti processors in parallel. A processor that
+// fails is dropped rather than failing the whole list. Card data and
+// calibration share one ISA payload, so Rigetti is single-phase: there is no
+// lighter endpoint to fetch first.
 export async function fetchRigettiBackends(): Promise<Backend[]> {
-  const list = await getJson<RigettiProcessorList>("v1/quantumProcessors");
   const settled = await Promise.allSettled(
-    (list.quantumProcessors ?? []).map(async (p) => {
+    RIGETTI_MACHINES.map(async (id) => {
       const isa = await getJson<RigettiISA>(
-        `v1/quantumProcessors/${p.id}/instructionSetArchitecture`,
+        `v1/quantumProcessors/${id}/instructionSetArchitecture`,
       );
-      return mapProcessor(p.id, isa);
+      return mapProcessor(id, isa);
     }),
   );
   return settled

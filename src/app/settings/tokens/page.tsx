@@ -3,8 +3,8 @@ import PagePlaceholder from "@/components/PagePlaceholder";
 export default function TokensPage() {
   return (
     <PagePlaceholder
-      title="API Tokens"
-      description="Create and manage tokens for programmatic access."
+      title="Access Tokens"
+      description="Access and manage your Light Rider access token."
     />
   );
 }

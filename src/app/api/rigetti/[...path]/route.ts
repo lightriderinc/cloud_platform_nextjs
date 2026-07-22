@@ -9,4 +9,5 @@ export const GET = createProxyRoute({
   baseUrl: "https://api.qcs.rigetti.com",
   token: process.env.RIGETTI_TOKEN,
   requireToken: false,
+  cacheTtlMs: 60_000,
 });
