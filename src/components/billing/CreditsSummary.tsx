@@ -35,7 +35,13 @@ export function ProgressBar({ fraction }: { fraction: number }) {
   );
 }
 
-/** Quantum Compute credits balance — used on its own (Payment page) and composed into UsageSummary (Billing page). */
+/**
+ * Credit ledger balance, displayed as "Light Rider tokens" — this is a
+ * display-label choice for the Pro-plan/billing context only (used on its
+ * own on the Payment page and composed into UsageSummary on the Billing
+ * page). The underlying CreditLedgerEntry/creditsBalanceCents fields, and
+ * the Quantum Compute page's own "compute credits" copy, are unchanged.
+ */
 export default function CreditsSummary() {
   const credits = useQuery({
     queryKey: ["billing", "credits"],
@@ -49,9 +55,9 @@ export default function CreditsSummary() {
   return (
     <div className="default-radius border border-gray-200 bg-white p-4">
       <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-gray-800">
-        ${formatUsd(credits.data.remainingCents)} remaining of $
-        {formatUsd(credits.data.purchasedCents)} purchased
-        <HintIcon text="Remaining reflects credits granted so far — nothing is deducted yet since job usage isn't metered." />
+        {formatUsd(credits.data.remainingCents)} Light Rider tokens remaining
+        of {formatUsd(credits.data.purchasedCents)} purchased
+        <HintIcon text="Remaining reflects Light Rider tokens granted so far — nothing is deducted yet since job usage isn't metered." />
       </p>
       <ProgressBar
         fraction={credits.data.remainingCents / credits.data.purchasedCents}

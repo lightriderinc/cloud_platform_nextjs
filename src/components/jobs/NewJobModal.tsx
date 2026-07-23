@@ -1,7 +1,8 @@
 "use client";
 
+import ProGateNotice from "@/components/billing/ProGateNotice";
 import { submitJob } from "@/lib/lr/client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { MdClose } from "react-icons/md";
 
@@ -10,10 +11,23 @@ const CIRCUITS = [
   { value: "bell", label: "bell gate (2-qubit entangled pair)" },
 ];
 
+async function fetchAccessTier(): Promise<"Pro" | "Basic"> {
+  const res = await fetch("/api/auth/access-tier");
+  const data = await res.json();
+  return data.tier === "Pro" ? "Pro" : "Basic";
+}
+
 export default function NewJobModal({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient();
   const [circuit, setCircuit] = useState(CIRCUITS[0].value);
   const [shots, setShots] = useState(1000);
+
+  // Real hardware today, no simulator-only path — gated like the dashboard
+  // demo. Actual enforcement is server-side in /api/lr/[...path]/route.ts.
+  const { data: accessTier } = useQuery({
+    queryKey: ["auth", "access-tier"],
+    queryFn: fetchAccessTier,
+  });
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -60,6 +74,9 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
+        {accessTier === undefined ? null : accessTier === "Basic" ? (
+          <ProGateNotice />
+        ) : (
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700">
@@ -119,6 +136,7 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );

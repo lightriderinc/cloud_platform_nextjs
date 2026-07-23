@@ -4,12 +4,28 @@
 // Fill these in .env.local once products/prices exist — see
 // BILLING_INTEGRATION.md for the exact list to create.
 
-export type UserPlanTier = "starter" | "developer" | "professional";
+export type UserPlanTier =
+  | "starter"
+  | "developer"
+  | "professional"
+  | "pro";
 
 export const USER_PLANS: Record<
   UserPlanTier,
   { name: string; priceEnvVar: string; monthlyUsd: number; includedCreditsUsd: number }
 > = {
+  // V2 two-tier simplification: only `pro` is rendered on the User Pricing
+  // page (see UserPlansGrid.tsx) and is the only paid tier a user can
+  // actually check out with today. starter/developer/professional stay
+  // defined and fully wired (checkout, webhook, findUserPlanByPriceId all
+  // still work for them) so V3+ can bring them back by just rendering their
+  // cards again — nothing here was deleted.
+  pro: {
+    name: "Pro",
+    priceEnvVar: "STRIPE_PRICE_USER_PRO",
+    monthlyUsd: 99,
+    includedCreditsUsd: 99,
+  },
   starter: {
     name: "Starter",
     priceEnvVar: "STRIPE_PRICE_USER_STARTER",

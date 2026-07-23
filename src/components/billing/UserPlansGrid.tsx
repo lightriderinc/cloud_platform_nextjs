@@ -2,99 +2,57 @@
 
 import { SubscriptionCheckoutButton } from "@/components/billing/CheckoutButtons";
 import PlanCard from "@/components/billing/PlanCard";
+import { USER_PLANS } from "@/lib/billing/plans";
 import { useState } from "react";
 
+// V2 two-tier simplification: only Basic (free) and Pro (paid) render here.
+// Starter/Developer/Professional/Enterprise still exist in plans.ts and
+// their checkout/webhook plumbing is untouched — restore by re-adding
+// <PlanCard> entries for them to the grid below (see git history for the
+// exact previous JSX, or plans.ts for the tier data).
 export default function UserPlansGrid() {
-  const [selected, setSelected] = useState<string>("developer");
+  const [selected, setSelected] = useState<"basic" | "pro">("pro");
+  const pro = USER_PLANS.pro;
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       <PlanCard
-        name="Starter"
-        price="$99"
-        billedNote="/mo"
-        description="For individuals and small teams."
+        name="Basic"
+        price="Free"
+        description="Included with your account."
         features={[
           "Access to core applications",
-          "Shared data & dashboards",
+          "Simulator & demo circuits",
           "Community support",
-          "1 user seat",
-          "$50 in compute credits included",
         ]}
-        selected={selected === "starter"}
-        onSelect={() => setSelected("starter")}
+        selected={selected === "basic"}
+        onSelect={() => setSelected("basic")}
         action={
-          <SubscriptionCheckoutButton
-            kind="user_plan"
-            tier="starter"
-            label="Choose Starter"
-          />
+          <div className="w-full default-radius border border-gray-200 px-4 py-2 text-center text-sm font-medium text-gray-500">
+            Included with your account
+          </div>
         }
       />
       <PlanCard
-        name="Developer"
-        price="$499"
+        name={pro.name}
+        price={`$${pro.monthlyUsd}`}
         billedNote="/mo"
-        description="For developers and growing teams."
-        badge="Most popular"
+        description="Run jobs on real quantum hardware."
+        badge="Recommended"
         features={[
-          "Everything in Starter",
-          "Advanced workflows",
-          "API access (limited)",
-          "5 user seats",
-          "$250 in compute credits included",
+          "Everything in Basic",
+          "Run jobs on real QPUs",
+          `${pro.includedCreditsUsd} Light Rider tokens included`,
+          "Priority support",
         ]}
-        selected={selected === "developer"}
-        onSelect={() => setSelected("developer")}
+        selected={selected === "pro"}
+        onSelect={() => setSelected("pro")}
         action={
           <SubscriptionCheckoutButton
             kind="user_plan"
-            tier="developer"
-            label="Choose Developer"
+            tier="pro"
+            label="Choose Pro"
           />
-        }
-      />
-      <PlanCard
-        name="Professional"
-        price="$2,500"
-        billedNote="/mo"
-        description="For production workloads."
-        features={[
-          "Everything in Developer",
-          "Custom SLAs & compliance",
-          "SSO & role-based access control",
-          "25 user seats",
-          "$1,500 in compute credits included",
-        ]}
-        selected={selected === "professional"}
-        onSelect={() => setSelected("professional")}
-        action={
-          <SubscriptionCheckoutButton
-            kind="user_plan"
-            tier="professional"
-            label="Choose Professional"
-          />
-        }
-      />
-      <PlanCard
-        name="Enterprise"
-        price="Custom"
-        description="For mission-critical deployments."
-        features={[
-          "Everything in Professional",
-          "Dedicated Success Manager",
-          "Unlimited seats",
-          "Custom SLAs",
-        ]}
-        selected={selected === "enterprise"}
-        onSelect={() => setSelected("enterprise")}
-        action={
-          <a
-            href="/pricing/enterprise"
-            className="block w-full default-radius border border-gray-300 px-4 py-2 text-center text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
-          >
-            Contact Sales
-          </a>
         }
       />
     </div>
