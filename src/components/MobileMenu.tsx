@@ -7,7 +7,7 @@ import SidebarNav from "./sidebar/SidebarNav";
 // Below the lg breakpoint, replaces the header user card with a hamburger that
 // opens an animated drawer (slide-in panel + backdrop fade) holding the
 // sidebar nav and the user card at the bottom.
-export default function MobileMenu() {
+export default function MobileMenu({ children }: { children?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {

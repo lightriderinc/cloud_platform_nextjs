@@ -6,19 +6,26 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "stripe:listen": "stripe listen --forward-to localhost:3000/api/webhooks/stripe"
   },
   "dependencies": {
+    "@logto/next": "^4.2.10",
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
     "@next/mdx": "^16.2.10",
+    "@prisma/client": "^6.19.3",
     "@tanstack/react-query": "^5.100.14",
     "@types/mdx": "^2.0.14",
+    "driver.js": "^1.8.0",
     "next": "16.2.9",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-icons": "^5.6.0",
-    "remark-gfm": "^4.0.1"
+    "remark-gfm": "^4.0.1",
+    "stripe": "^22.3.1"
   },
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",
@@ -32,6 +39,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "prisma": "^6.19.3",
     "semantic-release": "^25.0.5",
     "tailwindcss": "^4",
     "typescript": "^5"

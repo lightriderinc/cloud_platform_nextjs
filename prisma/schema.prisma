@@ -1,0 +1,106 @@
+// Billing/commerce schema for the Light Rider customer platform.
+//
+// This is intentionally scoped to *Stripe-facing* state only: who the
+// customer is in Stripe, what they're subscribed to, and a ledger of credit
+// grants/spends. It does not model quantum jobs, entropy pools, or usage
+// enforcement — that lives in the lr/EMS backend, which is expected to call
+// back into this app (or read a synced replica) to check balances before
+// running work. See BILLING_INTEGRATION.md for the handoff.
+//
+// Local dev: sqlite (see DATABASE_URL in .env.example). Swap the provider to
+// "postgresql" for staging/production — the schema itself is portable.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// One row per authenticated Logto user who has ever touched billing.
+model Customer {
+  id              String   @id @default(cuid())
+  logtoUserId     String   @unique // Logto `sub` claim — the anchor identity
+  email           String?
+  stripeCustomerId String  @unique
+  creditsBalanceCents Int  @default(0) // cached sum of CreditLedgerEntry.amountCents — kept in sync via db.$transaction alongside every ledger insert
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  subscriptions   Subscription[]
+  ledgerEntries   CreditLedgerEntry[]
+  usageEvents     ApiUsageEvent[]
+}
+
+// Mirrors a Stripe Subscription (used by both User Pricing plans and API
+// Pricing metered plans — `kind` distinguishes them).
+model Subscription {
+  id                   String   @id @default(cuid())
+  customerId           String
+  customer             Customer @relation(fields: [customerId], references: [id])
+  stripeSubscriptionId String   @unique
+  stripePriceId        String
+  kind                 SubscriptionKind
+  tier                 String?  // e.g. "starter" / "developer" / "professional" (User); "free" / "starter" / "developer" / "business" (API)
+  status               String   // Stripe subscription status, stored verbatim
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+enum SubscriptionKind {
+  USER_PLAN // Starter / Developer / Professional / Enterprise (User Pricing page)
+  API_PLAN  // Free / Starter / Developer / Business (API Pricing page, usage-metered)
+}
+
+// Append-only ledger for prepaid Quantum Compute credits. Balance = sum of
+// amountCents for a customer. Positive = grant (purchase, promo), negative =
+// spend (reported by the backend once it enforces consumption).
+model CreditLedgerEntry {
+  id           String   @id @default(cuid())
+  customerId   String
+  customer     Customer @relation(fields: [customerId], references: [id])
+  amountCents  Int      // signed
+  reason       String   // e.g. "checkout:cs_123", "job:job_456", "manual_adjustment"
+  stripeEventId String? @unique // idempotency guard for webhook replays
+  createdAt    DateTime @default(now())
+}
+
+// Mirror of Stripe meter events we report for EaaS API usage, kept for our
+// own auditing/analytics independent of Stripe's meter aggregation.
+model ApiUsageEvent {
+  id            String   @id @default(cuid())
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id])
+  stripeEventId String   @unique
+  quantity      Int
+  createdAt     DateTime @default(now())
+}
+
+// Captures submissions from the Enterprise & Government "Get Custom
+// Pricing" / "Contact Sales" form. No Stripe object backs this directly —
+// enterprise deals are closed via Stripe Invoicing/ACH or a marketplace
+// private offer, set up manually by sales once the deal terms are agreed.
+model EnterpriseLead {
+  id            String   @id @default(cuid())
+  logtoUserId   String?
+  email         String
+  company       String?
+  useCase       String?
+  deploymentType String?
+  message       String?
+  createdAt     DateTime @default(now())
+}
+
+// Raw webhook log for idempotency + debugging. Every processed Stripe event
+// id is recorded so retried webhooks are safely ignored.
+model ProcessedStripeEvent {
+  id        String   @id // Stripe event id, e.g. evt_123
+  type      String
+  createdAt DateTime @default(now())
+}

@@ -7,4 +7,5 @@ export const dynamic = "force-dynamic";
 export const GET = createProxyRoute({
   baseUrl: "https://resonance.iqm.tech",
   token: process.env.IQM_TOKEN,
+  cacheTtlMs: 30_000,
 });

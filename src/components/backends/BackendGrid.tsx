@@ -1,15 +1,20 @@
 import type { Backend } from "@/types/backend";
 import BackendCard from "./BackendCard";
+import BackendCardSkeleton from "./BackendCardSkeleton";
 
-// Responsive grid of backend cards: up to 4 columns wide, growing
-// downward as the catalog expands (the page itself handles scrolling).
-// Cards fade/rise in with a small stagger on mount.
+// Responsive grid of backend cards: up to 4 columns wide, growing downward as
+// the catalog expands (the page itself handles scrolling). Cards fade/rise in
+// with a small stagger on mount. `pendingCount` appends that many skeleton
+// tiles after the real cards, signalling providers still loading without
+// starting a new grid row block.
 export default function BackendGrid({
   backends,
   onSelect,
+  pendingCount = 0,
 }: {
   backends: Backend[];
   onSelect?: (backend: Backend) => void;
+  pendingCount?: number;
 }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -20,6 +25,11 @@ export default function BackendGrid({
           style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}
         >
           <BackendCard backend={backend} onSelect={onSelect} />
+        </div>
+      ))}
+      {Array.from({ length: pendingCount }).map((_, i) => (
+        <div key={`pending-${i}`} className="h-full">
+          <BackendCardSkeleton />
         </div>
       ))}
     </div>

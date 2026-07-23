@@ -73,14 +73,17 @@ async function getJson<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
+// `metrics` is the heavy calibration payload; when omitted (summary phase)
+// the metrics-derived fields (fidelities, gate list, qubit map colors) are
+// left out and the full fetch fills them in later.
 function mapMachine(
   machine: IqmMachine,
   architecture: StaticArchitecture[] | StaticArchitecture,
-  metrics: MetricsResponse,
+  metrics: MetricsResponse | undefined,
   status: BackendStatus,
 ): Backend {
   const arch = Array.isArray(architecture) ? architecture[0] : architecture;
-  const valid = metrics.observations.filter(
+  const valid = (metrics?.observations ?? []).filter(
     (o): o is MetricObservation & { value: number } =>
       !o.invalid && typeof o.value === "number",
   );
@@ -111,7 +114,7 @@ function mapMachine(
       if (m) qubitErrors[m[0]] = Number(((1 - o.value) * 100).toFixed(3));
     }
   }
-  const qubitMap = arch?.qubits
+  const qubitMap = metrics && arch?.qubits
     ? {
         nodes: [
           ...arch.qubits.map((q) => ({ id: q, label: q, error: qubitErrors[q] })),
@@ -135,7 +138,7 @@ function mapMachine(
     queueDepth: null,
     details: {
       description: `${name} is a ${kind}, with calibration data pulled live from IQM Resonance.`,
-      nativeGates,
+      nativeGates: metrics ? nativeGates : undefined,
       qubitMap,
       medianOneQubitFidelity: asPercent(
         median(valuesWhere((f) => f.includes("metrics.rb.prx."))),
@@ -167,7 +170,10 @@ function mapMachine(
 
 // Fetches all IQM machines in parallel. A machine that fails (offline, auth,
 // no architecture, etc.) is dropped rather than failing the whole list.
-export async function fetchIqmBackends(): Promise<Backend[]> {
+// `withMetrics` decides whether the heavy calibration payload is included;
+// architecture and health stay in both phases because the cards need the
+// qubit count and status badge.
+async function fetchMachines(withMetrics: boolean): Promise<Backend[]> {
   const settled = await Promise.allSettled(
     IQM_MACHINES.map(async (machine) => {
       // Health only applies to real hardware; simulators are software and
@@ -184,9 +190,11 @@ export async function fetchIqmBackends(): Promise<Backend[]> {
         getJson<StaticArchitecture[]>(
           `/api/iqm/api/v1/quantum-computers/${machine.alias}/artifacts/static-quantum-architectures`,
         ),
-        getJson<MetricsResponse>(
-          `/api/iqm/api/v1/calibration-sets/${machine.alias}/default/metrics`,
-        ),
+        withMetrics
+          ? getJson<MetricsResponse>(
+              `/api/iqm/api/v1/calibration-sets/${machine.alias}/default/metrics`,
+            )
+          : Promise.resolve(undefined),
         healthPromise,
       ]);
 
@@ -202,4 +210,15 @@ export async function fetchIqmBackends(): Promise<Backend[]> {
       (r): r is PromiseFulfilledResult<Backend> => r.status === "fulfilled",
     )
     .map((r) => r.value);
+}
+
+// Light first phase: everything the catalog cards need (name, qubit count,
+// live status) without the heavy calibration metrics.
+export async function fetchIqmSummaries(): Promise<Backend[]> {
+  return fetchMachines(false);
+}
+
+// Full second phase: includes calibration (fidelities and qubit map colors).
+export async function fetchIqmBackends(): Promise<Backend[]> {
+  return fetchMachines(true);
 }
