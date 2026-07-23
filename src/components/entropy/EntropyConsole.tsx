@@ -29,6 +29,7 @@ export default function EntropyConsole() {
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<EntropyResult | null>(null);
   const [history, setHistory] = useState<EntropyResult[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const sourceData = SOURCES.find((s) => s.id === selectedSourceId);
   const bytesValid = isValidByteCount(bytes);
@@ -37,6 +38,7 @@ export default function EntropyConsole() {
   async function handleGenerate() {
     if (!sourceData || !bytesValid) return;
     setGenerating(true);
+    setError(null);
     try {
       const next = await requestEntropy({
         sourceId: sourceData.id,
@@ -45,6 +47,8 @@ export default function EntropyConsole() {
       });
       setResult(next);
       setHistory((prev) => [next, ...prev].slice(0, HISTORY_LIMIT));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Entropy request failed.");
     } finally {
       setGenerating(false);
     }
@@ -80,6 +84,10 @@ export default function EntropyConsole() {
             <p className="text-xs text-[var(--brand-primary)]">
               Enter a byte count between {MIN_BYTES} and {MAX_BYTES}.
             </p>
+          )}
+
+          {error && (
+            <p className="text-xs text-[var(--brand-primary)]">{error}</p>
           )}
 
           <button

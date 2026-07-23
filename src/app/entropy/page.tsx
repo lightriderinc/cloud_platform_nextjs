@@ -16,10 +16,9 @@ export default function EntropyPage() {
 
       <div className="mb-6">
         <InfoBox>
-          This is a preview demo — entropy is generated in your browser so you can
-          explore the flow. <br />
-          At launch, requests will be served by the Light Rider entropy
-          distribution service.
+          Requests are served live by the Light Rider entropy distribution
+          service (EMS). Sources marked &ldquo;Available at Launch&rdquo; are
+          still coming online.
         </InfoBox>
       </div>
 
