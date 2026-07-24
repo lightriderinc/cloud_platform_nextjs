@@ -2,17 +2,20 @@ import { logtoConfig } from "@/app/logto";
 import LogoutButton from "@/components/auth/LogoutButton";
 import CurrentPlanBadge from "@/components/billing/CurrentPlanBadge";
 import { isPro } from "@/lib/auth";
-import { getSession, requireLogtoUser } from "@/lib/auth/session";
+import {
+  getAccountProfile,
+  getDisplayName,
+  getSession,
+  requireLogtoUser,
+} from "@/lib/auth/session";
 import { findUserByPrimaryEmail, type LogtoUserSummary } from "@/lib/logto/management";
 import {
   bindTotp,
   deleteMfaVerification,
   generateTotpSecret,
   getMfaVerifications,
-  getMyProfile,
   sendEmailCode,
   updateBirthdate,
-  updateName,
   updatePassword,
   updatePrimaryEmail,
   verifyEmailCode,
@@ -25,34 +28,22 @@ import { redirect } from "next/navigation";
 import ProfileActions from "./ProfileActions";
 
 export default async function AccountPage() {
-  const { isAuthenticated, claims, userInfo } = await getSession();
+  const { isAuthenticated, userInfo } = await getSession();
 
   if (!isAuthenticated) redirect("/");
 
-  let birthdate: string | null = null;
-  let name = userInfo?.name ?? claims?.name ?? null;
-  let mfaEnabled = false;
+  // Resolve the display name via the shared resolver so a brand-new user's full
+  // name shows on first sign-in (session claims lag until the first refresh; the
+  // Account API reflects it immediately). getAccountProfile is cached, so this
+  // and getDisplayName share a single Account API fetch per request.
+  const name = await getDisplayName();
+  const account = await getAccountProfile();
+  const birthdate = account?.profile?.birthdate ?? null;
 
+  let mfaEnabled = false;
   try {
     const token = await getAccessToken(logtoConfig);
     if (token) {
-      const extended = await getMyProfile(token);
-      birthdate = extended?.profile?.birthdate ?? null;
-
-      if (!name) {
-        const given = extended?.profile?.givenName;
-        const family = extended?.profile?.familyName;
-        if (given || family) {
-          const fullName = [given, family].filter(Boolean).join(" ");
-          try {
-            await updateName(token, fullName);
-          } catch {
-            // best-effort
-          }
-          name = fullName;
-        }
-      }
-
       const mfaFactors = await getMfaVerifications(token);
       mfaEnabled = mfaFactors.some((factor) => factor.type === "Totp");
     }

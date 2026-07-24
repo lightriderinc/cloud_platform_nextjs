@@ -9,15 +9,31 @@ async function throwOnError(res: Response): Promise<void> {
   }
 }
 
-export async function getMyProfile(
-  accessToken: string
-): Promise<{ profile?: { birthdate?: string; givenName?: string; familyName?: string } } | null> {
+export type MyAccount = {
+  name?: string | null;
+  username?: string | null;
+  avatar?: string | null;
+  profile?: { birthdate?: string; givenName?: string; familyName?: string };
+};
+
+/**
+ * Fetches the current user's account record from the Logto Account API.
+ *
+ * Returns the top-level `name`, `username`, and `avatar` alongside the nested
+ * `profile` fields. Unlike the OIDC ID-token/userinfo claims (which lag behind
+ * for a brand-new user until their first token refresh), this reflects the
+ * live account record immediately, so it's the source of truth for a new
+ * user's display name on first sign-in.
+ *
+ * Docs: https://docs.logto.io/end-user-flows/account-settings/by-account-api
+ */
+export async function getMyProfile(accessToken: string): Promise<MyAccount | null> {
   const res = await fetch(`${BASE}/api/my-account`, {
     headers: { Authorization: `Bearer ${accessToken}` },
     cache: 'no-store',
   });
   if (!res.ok) return null;
-  return res.json();
+  return res.json() as Promise<MyAccount>;
 }
 
 export async function updateBirthdate(accessToken: string, birthdate: string): Promise<void> {
