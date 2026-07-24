@@ -2,6 +2,7 @@ import { logtoConfig } from "@/app/logto";
 import LogoutButton from "@/components/auth/LogoutButton";
 import CurrentPlanBadge from "@/components/billing/CurrentPlanBadge";
 import { isPro } from "@/lib/auth";
+import { getSession } from "@/lib/auth/session";
 import {
   getMyProfile,
   sendEmailCode,
@@ -12,23 +13,14 @@ import {
   verifyEmailCode,
   verifyPassword,
 } from "@/lib/logto-account";
-import {
-  getAccessToken,
-  getLogtoContext,
-  signOut,
-} from "@logto/next/server-actions";
+import { getAccessToken, signOut } from "@logto/next/server-actions";
 import { refresh, revalidatePath } from "next/cache";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import ProfileActions from "./ProfileActions";
 
 export default async function AccountPage() {
-  const { isAuthenticated, claims, userInfo } = await getLogtoContext(
-    logtoConfig,
-    {
-      fetchUserInfo: true,
-    },
-  );
+  const { isAuthenticated, claims, userInfo } = await getSession();
 
   if (!isAuthenticated) redirect("/");
 
