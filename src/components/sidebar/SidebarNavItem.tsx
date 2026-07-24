@@ -26,6 +26,8 @@ export default function SidebarNavItem({
       <Link
         href={href}
         onClick={onNavigate}
+        target={external ? "_blank" : undefined}
+        rel={external ? "noopener noreferrer" : undefined}
         className={`mb-1 flex items-center gap-2 default-radius px-2 py-1.5 text-sm transition-colors ${
           active ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
         }`}
