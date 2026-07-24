@@ -59,7 +59,7 @@ export default function ProfileActions({
         <div className="flex w-full mb-5">
           <h2 className="text-xl font-bold text-gray-500">Profile</h2>
         </div>
-        <div className="flex flex-col default-radius divide-y border-b border-gray-100 divide-gray-100 mb-8 max-w-3xl bg-gray-50 px-4 py-3">
+        <div className="flex flex-col default-radius divide-y divide-gray-100 mb-8 max-w-3xl bg-gray-50 px-4 py-3">
           <InfoRow label="Full Name" value={name ?? "—"} />
 
           <div className="flex flex-row justify-between items-center">
@@ -85,7 +85,7 @@ export default function ProfileActions({
         <div className="flex w-full mb-5">
           <h2 className="text-xl font-bold text-gray-500">Security</h2>
         </div>
-        <div className="flex flex-col default-radius divide-y border-b border-gray-100 divide-gray-100 mb-8 max-w-3xl bg-gray-50 px-4 py-3">
+        <div className="flex flex-col default-radius divide-y divide-gray-100 mb-8 max-w-3xl bg-gray-50 px-4 py-3">
           <div className="flex flex-row justify-between items-center">
             <InfoRow label="Password" value="••••••••" />
             <InlineEditButton
