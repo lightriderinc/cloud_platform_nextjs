@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.4.1...v1.5.0) (2026-07-23)
+
+
+### Features
+
+* bring Stripe billing + Logto fix to main ([#9](https://github.com/lightriderinc/cloud_platform_nextjs/issues/9)) ([9ed6dca](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9ed6dcaae04f0959194044224cea9207f9056ca8))
+
 ## [1.4.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.4.0...v1.4.1) (2026-07-17)
 
 
