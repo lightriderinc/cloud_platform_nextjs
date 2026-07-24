@@ -9,8 +9,6 @@ export default async function Home() {
   return (
     <div className="flex flex-col h-full justify-between animate-fade-in-up">
       <div>
-        <GettingStartedChecklist />
-
         <h1 className="text-2xl font-semibold text-gray-700">Dashboard</h1>
         <p className="mb-12 text-sm text-gray-600">
           Your gateway to quantum computing. Explore our services and
@@ -48,6 +46,9 @@ export default async function Home() {
         <div className="flex flex-row gap-4 mt-6">
           <DashboardDemoEntropy />
           <DashboardDemoCircuit />
+        </div>
+        <div className="mt-4 flex">
+          <GettingStartedChecklist />
         </div>
       </div>
       <div className="flex flex-row gap-3 w-full justify-end pt-6 pb-2">

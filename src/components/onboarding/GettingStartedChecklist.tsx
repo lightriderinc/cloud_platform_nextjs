@@ -73,13 +73,13 @@ export default function GettingStartedChecklist() {
   if (steps.every((step) => step.done)) return null;
 
   return (
-    <div className="default-radius border border-gray-200 bg-gray-100 p-5 mb-6">
-      <h2 className="mb-3 text-lg font-bold text-gray-800">Getting started</h2>
+    <div className="default-radius bg-gray-50 pl-5 pr-8 pt-4 pb-6 mb-6">
+      <h2 className="mb-3 font-bold text-gray-600">First steps</h2>
       <ul className="flex flex-col gap-2">
         {steps.map((step) => (
-          <li key={step.key} className="flex items-center gap-2 text-sm">
+          <li key={step.key} className="flex items-center gap-2 text-xs">
             <span
-              className={`flex h-5 w-5 shrink-0 items-center justify-center default-radius border text-xs ${
+              className={`flex h-4 w-4 shrink-0 items-center justify-center default-radius border text-xs ${
                 step.done
                   ? "border-[var(--brand-primary)] bg-[var(--brand-primary)] text-white"
                   : "border-gray-300 text-transparent"
