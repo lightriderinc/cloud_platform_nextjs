@@ -1,16 +1,19 @@
 "use client";
 
+import DisableMfaModal from "@/components/profile/DisableMfaModal";
 import EditEmailModal from "@/components/profile/EditEmailModal";
 import EditPasswordModal from "@/components/profile/EditPasswordModal";
+import SetupMfaModal from "@/components/profile/SetupMfaModal";
 import { useState } from "react";
 import { MdEditSquare } from "react-icons/md";
 
-type Modal = "password" | "email" | "birthdate" | null;
+type Modal = "password" | "email" | "birthdate" | "mfa-setup" | "mfa-disable" | null;
 
 type Props = {
   name: string | null;
   email: string;
   birthdate: string | null;
+  mfaEnabled: boolean;
   onVerifyPassword: (password: string) => Promise<string>;
   onUpdatePassword: (
     verificationId: string,
@@ -28,21 +31,32 @@ type Props = {
     email: string,
   ) => Promise<void>;
   onUpdateBirthdate: (birthdate: string) => Promise<void>;
+  onGenerateTotpSecret: () => Promise<string>;
+  onBindTotp: (
+    verificationRecordId: string,
+    secret: string,
+    code: string,
+  ) => Promise<void>;
+  onDisableMfa: (verificationRecordId: string) => Promise<void>;
 };
 
 export default function ProfileActions({
   name,
   email,
   birthdate,
+  mfaEnabled: initialMfaEnabled,
   onVerifyPassword,
   onUpdatePassword,
   onSendEmailCode,
   onVerifyEmailCode,
   onUpdateEmail,
   onUpdateBirthdate,
+  onGenerateTotpSecret,
+  onBindTotp,
+  onDisableMfa,
 }: Props) {
   const [open, setOpen] = useState<Modal>(null);
-  const [mfaEnabled, setMfaEnabled] = useState(false);
+  const [mfaEnabled, setMfaEnabled] = useState(initialMfaEnabled);
   const [currentBirthdate, setCurrentBirthdate] = useState(birthdate);
 
   const formattedBirthdate = currentBirthdate
@@ -102,7 +116,10 @@ export default function ProfileActions({
                 {mfaEnabled ? "Enabled" : "Disabled"}
               </span>
             </div>
-            <MfaToggle enabled={mfaEnabled} onToggle={setMfaEnabled} />
+            <MfaToggle
+              enabled={mfaEnabled}
+              onToggle={(next) => setOpen(next ? "mfa-setup" : "mfa-disable")}
+            />
           </div>
         </div>
       </div>
@@ -131,6 +148,30 @@ export default function ProfileActions({
             setCurrentBirthdate(date);
             setOpen(null);
           }}
+          onClose={() => setOpen(null)}
+        />
+      )}
+      {open === "mfa-setup" && (
+        <SetupMfaModal
+          email={email}
+          issuer="Light Rider"
+          onVerifyPassword={onVerifyPassword}
+          onSendEmailCode={onSendEmailCode}
+          onVerifyEmailCode={onVerifyEmailCode}
+          onGenerateSecret={onGenerateTotpSecret}
+          onBind={onBindTotp}
+          onSuccess={() => setMfaEnabled(true)}
+          onClose={() => setOpen(null)}
+        />
+      )}
+      {open === "mfa-disable" && (
+        <DisableMfaModal
+          email={email}
+          onVerifyPassword={onVerifyPassword}
+          onSendEmailCode={onSendEmailCode}
+          onVerifyEmailCode={onVerifyEmailCode}
+          onDisable={onDisableMfa}
+          onSuccess={() => setMfaEnabled(false)}
           onClose={() => setOpen(null)}
         />
       )}
