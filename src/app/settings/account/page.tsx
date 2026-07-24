@@ -4,6 +4,10 @@ import CurrentPlanBadge from "@/components/billing/CurrentPlanBadge";
 import { isPro } from "@/lib/auth";
 import { getSession } from "@/lib/auth/session";
 import {
+  bindTotp,
+  deleteMfaVerification,
+  generateTotpSecret,
+  getMfaVerifications,
   getMyProfile,
   sendEmailCode,
   updateBirthdate,
@@ -26,6 +30,7 @@ export default async function AccountPage() {
 
   let birthdate: string | null = null;
   let name = userInfo?.name ?? claims?.name ?? null;
+  let mfaEnabled = false;
 
   try {
     const token = await getAccessToken(logtoConfig);
@@ -46,6 +51,9 @@ export default async function AccountPage() {
           name = fullName;
         }
       }
+
+      const mfaFactors = await getMfaVerifications(token);
+      mfaEnabled = mfaFactors.some((factor) => factor.type === "Totp");
     }
   } catch {
     // Account API not enabled or token unavailable
@@ -112,6 +120,33 @@ export default async function AccountPage() {
     refresh();
   }
 
+  async function doGenerateTotpSecret(): Promise<string> {
+    "use server";
+    const token = await getAccessToken(logtoConfig);
+    return generateTotpSecret(token);
+  }
+
+  async function doBindTotp(
+    verificationRecordId: string,
+    secret: string,
+    code: string,
+  ): Promise<void> {
+    "use server";
+    const token = await getAccessToken(logtoConfig);
+    await bindTotp(token, verificationRecordId, secret, code);
+    revalidatePath("/settings/account");
+  }
+
+  async function doDisableMfa(verificationRecordId: string): Promise<void> {
+    "use server";
+    const token = await getAccessToken(logtoConfig);
+    const factors = await getMfaVerifications(token);
+    for (const factor of factors) {
+      await deleteMfaVerification(token, verificationRecordId, factor.id);
+    }
+    revalidatePath("/settings/account");
+  }
+
   async function doSignOut(): Promise<void> {
     "use server";
     await signOut(logtoConfig);
@@ -157,12 +192,16 @@ export default async function AccountPage() {
         name={name}
         email={email ?? ""}
         birthdate={birthdate}
+        mfaEnabled={mfaEnabled}
         onVerifyPassword={doVerifyPassword}
         onUpdatePassword={doUpdatePassword}
         onSendEmailCode={doSendEmailCode}
         onVerifyEmailCode={doVerifyEmailCode}
         onUpdateEmail={doUpdateEmail}
         onUpdateBirthdate={doUpdateBirthdate}
+        onGenerateTotpSecret={doGenerateTotpSecret}
+        onBindTotp={doBindTotp}
+        onDisableMfa={doDisableMfa}
       />
 
       <div className="mt-8 pt-8">
