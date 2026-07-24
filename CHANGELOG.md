@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.5.0...v1.6.0) (2026-07-24)
+
+
+### Features
+
+* per-user API key generation, rotation, and revocation ([870e48a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/870e48a2604c538dfc0870bf29591b7632238334))
+
 # [1.5.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.4.1...v1.5.0) (2026-07-23)
 
 
