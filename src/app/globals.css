@@ -137,7 +137,6 @@ h1 {
     border: 1px solid #f87c56;
   }
   transition: border 150ms ease-out;
-
 }
 
 .btn-outline-brand {
@@ -155,4 +154,13 @@ h1 {
 
 .text-2xs {
   font-size: 0.6875rem;
+}
+
+.brand-link {
+  color: var(--brand-primary) !important;
+
+  &:hover {
+    color: #F25143 !important;
+    text-decoration: underline !important;
+  }
 }
