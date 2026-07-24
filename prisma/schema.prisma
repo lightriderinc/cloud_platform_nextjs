@@ -33,6 +33,7 @@ model Customer {
   subscriptions   Subscription[]
   ledgerEntries   CreditLedgerEntry[]
   usageEvents     ApiUsageEvent[]
+  apiKey          ApiKey?
 }
 
 // Mirrors a Stripe Subscription (used by both User Pricing plans and API
@@ -80,6 +81,20 @@ model ApiUsageEvent {
   stripeEventId String   @unique
   quantity      Int
   createdAt     DateTime @default(now())
+}
+
+// One SDK/API key per Customer, hashed at rest — only ever shown in full at
+// creation/rotation time. Self-contained to this app; not shared with
+// iqm-proxy/EMS today.
+model ApiKey {
+  id         String    @id @default(cuid())
+  customerId String    @unique
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  keyHash    String    @unique
+  keyPrefix  String
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+  rotatedAt  DateTime?
 }
 
 // Captures submissions from the Enterprise & Government "Get Custom
