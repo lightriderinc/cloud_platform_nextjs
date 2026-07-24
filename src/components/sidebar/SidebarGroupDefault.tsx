@@ -1,5 +1,8 @@
+import { IoDocumentTextSharp } from "react-icons/io5";
 import { MdApps, MdBarChart, MdDashboard } from "react-icons/md";
 import { RiCpuFill } from "react-icons/ri";
+
+import TakeTourButton from "../tour/TakeTourButton";
 import SidebarNavGroup from "./SidebarNavGroup";
 import SidebarNavItem from "./SidebarNavItem";
 
@@ -52,6 +55,18 @@ export default function SidebarGroupDefault({
           onNavigate={onNavigate}
           tourId="sidebar-backends"
         />
+      </SidebarNavGroup>
+
+      <SidebarNavGroup label="Resources">
+        <SidebarNavItem
+          name="Documentation"
+          external
+          href="https://docs.lightriderinc.com/"
+          icon={IoDocumentTextSharp}
+          onNavigate={onNavigate}
+          tourId="sidebar-applications"
+        />
+        <TakeTourButton />
       </SidebarNavGroup>
 
       {/* <SidebarNavGroup label="Platform">

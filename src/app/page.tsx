@@ -1,7 +1,6 @@
 import DashboardDemoCircuit from "@/components/dashboard/DashboardDemoCircuit";
 import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntropy";
 import InfoBox from "@/components/InfoBox";
-import GettingStartedChecklist from "@/components/onboarding/GettingStartedChecklist";
 
 export default async function Home() {
   // const token = process.env.LR_TOKEN ?? "";
@@ -44,12 +43,12 @@ export default async function Home() {
           </InfoBox>
         </div>
         <div className="flex flex-row gap-4 mt-6">
-          <DashboardDemoEntropy />
           <DashboardDemoCircuit />
+          <DashboardDemoEntropy />
         </div>
-        <div className="mt-4 flex">
+        {/* <div className="mt-4 flex">
           <GettingStartedChecklist />
-        </div>
+        </div> */}
       </div>
       <div className="flex flex-row gap-3 w-full justify-end pt-6 pb-2">
         <a
