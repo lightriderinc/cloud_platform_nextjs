@@ -5,6 +5,7 @@ import { useState } from 'react';
 type Props = {
   currentEmail: string;
   onVerifyPassword: (password: string) => Promise<string>;
+  onCheckEmailAvailable: (email: string) => Promise<void>;
   onSendCode: (email: string) => Promise<string>;
   onVerifyCode: (email: string, code: string, verificationRecordId: string) => Promise<string>;
   onUpdateEmail: (currentVerifId: string, newVerifId: string, email: string) => Promise<void>;
@@ -18,6 +19,7 @@ const STEPS: Step[] = ['verify-password', 'enter-new', 'verify-new'];
 export default function EditEmailModal({
   currentEmail,
   onVerifyPassword,
+  onCheckEmailAvailable,
   onSendCode,
   onVerifyCode,
   onUpdateEmail,
@@ -47,11 +49,16 @@ export default function EditEmailModal({
   }
 
   async function sendNewCode() {
-    if (!newEmail.includes('@')) { setError('Enter a valid email address'); return; }
+    const email = newEmail.trim();
+    if (!email.includes('@')) { setError('Enter a valid email address'); return; }
+    if (email !== newEmail) setNewEmail(email);
     setError('');
     setLoading(true);
     try {
-      const id = await onSendCode(newEmail);
+      // Warn about a duplicate/existing address BEFORE sending a code, so the
+      // user isn't asked to verify an email they can't actually claim (EM-02).
+      await onCheckEmailAvailable(email);
+      const id = await onSendCode(email);
       setNewVerifId(id);
       setStep('verify-new');
     } catch (e) {

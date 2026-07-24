@@ -25,6 +25,7 @@ type Props = {
     code: string,
     verificationRecordId: string,
   ) => Promise<string>;
+  onCheckEmailAvailable: (email: string) => Promise<void>;
   onUpdateEmail: (
     currentVerifId: string,
     newVerifId: string,
@@ -49,6 +50,7 @@ export default function ProfileActions({
   onUpdatePassword,
   onSendEmailCode,
   onVerifyEmailCode,
+  onCheckEmailAvailable,
   onUpdateEmail,
   onUpdateBirthdate,
   onGenerateTotpSecret,
@@ -137,6 +139,7 @@ export default function ProfileActions({
           onVerifyPassword={onVerifyPassword}
           onSendCode={onSendEmailCode}
           onVerifyCode={onVerifyEmailCode}
+          onCheckEmailAvailable={onCheckEmailAvailable}
           onUpdateEmail={onUpdateEmail}
           onClose={() => setOpen(null)}
         />
