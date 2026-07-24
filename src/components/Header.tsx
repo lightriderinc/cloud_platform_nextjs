@@ -11,9 +11,9 @@ export default async function Header() {
       <div className="flex items-center gap-2">
         <Link href="/">
           <Image
-            src="/Lightrider-logo.svg"
+            src="/Lightrider-cloud-logo-black.svg"
             alt="Lightrider logo"
-            width={190}
+            width={230}
             height={32}
           />
         </Link>
