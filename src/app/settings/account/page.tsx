@@ -2,7 +2,8 @@ import { logtoConfig } from "@/app/logto";
 import LogoutButton from "@/components/auth/LogoutButton";
 import CurrentPlanBadge from "@/components/billing/CurrentPlanBadge";
 import { isPro } from "@/lib/auth";
-import { getSession } from "@/lib/auth/session";
+import { getSession, requireLogtoUser } from "@/lib/auth/session";
+import { findUserByPrimaryEmail, type LogtoUserSummary } from "@/lib/logto/management";
 import {
   bindTotp,
   deleteMfaVerification,
@@ -84,6 +85,45 @@ export default async function AccountPage() {
     "use server";
     const token = await getAccessToken(logtoConfig);
     await updatePassword(token, verificationId, newPassword);
+  }
+
+  /**
+   * Pre-flight duplicate-email check for the change-email flow. Runs BEFORE any
+   * verification code is sent, so the user is warned up front instead of only
+   * after verifying an address they can't actually use (bug EM-02).
+   *
+   * Throws a user-facing message on conflict; the modal surfaces it inline and
+   * stays on the "enter new email" step. Fails open on lookup errors — the
+   * Account API still enforces uniqueness when the change is finalized, so an
+   * infra hiccup in this pre-check never blocks a legitimate change.
+   *
+   * Note: confirming whether an email is registered is account enumeration.
+   * This matches the platform's existing sign-up behavior, and can be masked
+   * later via Logto's "Hide account existence" setting if desired.
+   */
+  async function doCheckEmailAvailability(emailAddr: string): Promise<void> {
+    "use server";
+    const candidate = emailAddr.trim();
+    const { sub } = await requireLogtoUser();
+
+    let existing: LogtoUserSummary | null = null;
+    try {
+      existing = await findUserByPrimaryEmail(candidate);
+    } catch (err) {
+      console.error(
+        "[account] email availability pre-check failed; allowing flow to continue:",
+        err,
+      );
+      return;
+    }
+
+    if (!existing) {
+      return; // available
+    }
+    if (existing.id === sub) {
+      throw new Error("That's already the email address on your account.");
+    }
+    throw new Error("That email is already linked to another account.");
   }
 
   async function doSendEmailCode(emailAddr: string): Promise<string> {
@@ -197,6 +237,7 @@ export default async function AccountPage() {
         onUpdatePassword={doUpdatePassword}
         onSendEmailCode={doSendEmailCode}
         onVerifyEmailCode={doVerifyEmailCode}
+        onCheckEmailAvailable={doCheckEmailAvailability}
         onUpdateEmail={doUpdateEmail}
         onUpdateBirthdate={doUpdateBirthdate}
         onGenerateTotpSecret={doGenerateTotpSecret}
