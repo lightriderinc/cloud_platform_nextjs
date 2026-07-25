@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.7.0...v1.7.1) (2026-07-25)
+
+
+### Bug Fixes
+
+* run prisma generate before build to pick up schema changes ([74b86f3](https://github.com/lightriderinc/cloud_platform_nextjs/commit/74b86f33e982f5566bc4c876096de54d0ac21d1c))
+
 # [1.7.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.6.0...v1.7.0) (2026-07-25)
 
 
