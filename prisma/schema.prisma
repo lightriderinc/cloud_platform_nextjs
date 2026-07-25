@@ -109,6 +109,8 @@ model QuantumJobSubmission {
   customer   Customer @relation(fields: [customerId], references: [id])
   jobId      String   @unique // iqm-proxy's job_uuid
   backend    String
+  shots      Int      @default(1000) // backfill for pre-existing rows (never captured before this field existed) matches the modals' own hardcoded default; always passed explicitly going forward
+  status     String   @default("PENDING") // cached last-known status; refreshed opportunistically whenever GET jobs/[id] observes a live value from iqm-proxy — not itself a live source of truth
   costCents  Int
   createdAt  DateTime @default(now())
 }

@@ -91,7 +91,14 @@ export async function POST(req: Request) {
   if (jobId) {
     ops.push(
       db.quantumJobSubmission.create({
-        data: { customerId: customer.id, jobId: String(jobId), backend, costCents },
+        data: {
+          customerId: customer.id,
+          jobId: String(jobId),
+          backend,
+          shots: shots ?? 1,
+          status: typeof data.status === "string" ? data.status : "PENDING",
+          costCents,
+        },
       }),
     );
   } else {

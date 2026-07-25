@@ -49,5 +49,16 @@ export async function GET(
   }
 
   const data = await proxyRes.json();
+
+  // Opportunistically refresh the cached status so the /jobs list can show
+  // something better than a stale "PENDING" without live-polling every row
+  // on every page load. Best-effort — a failed cache write shouldn't fail a
+  // request that already has the real, live answer to return.
+  if (typeof data.status === "string" && data.status !== submission.status) {
+    db.quantumJobSubmission
+      .update({ where: { jobId: id }, data: { status: data.status } })
+      .catch(() => {});
+  }
+
   return NextResponse.json(data);
 }

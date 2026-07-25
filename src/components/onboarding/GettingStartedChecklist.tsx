@@ -1,6 +1,5 @@
 "use client";
 
-import { fetchJobs } from "@/lib/lr/client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -18,6 +17,16 @@ async function fetchOnboardingStatus(): Promise<{ hasPlanOrCredits: boolean }> {
   return res.json();
 }
 
+// QuantumJobSubmission-backed list (same source /jobs itself reads) — not
+// the old /api/lr/jobs, which is scoped to a different iqm-proxy identity
+// and no longer receives anything submitted through the current path.
+async function fetchHasRunJob(): Promise<boolean> {
+  const res = await fetch("/api/lr/quantum/jobs");
+  if (!res.ok) return false;
+  const data = await res.json();
+  return (data.jobs ?? []).length > 0;
+}
+
 export default function GettingStartedChecklist() {
   const [status, setStatus] = useState<Status | null>(null);
 
@@ -26,12 +35,12 @@ export default function GettingStartedChecklist() {
 
     Promise.all([
       fetchOnboardingStatus().catch(() => ({ hasPlanOrCredits: false })),
-      fetchJobs().catch(() => []),
-    ]).then(([onboarding, jobs]) => {
+      fetchHasRunJob().catch(() => false),
+    ]).then(([onboarding, hasRunJob]) => {
       if (cancelled) return;
       setStatus({
         hasPlanOrCredits: onboarding.hasPlanOrCredits,
-        hasRunJob: jobs.length > 0,
+        hasRunJob,
         hasExploredApplications:
           localStorage.getItem(EXPLORED_APPLICATIONS_KEY) === "true",
       });
