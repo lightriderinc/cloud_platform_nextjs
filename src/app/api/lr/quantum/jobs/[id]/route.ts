@@ -1,4 +1,4 @@
-import { resolveApiKey } from "@/lib/auth/apiKeys";
+import { resolveCustomerFromRequest } from "@/lib/auth/resolveCustomer";
 import { db } from "@/lib/billing/db";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -7,27 +7,23 @@ export const dynamic = "force-dynamic";
 /**
  * GET /api/lr/quantum/jobs/:id
  *
- * No plan check — reading your own job is free. Ownership is enforced
- * against QuantumJobSubmission (see submit/route.ts) since iqm-proxy itself
- * only sees our one shared QUANTUM_PROXY_SERVICE_KEY and can't tell our
- * customers apart. 404 (not 403) for a job that exists but isn't yours, so a
- * guess doesn't confirm the job's existence.
+ * No plan check — reading your own job is free. Accepts either a Logto
+ * session or a bearer API key (see resolveCustomer.ts). Ownership is
+ * enforced against QuantumJobSubmission (see submit/route.ts) since
+ * iqm-proxy itself only sees our one shared QUANTUM_PROXY_SERVICE_KEY and
+ * can't tell our customers apart. 404 (not 403) for a job that exists but
+ * isn't yours, so a guess doesn't confirm the job's existence.
  */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const bearerToken = request.headers.get("authorization")?.replace("Bearer ", "");
-  if (!bearerToken) {
+  const customer = await resolveCustomerFromRequest(request);
+  if (!customer) {
     return NextResponse.json(
-      { error: "Missing API key. Get one at /settings/tokens." },
+      { error: "Not signed in, and no valid API key provided." },
       { status: 401 },
     );
-  }
-
-  const customer = await resolveApiKey(bearerToken);
-  if (!customer) {
-    return NextResponse.json({ error: "Invalid or revoked API key." }, { status: 401 });
   }
 
   const { id } = await params;

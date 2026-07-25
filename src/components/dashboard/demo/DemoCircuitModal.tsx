@@ -1,7 +1,8 @@
 "use client";
 
 import ProGateNotice from "@/components/billing/ProGateNotice";
-import { submitJob } from "@/lib/lr/client";
+import { fetchIsProFromSubscriptions } from "@/lib/billing/clientAccessCheck";
+import { CIRCUIT_PAYLOADS, submitQuantumJob } from "@/lib/quantum/client";
 import type { Job } from "@/types/job";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -9,12 +10,6 @@ import { MdClose } from "react-icons/md";
 import CircuitSchematic, { type CircuitType } from "./CircuitSchematic";
 import DemoJobResult from "./DemoJobResult";
 import ShotsInput from "./ShotsInput";
-
-async function fetchAccessTier(): Promise<"Pro" | "Basic"> {
-  const res = await fetch("/api/auth/access-tier");
-  const data = await res.json();
-  return data.tier === "Pro" ? "Pro" : "Basic";
-}
 
 const CIRCUITS: { value: CircuitType; label: string; description: string }[] =
   [
@@ -33,14 +28,15 @@ export default function DemoCircuitModal({ onClose }: { onClose: () => void }) {
   const [shots, setShots] = useState(1000);
   const [submittedJob, setSubmittedJob] = useState<Job | null>(null);
 
-  // These test circuits run on real quantum hardware today — there's no
-  // simulator-only submission path — so this demo is gated the same as the
-  // real Jobs page. The actual enforcement is server-side in
-  // /api/lr/[...path]/route.ts; this is just so Basic users see the upsell
-  // before filling out the form instead of after submitting.
-  const { data: accessTier } = useQuery({
-    queryKey: ["auth", "access-tier"],
-    queryFn: fetchAccessTier,
+  // Submits to the "iqm-garnet-mock" backend, matching this tile's own
+  // "simulator" framing — actual enforcement (Pro + credits) is server-side
+  // in /api/lr/quantum/submit; this proactive check just shows the upsell
+  // before filling out the form instead of after submitting. Reads the same
+  // DB subscription state /settings/payment does (not the Logto role, which
+  // can silently drift from it — see clientAccessCheck.ts).
+  const { data: isPro } = useQuery({
+    queryKey: ["billing", "is-pro"],
+    queryFn: fetchIsProFromSubscriptions,
   });
 
   useEffect(() => {
@@ -52,10 +48,10 @@ export default function DemoCircuitModal({ onClose }: { onClose: () => void }) {
   }, [onClose]);
 
   const { mutate, isPending, isError, error, reset: resetMutation } = useMutation({
-    mutationFn: () => submitJob(circuit, shots),
+    mutationFn: () => submitQuantumJob("iqm-garnet-mock", CIRCUIT_PAYLOADS[circuit], shots),
     onSuccess: (job) => {
       queryClient.invalidateQueries({ queryKey: ["lr-jobs"] });
-      setSubmittedJob({ ...job, gate: circuit, shots });
+      setSubmittedJob({ ...job, status: job.status ?? "PENDING", gate: circuit, shots });
     },
   });
 
@@ -109,7 +105,7 @@ export default function DemoCircuitModal({ onClose }: { onClose: () => void }) {
                   job={submittedJob}
                   onTryAnother={handleTryAnother}
                 />
-              ) : accessTier === undefined ? null : accessTier === "Basic" ? (
+              ) : isPro === undefined ? null : !isPro ? (
                 <ProGateNotice />
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">

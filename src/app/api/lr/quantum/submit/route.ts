@@ -1,4 +1,4 @@
-import { resolveApiKey } from "@/lib/auth/apiKeys";
+import { resolveCustomerFromRequest } from "@/lib/auth/resolveCustomer";
 import { hasEnoughCredits, isProCustomer } from "@/lib/billing/planCheck";
 import { db } from "@/lib/billing/db";
 import { isValidBackend, QUANTUM_BACKENDS } from "@/lib/quantum/backends";
@@ -7,24 +7,21 @@ import { NextResponse } from "next/server";
 /**
  * POST /api/lr/quantum/submit
  *
- * SDK/API-key-authenticated job submission to iqm-proxy, gated on the Pro
- * plan and prepaid credit balance. Distinct from the browser-session-gated
- * /api/lr/jobs (NewJobModal / dashboard demo) — this path has no Logto
- * session, only a bearer `lr_` key, so the Pro check goes through the
- * Subscription table directly (see planCheck.ts) instead of getAccessTier().
+ * Job submission to iqm-proxy, gated on the Pro plan and prepaid credit
+ * balance. Accepts either a Logto browser session (DemoCircuitModal,
+ * NewJobModal — in-app, same-origin calls) or an `Authorization: Bearer
+ * lr_...` API key (external SDK/Colab callers) — see resolveCustomer.ts.
+ * Either way, the Pro check goes through the Subscription table directly
+ * (see planCheck.ts), not getAccessTier()/the Logto role, since that role
+ * can silently drift from actual subscription state.
  */
 export async function POST(req: Request) {
-  const bearerToken = req.headers.get("authorization")?.replace("Bearer ", "");
-  if (!bearerToken) {
+  const customer = await resolveCustomerFromRequest(req);
+  if (!customer) {
     return NextResponse.json(
-      { error: "Missing API key. Get one at /settings/tokens." },
+      { error: "Not signed in, and no valid API key provided." },
       { status: 401 },
     );
-  }
-
-  const customer = await resolveApiKey(bearerToken);
-  if (!customer) {
-    return NextResponse.json({ error: "Invalid or revoked API key." }, { status: 401 });
   }
 
   const body = await req.json();

@@ -1,32 +1,31 @@
 "use client";
 
 import ProGateNotice from "@/components/billing/ProGateNotice";
-import { submitJob } from "@/lib/lr/client";
+import { fetchIsProFromSubscriptions } from "@/lib/billing/clientAccessCheck";
+import { CIRCUIT_PAYLOADS, submitQuantumJob } from "@/lib/quantum/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { MdClose } from "react-icons/md";
 
-const CIRCUITS = [
+const CIRCUITS: { value: "h" | "bell"; label: string }[] = [
   { value: "h", label: "h gate (1-qubit superposition)" },
   { value: "bell", label: "bell gate (2-qubit entangled pair)" },
 ];
 
-async function fetchAccessTier(): Promise<"Pro" | "Basic"> {
-  const res = await fetch("/api/auth/access-tier");
-  const data = await res.json();
-  return data.tier === "Pro" ? "Pro" : "Basic";
-}
-
 export default function NewJobModal({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient();
-  const [circuit, setCircuit] = useState(CIRCUITS[0].value);
+  const [circuit, setCircuit] = useState<"h" | "bell">(CIRCUITS[0].value);
   const [shots, setShots] = useState(1000);
 
-  // Real hardware today, no simulator-only path — gated like the dashboard
-  // demo. Actual enforcement is server-side in /api/lr/[...path]/route.ts.
-  const { data: accessTier } = useQuery({
-    queryKey: ["auth", "access-tier"],
-    queryFn: fetchAccessTier,
+  // Real hardware ("iqm-garnet") — this is the Jobs page's real submission
+  // form, not a demo. Actual enforcement (Pro + credits) is server-side in
+  // /api/lr/quantum/submit; this proactive check reads the same DB
+  // subscription state /settings/payment does, not the Logto role (which
+  // can silently drift from it — see clientAccessCheck.ts and the identical
+  // fix in DemoCircuitModal).
+  const { data: isPro } = useQuery({
+    queryKey: ["billing", "is-pro"],
+    queryFn: fetchIsProFromSubscriptions,
   });
 
   useEffect(() => {
@@ -38,7 +37,7 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
   }, [onClose]);
 
   const { mutate, isPending, isError, error } = useMutation({
-    mutationFn: () => submitJob(circuit, shots),
+    mutationFn: () => submitQuantumJob("iqm-garnet", CIRCUIT_PAYLOADS[circuit], shots),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lr-jobs"] });
       onClose();
@@ -74,7 +73,7 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        {accessTier === undefined ? null : accessTier === "Basic" ? (
+        {isPro === undefined ? null : !isPro ? (
           <ProGateNotice />
         ) : (
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -84,7 +83,7 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
             </label>
             <select
               value={circuit}
-              onChange={(e) => setCircuit(e.target.value)}
+              onChange={(e) => setCircuit(e.target.value as "h" | "bell")}
               className="default-radius w-full border border-gray-100 bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300"
             >
               {CIRCUITS.map((c) => (

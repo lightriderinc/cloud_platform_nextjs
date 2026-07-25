@@ -1,7 +1,7 @@
 "use client";
 
 import JobStatusBadge from "@/components/jobs/JobStatusBadge";
-import { fetchJobDetail, fetchJobResult } from "@/lib/lr/client";
+import { fetchQuantumJobDetail, fetchQuantumJobResult } from "@/lib/quantum/client";
 import type { Job } from "@/types/job";
 import { useQuery } from "@tanstack/react-query";
 
@@ -15,7 +15,7 @@ interface Props {
 export default function DemoJobResult({ job, onTryAnother }: Props) {
   const { data: detail, isRefetching: isPolling } = useQuery({
     queryKey: ["lr-job-detail", job.uuid],
-    queryFn: () => fetchJobDetail(job.uuid),
+    queryFn: () => fetchQuantumJobDetail(job.uuid),
     retry: 0,
     refetchInterval: (query) =>
       TERMINAL.has(query.state.data?.status ?? job.status) ? false : 3000,
@@ -25,7 +25,7 @@ export default function DemoJobResult({ job, onTryAnother }: Props) {
 
   const { data: counts } = useQuery({
     queryKey: ["lr-job-result", job.uuid],
-    queryFn: () => fetchJobResult(job.uuid),
+    queryFn: () => fetchQuantumJobResult(job.uuid),
     enabled: currentStatus === "COMPLETED",
   });
 
