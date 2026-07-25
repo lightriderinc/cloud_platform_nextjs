@@ -34,6 +34,7 @@ model Customer {
   ledgerEntries   CreditLedgerEntry[]
   usageEvents     ApiUsageEvent[]
   apiKey          ApiKey?
+  quantumJobs     QuantumJobSubmission[]
 }
 
 // Mirrors a Stripe Subscription (used by both User Pricing plans and API
@@ -95,6 +96,21 @@ model ApiKey {
   createdAt  DateTime  @default(now())
   lastUsedAt DateTime?
   rotatedAt  DateTime?
+}
+
+// Records which Customer submitted which iqm-proxy job. This app always
+// calls iqm-proxy with one shared QUANTUM_PROXY_SERVICE_KEY, so iqm-proxy's
+// own per-owner enforcement can't tell our customers apart from each other —
+// this table is what lets the jobs/[id] status/result routes enforce that a
+// customer can only ever look up their own job.
+model QuantumJobSubmission {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  jobId      String   @unique // iqm-proxy's job_uuid
+  backend    String
+  costCents  Int
+  createdAt  DateTime @default(now())
 }
 
 // Captures submissions from the Enterprise & Government "Get Custom
