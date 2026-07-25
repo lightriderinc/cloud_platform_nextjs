@@ -1,5 +1,6 @@
 "use client";
 
+import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { FaMicrochip } from "react-icons/fa";
 import {
@@ -59,12 +60,24 @@ const SOURCES = [
 
 const BYTE_PRESETS = [16, 32, 64, 128, 256, 512];
 
-function generateHex(bytes: number): string {
-  const arr = new Uint8Array(bytes);
-  crypto.getRandomValues(arr);
-  return Array.from(arr)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+interface GenerateResponse {
+  source: string;
+  bytes: number;
+  hex: string;
+  generatedAt: string;
+}
+
+async function requestEntropy(source: string, bytes: number): Promise<GenerateResponse> {
+  const res = await fetch("/api/entropy/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ source, bytes }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error ?? `HTTP ${res.status}`);
+  }
+  return data;
 }
 
 type Step = 1 | 2 | 3;
@@ -156,14 +169,17 @@ export default function EntropyModal({ onClose }: { onClose: () => void }) {
   const sourceData = SOURCES.find((s) => s.id === selectedSourceId);
   const bytesValid = activeBytes >= 1 && activeBytes <= 4096;
 
+  const generateMutation = useMutation({
+    mutationFn: () => requestEntropy(sourceData!.id, activeBytes),
+    onSuccess: (data) => {
+      setResult({ sourceName: sourceData!.name, bytes: data.bytes, hex: data.hex });
+      setStep(3);
+    },
+  });
+
   function handleGenerate() {
     if (!sourceData || !bytesValid) return;
-    setResult({
-      sourceName: sourceData.name,
-      bytes: activeBytes,
-      hex: generateHex(activeBytes),
-    });
-    setStep(3);
+    generateMutation.mutate();
   }
 
   function handleCopy() {
@@ -181,6 +197,7 @@ export default function EntropyModal({ onClose }: { onClose: () => void }) {
     setCustomInput("");
     setResult(null);
     setCopied(false);
+    generateMutation.reset();
   }
 
   const subtitles: Record<Step, string> = {
@@ -340,6 +357,14 @@ export default function EntropyModal({ onClose }: { onClose: () => void }) {
                   </div>
                 </div>
               </div>
+
+              {generateMutation.isError && (
+                <p className="text-sm text-red-500">
+                  {generateMutation.error instanceof Error
+                    ? generateMutation.error.message
+                    : "Failed to generate entropy. Please try again."}
+                </p>
+              )}
             </div>
           )}
 
@@ -427,12 +452,12 @@ export default function EntropyModal({ onClose }: { onClose: () => void }) {
               </button>
               <button
                 type="button"
-                disabled={!bytesValid}
+                disabled={!bytesValid || generateMutation.isPending}
                 onClick={handleGenerate}
                 style={{ backgroundColor: "var(--brand-primary)" }}
                 className="default-radius px-4 py-2 text-sm font-medium text-white transition-opacity cursor-pointer hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Generate Entropy
+                {generateMutation.isPending ? "Generating…" : "Generate Entropy"}
               </button>
             </>
           )}
