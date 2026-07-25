@@ -1,5 +1,6 @@
 import DashboardDemoCircuit from "@/components/dashboard/DashboardDemoCircuit";
 import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntopy";
+import LowCreditsBanner from "@/components/billing/LowCreditsBanner";
 import InfoBox from "@/components/InfoBox";
 import GettingStartedChecklist from "@/components/onboarding/GettingStartedChecklist";
 
@@ -9,6 +10,7 @@ export default async function Home() {
   return (
     <div className="flex flex-col h-full justify-between animate-fade-in-up">
       <div>
+        <LowCreditsBanner />
         <GettingStartedChecklist />
 
         <h1 className="text-2xl font-semibold text-gray-700">Dashboard</h1>
