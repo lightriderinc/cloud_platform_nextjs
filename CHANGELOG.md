@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.7.1...v1.8.0) (2026-07-25)
+
+
+### Features
+
+* add Connect/Colab UI to backend detail modal for QPU job submission ([02bfc64](https://github.com/lightriderinc/cloud_platform_nextjs/commit/02bfc645097b8465c9e8afe0c1b75bb86c6cbd35))
+
 ## [1.7.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.7.0...v1.7.1) (2026-07-25)
 
 
