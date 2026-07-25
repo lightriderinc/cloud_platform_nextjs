@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.6.0...v1.7.0) (2026-07-25)
+
+
+### Features
+
+* quantum job submission with plan-gated backend access and credit metering ([93c7d11](https://github.com/lightriderinc/cloud_platform_nextjs/commit/93c7d1132e969fc929764e763ae030a0c32b9b65))
+
 # [1.6.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.5.0...v1.6.0) (2026-07-24)
 
 
