@@ -160,7 +160,7 @@ h1 {
   color: var(--brand-primary) !important;
 
   &:hover {
-    color: #F25143 !important;
+    color: #f25143 !important;
     text-decoration: underline !important;
   }
 }

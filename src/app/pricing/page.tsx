@@ -12,16 +12,19 @@ const PRICING_PAGES = [
     name: "User Plans",
     description: "Monthly platform access for teams and individuals, with credits included.",
   },
-  {
-    href: "/pricing/api",
-    name: "API Pricing",
-    description: "Usage-based pricing for Entropy-as-a-Service (EaaS) API calls.",
-  },
-  {
-    href: "/pricing/enterprise",
-    name: "Enterprise & Government",
-    description: "Custom deployments, security, and SLAs for large organizations.",
-  },
+  // Hidden for V2 (two-tier Basic/Pro simplification) — the /pricing/api and
+  // /pricing/enterprise routes/pages are untouched, just not linked from
+  // here for now. Uncomment to bring them back.
+  // {
+  //   href: "/pricing/api",
+  //   name: "API Pricing",
+  //   description: "Usage-based pricing for Entropy-as-a-Service (EaaS) API calls.",
+  // },
+  // {
+  //   href: "/pricing/enterprise",
+  //   name: "Enterprise & Government",
+  //   description: "Custom deployments, security, and SLAs for large organizations.",
+  // },
 ];
 
 export default function PricingOverviewPage() {

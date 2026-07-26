@@ -1,0 +1,136 @@
+"use client";
+
+import { getQuantumBackendId } from "@/lib/quantum/backends";
+import type { Backend } from "@/types/backend";
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import { useState } from "react";
+import { MdCheck, MdContentCopy, MdOpenInNew } from "react-icons/md";
+
+const COLAB_URL =
+  "https://colab.research.google.com/github/lightriderinc/cloud_platform_nextjs/blob/main/docs/notebooks/quantum-quickstart.ipynb";
+
+function pythonSnippet(backendId: string): string {
+  return `import requests
+
+api_key = input("Enter your Light Rider API key: ")
+base_url = "https://lightriderapp.vercel.app"
+
+circuit = {
+    "num_qubits": 2,
+    "instructions": [
+        {"name": "h", "qubits": [0]},
+        {"name": "cx", "qubits": [0, 1]},
+        {"name": "measure", "qubits": [0], "clbits": [0]},
+        {"name": "measure", "qubits": [1], "clbits": [1]},
+    ],
+}
+
+response = requests.post(
+    f"{base_url}/api/lr/quantum/submit",
+    headers={"Authorization": f"Bearer {api_key}"},
+    json={"backend": "${backendId}", "circuit": circuit, "shots": 1000},
+)
+response.raise_for_status()
+job = response.json()
+print("Job submitted:", job["job_uuid"])
+`;
+}
+
+async function fetchHasApiKey(): Promise<boolean> {
+  const res = await fetch("/api/settings/tokens");
+  if (!res.ok) return false;
+  const data = await res.json();
+  return !!data.apiKey;
+}
+
+export default function BackendConnectSection({ backend }: { backend: Backend }) {
+  const [copied, setCopied] = useState(false);
+  const quantumBackendId = getQuantumBackendId(backend.id);
+
+  const { data: hasApiKey, isLoading } = useQuery({
+    queryKey: ["settings", "has-api-key"],
+    queryFn: fetchHasApiKey,
+    enabled: backend.type === "QPU" && !!quantumBackendId,
+  });
+
+  if (backend.type !== "QPU") {
+    return (
+      <p className="mt-3 text-sm text-gray-600">
+        Simulators run without an API key — see the SDK docs.
+      </p>
+    );
+  }
+
+  if (!quantumBackendId) {
+    return (
+      <p className="mt-3 text-sm text-gray-600">
+        This backend isn&apos;t available for direct API submission yet.
+      </p>
+    );
+  }
+
+  if (isLoading) {
+    return null;
+  }
+
+  const snippet = pythonSnippet(quantumBackendId);
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(snippet);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API unavailable — silently ignore
+    }
+  }
+
+  return (
+    <div className="mt-3 flex flex-col gap-3">
+      <p className="text-sm text-gray-600">
+        Submit jobs to this backend using your Light Rider API key.
+      </p>
+
+      {!hasApiKey ? (
+        <div className="default-radius border border-gray-200 bg-gray-50 p-4">
+          <p className="mb-3 text-sm text-gray-700">Generate your API key first.</p>
+          <Link
+            href="/settings/tokens"
+            className="inline-block default-radius px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            style={{ backgroundColor: "var(--brand-primary)" }}
+          >
+            Get your API key
+          </Link>
+        </div>
+      ) : (
+        <>
+          <div className="relative">
+            <pre className="default-radius border border-gray-800 bg-gray-900 p-4 pr-24 overflow-x-auto">
+              <code className="whitespace-pre font-mono text-xs leading-relaxed text-gray-100">
+                {snippet}
+              </code>
+            </pre>
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="absolute right-3 top-3 flex shrink-0 items-center gap-1.5 default-radius border border-gray-700 bg-gray-800 px-2.5 py-1 text-xs text-gray-200 transition-colors hover:bg-gray-700"
+            >
+              {copied ? <MdCheck className="text-green-400" /> : <MdContentCopy />}
+              {copied ? "Copied" : "Copy code"}
+            </button>
+          </div>
+
+          <a
+            href={COLAB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-fit items-center gap-1.5 default-radius border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+          >
+            Open in Google Colab <MdOpenInNew className="text-base" />
+          </a>
+        </>
+      )}
+    </div>
+  );
+}

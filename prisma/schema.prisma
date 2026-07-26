@@ -33,6 +33,8 @@ model Customer {
   subscriptions   Subscription[]
   ledgerEntries   CreditLedgerEntry[]
   usageEvents     ApiUsageEvent[]
+  apiKey          ApiKey?
+  quantumJobs     QuantumJobSubmission[]
 }
 
 // Mirrors a Stripe Subscription (used by both User Pricing plans and API
@@ -80,6 +82,37 @@ model ApiUsageEvent {
   stripeEventId String   @unique
   quantity      Int
   createdAt     DateTime @default(now())
+}
+
+// One SDK/API key per Customer, hashed at rest — only ever shown in full at
+// creation/rotation time. Self-contained to this app; not shared with
+// iqm-proxy/EMS today.
+model ApiKey {
+  id         String    @id @default(cuid())
+  customerId String    @unique
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  keyHash    String    @unique
+  keyPrefix  String
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+  rotatedAt  DateTime?
+}
+
+// Records which Customer submitted which iqm-proxy job. This app always
+// calls iqm-proxy with one shared QUANTUM_PROXY_SERVICE_KEY, so iqm-proxy's
+// own per-owner enforcement can't tell our customers apart from each other —
+// this table is what lets the jobs/[id] status/result routes enforce that a
+// customer can only ever look up their own job.
+model QuantumJobSubmission {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  jobId      String   @unique // iqm-proxy's job_uuid
+  backend    String
+  shots      Int      @default(1000) // backfill for pre-existing rows (never captured before this field existed) matches the modals' own hardcoded default; always passed explicitly going forward
+  status     String   @default("PENDING") // cached last-known status; refreshed opportunistically whenever GET jobs/[id] observes a live value from iqm-proxy — not itself a live source of truth
+  costCents  Int
+  createdAt  DateTime @default(now())
 }
 
 // Captures submissions from the Enterprise & Government "Get Custom

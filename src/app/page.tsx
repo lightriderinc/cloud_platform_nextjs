@@ -1,6 +1,8 @@
+import LowCreditsBanner from "@/components/billing/LowCreditsBanner";
 import DashboardDemoCircuit from "@/components/dashboard/DashboardDemoCircuit";
 import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntropy";
 import InfoBox from "@/components/InfoBox";
+import GettingStartedChecklist from "@/components/onboarding/GettingStartedChecklist";
 
 export default async function Home() {
   // const token = process.env.LR_TOKEN ?? "";
@@ -8,6 +10,9 @@ export default async function Home() {
   return (
     <div className="flex flex-col h-full justify-between animate-fade-in-up">
       <div>
+        <LowCreditsBanner />
+        <GettingStartedChecklist />
+
         <h1 className="text-2xl font-semibold text-gray-700">Dashboard</h1>
         <p className="mb-12 text-sm text-gray-600">
           Your gateway to quantum computing. Explore our services and
