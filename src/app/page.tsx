@@ -10,9 +10,6 @@ export default async function Home() {
   return (
     <div className="flex flex-col h-full justify-between animate-fade-in-up">
       <div>
-        <LowCreditsBanner />
-        <GettingStartedChecklist />
-
         <h1 className="text-2xl font-semibold text-gray-700">Dashboard</h1>
         <p className="mb-12 text-sm text-gray-600">
           Your gateway to quantum computing. Explore our services and
@@ -34,7 +31,7 @@ export default async function Home() {
           </section>
         </div>
       </div> */}
-
+        <LowCreditsBanner />
         <div>
           <h2 className="mb-3 text-xl font-bold text-gray-600">
             Getting started
@@ -51,9 +48,9 @@ export default async function Home() {
           <DashboardDemoCircuit />
           <DashboardDemoEntropy />
         </div>
-        {/* <div className="mt-4 flex">
+        <div className="mt-4 flex">
           <GettingStartedChecklist />
-        </div> */}
+        </div>
       </div>
       <div className="flex flex-row gap-3 w-full justify-end pt-6 pb-2">
         <a
