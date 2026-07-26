@@ -1,6 +1,8 @@
+import LowCreditsBanner from "@/components/billing/LowCreditsBanner";
 import DashboardDemoCircuit from "@/components/dashboard/DashboardDemoCircuit";
 import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntropy";
 import InfoBox from "@/components/InfoBox";
+import GettingStartedChecklist from "@/components/onboarding/GettingStartedChecklist";
 
 export default async function Home() {
   // const token = process.env.LR_TOKEN ?? "";
@@ -29,7 +31,7 @@ export default async function Home() {
           </section>
         </div>
       </div> */}
-
+        <LowCreditsBanner />
         <div>
           <h2 className="mb-3 text-xl font-bold text-gray-600">
             Getting started
@@ -46,9 +48,9 @@ export default async function Home() {
           <DashboardDemoCircuit />
           <DashboardDemoEntropy />
         </div>
-        {/* <div className="mt-4 flex">
+        <div className="mt-4 flex">
           <GettingStartedChecklist />
-        </div> */}
+        </div>
       </div>
       <div className="flex flex-row gap-3 w-full justify-end pt-6 pb-2">
         <a

@@ -8,7 +8,6 @@ import {
   getSession,
   requireLogtoUser,
 } from "@/lib/auth/session";
-import { findUserByPrimaryEmail, type LogtoUserSummary } from "@/lib/logto/management";
 import {
   bindTotp,
   deleteMfaVerification,
@@ -21,6 +20,7 @@ import {
   verifyEmailCode,
   verifyPassword,
 } from "@/lib/logto-account";
+import { findUserByPrimaryEmail, type LogtoUserSummary } from "@/lib/logto/management";
 import { getAccessToken, signOut } from "@logto/next/server-actions";
 import { refresh, revalidatePath } from "next/cache";
 import Image from "next/image";

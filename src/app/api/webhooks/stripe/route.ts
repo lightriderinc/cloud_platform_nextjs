@@ -1,6 +1,7 @@
 import { db } from "@/lib/billing/db";
 import { findApiPlanByPriceId, findUserPlanByPriceId } from "@/lib/billing/plans";
 import { assignRoleToUser, revokeRoleFromUser } from "@/lib/logto/management";
+import { withRetries } from "@/lib/retry";
 import { stripe } from "@/lib/stripe/client";
 import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
@@ -92,45 +93,46 @@ async function handleEvent(event: Stripe.Event) {
         data: { status: "canceled" },
       });
 
-      // Validation flow: the subscription actually ended, so the Pro role
-      // shouldn't stay unlocked. Rethrow on failure so Stripe retries.
-      if (subscription.metadata?.kind === "validation") {
-        const customer = await db.customer.findUnique({
-          where: { stripeCustomerId: subscription.customer as string },
-        });
-        if (!customer) {
-          console.warn(
-            `[stripe-webhook] no local Customer for stripeCustomerId=${subscription.customer}; skipping role revoke.`,
-          );
-          break;
-        }
+      // The subscription actually ended, so the Pro role shouldn't stay
+      // unlocked — runs for every subscription kind, mirroring
+      // syncProRoleForActiveSubscription's grant side, which also runs
+      // unconditionally on creation/update. Previously this was gated to
+      // kind === "validation" only, so a real user_plan Pro subscription
+      // being cancelled never revoked the role at all. Rethrow on failure
+      // (after retries) so Stripe retries the webhook.
+      const customer = await db.customer.findUnique({
+        where: { stripeCustomerId: subscription.customer as string },
+      });
+      if (!customer) {
+        console.warn(
+          `[stripe-webhook] no local Customer for stripeCustomerId=${subscription.customer}; skipping role revoke.`,
+        );
+        break;
+      }
 
-        // A customer can hold more than one active plan (e.g. a User Pricing
-        // plan alongside the validation subscription) — only revoke Pro if
-        // nothing else keeps it earned.
-        const otherActiveSubscription = await db.subscription.findFirst({
-          where: {
-            customerId: customer.id,
-            stripeSubscriptionId: { not: subscription.id },
-            status: { in: ["active", "trialing"] },
-          },
-        });
-        if (otherActiveSubscription) {
-          break;
-        }
+      // A customer can hold more than one active plan (e.g. a User Pricing
+      // plan alongside a validation subscription) — only revoke Pro if
+      // nothing else keeps it earned.
+      const otherActiveSubscription = await db.subscription.findFirst({
+        where: {
+          customerId: customer.id,
+          stripeSubscriptionId: { not: subscription.id },
+          status: { in: ["active", "trialing"] },
+        },
+      });
+      if (otherActiveSubscription) {
+        break;
+      }
 
-        try {
-          await revokeRoleFromUser(
-            customer.logtoUserId,
-            process.env.LOGTO_PRO_ROLE_ID as string,
-          );
-        } catch (err) {
-          console.error(
-            `[stripe-webhook] failed to revoke Logto role from ${customer.logtoUserId}:`,
-            err,
-          );
-          throw err;
-        }
+      const revokeRoleId = process.env.LOGTO_PRO_ROLE_ID as string;
+      try {
+        await withRetries(() => revokeRoleFromUser(customer.logtoUserId, revokeRoleId));
+      } catch (err) {
+        console.error(
+          `[stripe-webhook] failed to revoke Logto role ${revokeRoleId} from ${customer.logtoUserId} after retries:`,
+          err,
+        );
+        throw err;
       }
       break;
     }
@@ -289,9 +291,10 @@ async function grantIncludedCreditsIfApplicable(
 }
 
 /**
- * Keeps the Logto Pro role in sync with subscription status. Rethrow on
- * failure so Stripe retries the webhook instead of us silently dropping the
- * grant.
+ * Keeps the Logto Pro role in sync with subscription status. Retries the
+ * Management API call a few times before giving up (transient failures are
+ * the common case), then rethrows so Stripe retries the whole webhook as a
+ * last resort instead of us silently dropping the grant.
  */
 async function syncProRoleForActiveSubscription(subscription: Stripe.Subscription) {
   if (subscription.status !== "active" && subscription.status !== "trialing") {
@@ -308,14 +311,12 @@ async function syncProRoleForActiveSubscription(subscription: Stripe.Subscriptio
     return;
   }
 
+  const roleId = process.env.LOGTO_PRO_ROLE_ID as string;
   try {
-    await assignRoleToUser(
-      customer.logtoUserId,
-      process.env.LOGTO_PRO_ROLE_ID as string,
-    );
+    await withRetries(() => assignRoleToUser(customer.logtoUserId, roleId));
   } catch (err) {
     console.error(
-      `[stripe-webhook] failed to assign Logto role to ${customer.logtoUserId}:`,
+      `[stripe-webhook] failed to assign Logto role ${roleId} to ${customer.logtoUserId} after retries:`,
       err,
     );
     throw err;

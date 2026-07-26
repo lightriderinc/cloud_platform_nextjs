@@ -153,14 +153,14 @@ h1 {
 }
 
 .text-2xs {
-  font-size: 0.6875rem;
+  font-size: 0.6875rem !important;
 }
 
 .brand-link {
   color: var(--brand-primary) !important;
 
   &:hover {
-    color: #F25143 !important;
+    color: #f25143 !important;
     text-decoration: underline !important;
   }
 }

@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "QuantumJobSubmission" ADD COLUMN     "shots" INTEGER NOT NULL DEFAULT 1000,
+ADD COLUMN     "status" TEXT NOT NULL DEFAULT 'PENDING';

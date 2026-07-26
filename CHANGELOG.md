@@ -1,3 +1,38 @@
+# [1.8.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.7.1...v1.8.0) (2026-07-25)
+
+
+### Features
+
+* add Connect/Colab UI to backend detail modal for QPU job submission ([02bfc64](https://github.com/lightriderinc/cloud_platform_nextjs/commit/02bfc645097b8465c9e8afe0c1b75bb86c6cbd35))
+
+## [1.7.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.7.0...v1.7.1) (2026-07-25)
+
+
+### Bug Fixes
+
+* run prisma generate before build to pick up schema changes ([74b86f3](https://github.com/lightriderinc/cloud_platform_nextjs/commit/74b86f33e982f5566bc4c876096de54d0ac21d1c))
+
+# [1.7.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.6.0...v1.7.0) (2026-07-25)
+
+
+### Features
+
+* quantum job submission with plan-gated backend access and credit metering ([93c7d11](https://github.com/lightriderinc/cloud_platform_nextjs/commit/93c7d1132e969fc929764e763ae030a0c32b9b65))
+
+# [1.6.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.5.0...v1.6.0) (2026-07-24)
+
+
+### Features
+
+* per-user API key generation, rotation, and revocation ([870e48a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/870e48a2604c538dfc0870bf29591b7632238334))
+
+# [1.5.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.4.1...v1.5.0) (2026-07-23)
+
+
+### Features
+
+* bring Stripe billing + Logto fix to main ([#9](https://github.com/lightriderinc/cloud_platform_nextjs/issues/9)) ([9ed6dca](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9ed6dcaae04f0959194044224cea9207f9056ca8))
+
 ## [1.4.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.4.0...v1.4.1) (2026-07-17)
 
 

@@ -1,19 +1,32 @@
 "use client";
 
-import { submitJob } from "@/lib/lr/client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import ProGateNotice from "@/components/billing/ProGateNotice";
+import { fetchIsProFromSubscriptions } from "@/lib/billing/clientAccessCheck";
+import { CIRCUIT_PAYLOADS, submitQuantumJob } from "@/lib/quantum/client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { MdClose } from "react-icons/md";
 
-const CIRCUITS = [
+const CIRCUITS: { value: "h" | "bell"; label: string }[] = [
   { value: "h", label: "h gate (1-qubit superposition)" },
   { value: "bell", label: "bell gate (2-qubit entangled pair)" },
 ];
 
 export default function NewJobModal({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient();
-  const [circuit, setCircuit] = useState(CIRCUITS[0].value);
+  const [circuit, setCircuit] = useState<"h" | "bell">(CIRCUITS[0].value);
   const [shots, setShots] = useState(1000);
+
+  // Real hardware ("iqm-garnet") — this is the Jobs page's real submission
+  // form, not a demo. Actual enforcement (Pro + credits) is server-side in
+  // /api/lr/quantum/submit; this proactive check reads the same DB
+  // subscription state /settings/payment does, not the Logto role (which
+  // can silently drift from it — see clientAccessCheck.ts and the identical
+  // fix in DemoCircuitModal).
+  const { data: isPro } = useQuery({
+    queryKey: ["billing", "is-pro"],
+    queryFn: fetchIsProFromSubscriptions,
+  });
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -24,7 +37,7 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
   }, [onClose]);
 
   const { mutate, isPending, isError, error } = useMutation({
-    mutationFn: () => submitJob(circuit, shots),
+    mutationFn: () => submitQuantumJob("iqm-garnet", CIRCUIT_PAYLOADS[circuit], shots),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lr-jobs"] });
       onClose();
@@ -60,6 +73,9 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
+        {isPro === undefined ? null : !isPro ? (
+          <ProGateNotice />
+        ) : (
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700">
@@ -67,7 +83,7 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
             </label>
             <select
               value={circuit}
-              onChange={(e) => setCircuit(e.target.value)}
+              onChange={(e) => setCircuit(e.target.value as "h" | "bell")}
               className="default-radius w-full border border-gray-100 bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300"
             >
               {CIRCUITS.map((c) => (
@@ -119,6 +135,7 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );

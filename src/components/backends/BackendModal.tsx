@@ -3,6 +3,7 @@
 import type { Backend } from "@/types/backend";
 import { useEffect } from "react";
 import { MdClose } from "react-icons/md";
+import BackendConnectSection from "./BackendConnectSection";
 import BackendStatusBadge from "./BackendStatusBadge";
 import QubitMap from "./QubitMap";
 
@@ -129,10 +130,7 @@ export default function BackendModal({
           <summary className="cursor-pointer select-none text-lg font-medium">
             Connect to {name}
           </summary>
-          <p className="mt-3 text-sm text-gray-600">
-            Platform is currently under development. <br/>
-            Connection instructions and API token setup will appear here.
-          </p>
+          <BackendConnectSection backend={backend} />
         </details>
       </div>
     </div>
