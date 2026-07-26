@@ -1,5 +1,8 @@
-import { MdApps, MdBarChart, MdDashboard, MdPayments } from "react-icons/md";
+import { IoDocumentTextSharp } from "react-icons/io5";
+import { MdApps, MdBarChart, MdDashboard } from "react-icons/md";
 import { RiCpuFill } from "react-icons/ri";
+
+import TakeTourButton from "../tour/TakeTourButton";
 import SidebarNavGroup from "./SidebarNavGroup";
 import SidebarNavItem from "./SidebarNavItem";
 
@@ -27,6 +30,16 @@ export default function SidebarGroupDefault({
         />
       </SidebarNavGroup>
 
+      {/* <SidebarNavGroup label="Entropy">
+        <SidebarNavItem
+          name="Get Entropy"
+          href="/entropy"
+          icon={MdCasino}
+          onNavigate={onNavigate}
+          tourId="sidebar-entropy"
+        />
+      </SidebarNavGroup> */}
+
       <SidebarNavGroup label="Explore">
         <SidebarNavItem
           name="Applications"
@@ -44,7 +57,19 @@ export default function SidebarGroupDefault({
         />
       </SidebarNavGroup>
 
-      <SidebarNavGroup label="Platform">
+      <SidebarNavGroup label="Resources">
+        <SidebarNavItem
+          name="Documentation"
+          external
+          href="https://docs.lightriderinc.com/"
+          icon={IoDocumentTextSharp}
+          onNavigate={onNavigate}
+          tourId="sidebar-applications"
+        />
+        <TakeTourButton />
+      </SidebarNavGroup>
+
+      {/* <SidebarNavGroup label="Platform">
         <SidebarNavItem
           name="Pricing"
           href="/pricing"
@@ -52,7 +77,7 @@ export default function SidebarGroupDefault({
           onNavigate={onNavigate}
           tourId="sidebar-pricing"
         />
-      </SidebarNavGroup>
+      </SidebarNavGroup> */}
     </>
   );
 }

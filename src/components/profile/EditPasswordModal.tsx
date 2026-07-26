@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import PasswordRequirements, { meetsLivePasswordRequirements } from '@/components/ui/PasswordRequirements';
+
 type Props = {
   onVerifyPassword: (password: string) => Promise<string>;
   onUpdatePassword: (verificationId: string, newPassword: string) => Promise<void>;
@@ -35,7 +37,7 @@ export default function EditPasswordModal({ onVerifyPassword, onUpdatePassword, 
 
   async function handleUpdate() {
     if (newPwd !== confirmPwd) { setError('Passwords do not match'); return; }
-    if (newPwd.length < 8) { setError('Password must be at least 8 characters'); return; }
+    if (!meetsLivePasswordRequirements(newPwd)) { setError('Please meet the password requirements below.'); return; }
     setError('');
     setLoading(true);
     try {
@@ -99,6 +101,7 @@ export default function EditPasswordModal({ onVerifyPassword, onUpdatePassword, 
               autoFocus
               className="w-full default-radius border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-gray-400 mb-3"
             />
+            <PasswordRequirements password={newPwd} className="mb-4" />
             <label className="block text-xs text-gray-500 mb-1">Confirm new password</label>
             <input
               type="password"

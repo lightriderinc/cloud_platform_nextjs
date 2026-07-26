@@ -1,4 +1,3 @@
-import TakeTourButton from "@/components/tour/TakeTourButton";
 import Image from "next/image";
 import Link from "next/link";
 import AuthenticationSection from "./AuthenticationSection";
@@ -12,16 +11,15 @@ export default async function Header() {
       <div className="flex items-center gap-2">
         <Link href="/">
           <Image
-            src="/Lightrider-logo.svg"
+            src="/Lightrider-cloud-logo-black.svg"
             alt="Lightrider logo"
-            width={190}
+            width={230}
             height={32}
           />
         </Link>
       </div>
 
       <div className="flex items-center gap-1 mr-2">
-        <TakeTourButton />
         {/* Desktop: account button. Mobile: hamburger that opens the menu. */}
         {/* <UserCard className="hidden lg:flex" /> */}
         <div className="hidden lg:block" data-tour="header-account">

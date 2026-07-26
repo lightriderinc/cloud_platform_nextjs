@@ -6,5 +6,5 @@ export const logtoConfig = {
   cookieSecret: 'E3mO9dzSVAyoFCvgHzY1Z8DbvNH2TlEg', // Auto-generated 32 digit secret
   cookieSecure: process.env.NODE_ENV === 'production',
   proRoleID: "d4px0fafm78qfb574wgfm",
-  scopes: ['email', 'profile', 'roles'],
+  scopes: ['email', 'profile', 'roles', 'identities'],
 };

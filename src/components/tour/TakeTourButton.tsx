@@ -1,17 +1,17 @@
 "use client";
 
 import { startTour } from "@/lib/tour/startTour";
-import { MdTour } from "react-icons/md";
+import { MdMap } from "react-icons/md";
 
 export default function TakeTourButton() {
   return (
     <button
       type="button"
       onClick={() => startTour()}
-      className="flex items-center gap-1.5 default-radius px-2 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-100"
+      className="mb-1 flex w-full items-center gap-2 default-radius px-2 py-1.5 text-sm transition-colors hover:bg-gray-50 cursor-pointer"
     >
-      <MdTour className="text-base" />
-      Take a tour
+      <MdMap className="text-gray-500" />
+      Quick Tour
     </button>
   );
 }

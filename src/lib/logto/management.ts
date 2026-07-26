@@ -115,3 +115,65 @@ export async function revokeRoleFromUser(
     `Failed to revoke Logto role ${roleId} from user ${logtoUserId} (${res.status}): ${detail}`,
   );
 }
+
+export type LogtoUserSummary = {
+  id: string;
+  primaryEmail: string | null;
+  username: string | null;
+  name: string | null;
+};
+
+/**
+ * Looks up a Logto user by exact primary email via the Management API. Returns
+ * the matching user, or null when no account uses that email.
+ *
+ * Uses `mode.primaryEmail=exact`; matching is case-insensitive (Logto's
+ * `isCaseSensitive` defaults to false), which is what we want since email
+ * identifiers are compared case-insensitively. Primary emails are unique in
+ * Logto, so there is at most one match.
+ *
+ * Docs: https://docs.logto.io/user-management/advanced-user-search
+ */
+export async function findUserByPrimaryEmail(
+  email: string,
+): Promise<LogtoUserSummary | null> {
+  const token = await getAccessToken();
+
+  const params = new URLSearchParams({
+    "search.primaryEmail": email,
+    "mode.primaryEmail": "exact",
+    page: "1",
+    page_size: "1",
+  });
+
+  const res = await fetch(`${endpointBase()}/api/users?${params.toString()}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(
+      `Failed to search Logto users by email (${res.status}): ${detail}`,
+    );
+  }
+
+  const users = (await res.json()) as Array<{
+    id: string;
+    primaryEmail?: string | null;
+    username?: string | null;
+    name?: string | null;
+  }>;
+
+  const match = users[0];
+  if (!match) {
+    return null;
+  }
+
+  return {
+    id: match.id,
+    primaryEmail: match.primaryEmail ?? null,
+    username: match.username ?? null,
+    name: match.name ?? null,
+  };
+}

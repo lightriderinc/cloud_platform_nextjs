@@ -1,5 +1,4 @@
-import { logtoConfig } from "@/app/logto";
-import { getLogtoContext } from "@logto/next/server-actions";
+import { getSession } from "@/lib/auth/session";
 
 export type AccessTier = "Pro" | "Basic";
 
@@ -10,7 +9,7 @@ export function resolveAccessTier(roles: string[] | undefined): AccessTier {
 }
 
 export async function getAccessTier(): Promise<AccessTier> {
-  const { userInfo, claims } = await getLogtoContext(logtoConfig, { fetchUserInfo: true });
+  const { userInfo, claims } = await getSession();
   const roles =
     (userInfo?.roles as string[] | undefined) ??
     (claims?.roles as string[] | undefined);

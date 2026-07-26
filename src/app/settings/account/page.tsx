@@ -3,57 +3,49 @@ import LogoutButton from "@/components/auth/LogoutButton";
 import CurrentPlanBadge from "@/components/billing/CurrentPlanBadge";
 import { isPro } from "@/lib/auth";
 import {
-  getMyProfile,
+  getAccountProfile,
+  getDisplayName,
+  getSession,
+  requireLogtoUser,
+} from "@/lib/auth/session";
+import {
+  bindTotp,
+  deleteMfaVerification,
+  generateTotpSecret,
+  getMfaVerifications,
   sendEmailCode,
   updateBirthdate,
-  updateName,
   updatePassword,
   updatePrimaryEmail,
   verifyEmailCode,
   verifyPassword,
 } from "@/lib/logto-account";
-import {
-  getAccessToken,
-  getLogtoContext,
-  signOut,
-} from "@logto/next/server-actions";
+import { findUserByPrimaryEmail, type LogtoUserSummary } from "@/lib/logto/management";
+import { getAccessToken, signOut } from "@logto/next/server-actions";
 import { refresh, revalidatePath } from "next/cache";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import ProfileActions from "./ProfileActions";
 
 export default async function AccountPage() {
-  const { isAuthenticated, claims, userInfo } = await getLogtoContext(
-    logtoConfig,
-    {
-      fetchUserInfo: true,
-    },
-  );
+  const { isAuthenticated, userInfo } = await getSession();
 
   if (!isAuthenticated) redirect("/");
 
-  let birthdate: string | null = null;
-  let name = userInfo?.name ?? claims?.name ?? null;
+  // Resolve the display name via the shared resolver so a brand-new user's full
+  // name shows on first sign-in (session claims lag until the first refresh; the
+  // Account API reflects it immediately). getAccountProfile is cached, so this
+  // and getDisplayName share a single Account API fetch per request.
+  const name = await getDisplayName();
+  const account = await getAccountProfile();
+  const birthdate = account?.profile?.birthdate ?? null;
 
+  let mfaEnabled = false;
   try {
     const token = await getAccessToken(logtoConfig);
     if (token) {
-      const extended = await getMyProfile(token);
-      birthdate = extended?.profile?.birthdate ?? null;
-
-      if (!name) {
-        const given = extended?.profile?.givenName;
-        const family = extended?.profile?.familyName;
-        if (given || family) {
-          const fullName = [given, family].filter(Boolean).join(" ");
-          try {
-            await updateName(token, fullName);
-          } catch {
-            // best-effort
-          }
-          name = fullName;
-        }
-      }
+      const mfaFactors = await getMfaVerifications(token);
+      mfaEnabled = mfaFactors.some((factor) => factor.type === "Totp");
     }
   } catch {
     // Account API not enabled or token unavailable
@@ -84,6 +76,45 @@ export default async function AccountPage() {
     "use server";
     const token = await getAccessToken(logtoConfig);
     await updatePassword(token, verificationId, newPassword);
+  }
+
+  /**
+   * Pre-flight duplicate-email check for the change-email flow. Runs BEFORE any
+   * verification code is sent, so the user is warned up front instead of only
+   * after verifying an address they can't actually use (bug EM-02).
+   *
+   * Throws a user-facing message on conflict; the modal surfaces it inline and
+   * stays on the "enter new email" step. Fails open on lookup errors — the
+   * Account API still enforces uniqueness when the change is finalized, so an
+   * infra hiccup in this pre-check never blocks a legitimate change.
+   *
+   * Note: confirming whether an email is registered is account enumeration.
+   * This matches the platform's existing sign-up behavior, and can be masked
+   * later via Logto's "Hide account existence" setting if desired.
+   */
+  async function doCheckEmailAvailability(emailAddr: string): Promise<void> {
+    "use server";
+    const candidate = emailAddr.trim();
+    const { sub } = await requireLogtoUser();
+
+    let existing: LogtoUserSummary | null = null;
+    try {
+      existing = await findUserByPrimaryEmail(candidate);
+    } catch (err) {
+      console.error(
+        "[account] email availability pre-check failed; allowing flow to continue:",
+        err,
+      );
+      return;
+    }
+
+    if (!existing) {
+      return; // available
+    }
+    if (existing.id === sub) {
+      throw new Error("That's already the email address on your account.");
+    }
+    throw new Error("That email is already linked to another account.");
   }
 
   async function doSendEmailCode(emailAddr: string): Promise<string> {
@@ -118,6 +149,33 @@ export default async function AccountPage() {
     await updateBirthdate(token, birthdate);
     revalidatePath("/settings/account");
     refresh();
+  }
+
+  async function doGenerateTotpSecret(): Promise<string> {
+    "use server";
+    const token = await getAccessToken(logtoConfig);
+    return generateTotpSecret(token);
+  }
+
+  async function doBindTotp(
+    verificationRecordId: string,
+    secret: string,
+    code: string,
+  ): Promise<void> {
+    "use server";
+    const token = await getAccessToken(logtoConfig);
+    await bindTotp(token, verificationRecordId, secret, code);
+    revalidatePath("/settings/account");
+  }
+
+  async function doDisableMfa(verificationRecordId: string): Promise<void> {
+    "use server";
+    const token = await getAccessToken(logtoConfig);
+    const factors = await getMfaVerifications(token);
+    for (const factor of factors) {
+      await deleteMfaVerification(token, verificationRecordId, factor.id);
+    }
+    revalidatePath("/settings/account");
   }
 
   async function doSignOut(): Promise<void> {
@@ -165,12 +223,17 @@ export default async function AccountPage() {
         name={name}
         email={email ?? ""}
         birthdate={birthdate}
+        mfaEnabled={mfaEnabled}
         onVerifyPassword={doVerifyPassword}
         onUpdatePassword={doUpdatePassword}
         onSendEmailCode={doSendEmailCode}
         onVerifyEmailCode={doVerifyEmailCode}
+        onCheckEmailAvailable={doCheckEmailAvailability}
         onUpdateEmail={doUpdateEmail}
         onUpdateBirthdate={doUpdateBirthdate}
+        onGenerateTotpSecret={doGenerateTotpSecret}
+        onBindTotp={doBindTotp}
+        onDisableMfa={doDisableMfa}
       />
 
       <div className="mt-8 pt-8">
