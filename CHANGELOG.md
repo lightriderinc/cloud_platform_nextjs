@@ -1,3 +1,40 @@
+# [1.9.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.8.0...v1.9.0) (2026-07-26)
+
+
+### Bug Fixes
+
+* code verification for email change ([4c0338f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/4c0338f81d42c98961c216e3223c6792c040b6e2))
+* editing profile items ([fed11fb](https://github.com/lightriderinc/cloud_platform_nextjs/commit/fed11fb8fe4178b45a39249f3c3bc3e03624492d))
+* external nav link opens in new tab ([9a6210e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9a6210e1b07cdb62ab2663ea35d1483d1225ddf6))
+* getting started card updated ([c3f3ca3](https://github.com/lightriderinc/cloud_platform_nextjs/commit/c3f3ca3c9fb96ba89649cb4b1e7fd0ca5517b71e))
+* logto session issues ([93d8b8b](https://github.com/lightriderinc/cloud_platform_nextjs/commit/93d8b8b257a79395915d5ea642d29ab3e0637523))
+* LR cloud logo update ([1c0ea9b](https://github.com/lightriderinc/cloud_platform_nextjs/commit/1c0ea9b5cd04f7e6e6bab18fadf4b1d3efe2ad2e))
+* markdown styles + legal updated ([64f7bcf](https://github.com/lightriderinc/cloud_platform_nextjs/commit/64f7bcf574764a2ff535a8d5d6268323ec380ef7))
+* minor fixes ([2fa16e4](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2fa16e4fe8c731cb361d96140a6ad00dace36d6c))
+* page loading animation ([f1efa82](https://github.com/lightriderinc/cloud_platform_nextjs/commit/f1efa821b521241312e73ff2d836add16ea94296))
+* pro user role toggle for testing ([2f32a46](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2f32a46870978ef9b729310ca926477c09d80316))
+* sidenav updated + settings navigation ([b6f1c07](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b6f1c07b16f6ca39cfc331e3fd0a7306130dc734))
+* updated navbar with login/acc card ([9bd00fe](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9bd00fe1dab9a9ac3d7d396b8ab531cdfa0a6330))
+* updated navigation ([f3384ea](https://github.com/lightriderinc/cloud_platform_nextjs/commit/f3384eae490f54b10e1e4cdf40bac084ebf5bd69))
+* user card initials ([92b3af3](https://github.com/lightriderinc/cloud_platform_nextjs/commit/92b3af3058d44316e74ed1f6bdb1b53bcf17448b))
+* user full name auto added after sign up ([abb85c9](https://github.com/lightriderinc/cloud_platform_nextjs/commit/abb85c964e4bd17f5478cb4668739a394b1e1acc))
+* user role display ([d49e510](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d49e51022081bcd724f9a3938ebf7b372a638621))
+* user role displayed ([9e84eb5](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9e84eb5fc6924a0cd0884b614017853aefed104e))
+* When a new user signs up, full name displayed on the account card and in the account page before the first session refresh. ([1a848b4](https://github.com/lightriderinc/cloud_platform_nextjs/commit/1a848b41b01654856df2b6d3c7b5c014c14143d9))
+* when changing emails it checks for existing accounts with same email before handing off to verification ([69a5a08](https://github.com/lightriderinc/cloud_platform_nextjs/commit/69a5a0878401ea844dc95e9c5b4822aef1f55a21))
+
+
+### Features
+
+* account center + settings init ([9978d0e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9978d0e82308e7d348e354e1c8a98c22de15bec6))
+* add IBM Quantum backend cards with live calibration ([436ec2d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/436ec2dfbaf86ac1f3f12350b7ad1b6ef4f51d4f))
+* added profile page ([eea99bd](https://github.com/lightriderinc/cloud_platform_nextjs/commit/eea99bd53a05964e2334189fcf0e97a38675112d))
+* created initial version of entropy page for further development ([e978db0](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e978db0507f86d1acd0d607eac8b2aabc467f483))
+* Integrated logto with log in ([c350059](https://github.com/lightriderinc/cloud_platform_nextjs/commit/c3500596995338b84b5105a4261984e5b6512b79))
+* major updates across branches ([8a2634a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/8a2634aec52f14fddd3d193556e9cf1d9d9b4451))
+* major updates across branches - account mgmt + payment + styles ([88e40e2](https://github.com/lightriderinc/cloud_platform_nextjs/commit/88e40e216d810d915adf4ad74ff42123363fb46a))
+* successfully integrated 2FA process upon loing and profile toggle also works ([62efb64](https://github.com/lightriderinc/cloud_platform_nextjs/commit/62efb64b05929c906ad95c1537e0e577eee38440))
+
 # [1.8.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.7.1...v1.8.0) (2026-07-25)
 
 
