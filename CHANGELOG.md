@@ -1,3 +1,11 @@
+## [1.9.2](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.1...v1.9.2) (2026-07-27)
+
+
+### Bug Fixes
+
+* minor issues fixed ([7b7dca3](https://github.com/lightriderinc/cloud_platform_nextjs/commit/7b7dca3dfef4e279c12eaf3c593bfd36e6723f38))
+* minor issues fixed ([07015e2](https://github.com/lightriderinc/cloud_platform_nextjs/commit/07015e24e543d8462617b32292c22c566cc01c91))
+
 ## [1.9.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.0...v1.9.1) (2026-07-27)
 
 
