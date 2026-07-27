@@ -8,7 +8,7 @@ export default function WelcomePage() {
   return (
     <div className="flex flex-col">
       <main className="py-3">
-        <div className="flex flex-col mb-40">
+        <div className="flex flex-col mb-16">
           <h1 className="hero font-semibold text-gray-700 mb-4">
             Welcome to <br /> Light Rider{" "}
             <span className="color-brand-primary">Cloud</span>.
