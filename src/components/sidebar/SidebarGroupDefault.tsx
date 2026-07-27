@@ -2,14 +2,16 @@ import { IoDocumentTextSharp } from "react-icons/io5";
 import { MdApps, MdBarChart, MdDashboard } from "react-icons/md";
 import { RiCpuFill } from "react-icons/ri";
 
-import TakeTourButton from "../tour/TakeTourButton";
+import TakeTourButtonClient from "../tour/TakeTourButtonClient";
 import SidebarNavGroup from "./SidebarNavGroup";
 import SidebarNavItem from "./SidebarNavItem";
 
 export default function SidebarGroupDefault({
   onNavigate,
+  isAuthenticated,
 }: {
   onNavigate?: () => void;
+  isAuthenticated: boolean;
 }) {
   return (
     <>
@@ -66,7 +68,7 @@ export default function SidebarGroupDefault({
           onNavigate={onNavigate}
           tourId="sidebar-applications"
         />
-        <TakeTourButton />
+        <TakeTourButtonClient isAuthenticated={isAuthenticated} />
       </SidebarNavGroup>
 
       {/* <SidebarNavGroup label="Platform">

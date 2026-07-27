@@ -3,7 +3,13 @@
 import { startTour } from "@/lib/tour/startTour";
 import { MdMap } from "react-icons/md";
 
-export default function TakeTourButton() {
+export default function TakeTourButtonClient({
+  isAuthenticated,
+}: {
+  isAuthenticated: boolean;
+}) {
+  if (!isAuthenticated) return null;
+
   return (
     <button
       type="button"

@@ -7,7 +7,13 @@ import SidebarNav from "./sidebar/SidebarNav";
 // Below the lg breakpoint, replaces the header user card with a hamburger that
 // opens an animated drawer (slide-in panel + backdrop fade) holding the
 // sidebar nav and the user card at the bottom.
-export default function MobileMenu({ children }: { children?: React.ReactNode }) {
+export default function MobileMenu({
+  children,
+  isAuthenticated,
+}: {
+  children?: React.ReactNode;
+  isAuthenticated: boolean;
+}) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -59,22 +65,10 @@ export default function MobileMenu({ children }: { children?: React.ReactNode })
             </button>
           </div>
 
-          <SidebarNav onNavigate={() => setOpen(false)} />
+          <SidebarNav onNavigate={() => setOpen(false)} isAuthenticated={isAuthenticated} />
 
           <div className="border-t border-gray-100 p-3">
-            {/* <UserCard className="w-full" /> */}
-            <a
-              href="https://lightriderinc.com/early-access"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <button
-                type="button"
-                className="default-radius px-3 py-2 text-sm font-semibold text-brand-primary cursor-pointer btn-outline-brand transition-opacity min-w-[110px] w-full"
-              >
-                Get early access
-              </button>
-            </a>
+            {children}
           </div>
         </div>
       </div>

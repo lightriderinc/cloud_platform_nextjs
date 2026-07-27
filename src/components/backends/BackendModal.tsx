@@ -21,9 +21,11 @@ type Spec = { label: string; value: React.ReactNode };
 export default function BackendModal({
   backend,
   onClose,
+  isAuthenticated,
 }: {
   backend: Backend;
   onClose: () => void;
+  isAuthenticated: boolean;
 }) {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -130,7 +132,7 @@ export default function BackendModal({
           <summary className="cursor-pointer select-none text-lg font-medium">
             Connect to {name}
           </summary>
-          <BackendConnectSection backend={backend} />
+          <BackendConnectSection backend={backend} isAuthenticated={isAuthenticated} />
         </details>
       </div>
     </div>

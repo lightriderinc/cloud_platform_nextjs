@@ -1,9 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import {
-  MdArrowOutward
-} from "react-icons/md";
+import { MdArrowOutward } from "react-icons/md";
 import SidebarGroupDefault from "./SidebarGroupDefault";
 import SidebarGroupLegal from "./SidebarGroupLegal";
 import SidebarGroupSettings from "./SidebarGroupSettings";
@@ -12,8 +10,10 @@ import SidebarGroupSettings from "./SidebarGroupSettings";
 // mobile menu. onNavigate lets the mobile drawer close itself on link click.
 export default function SidebarNav({
   onNavigate,
+  isAuthenticated,
 }: {
   onNavigate?: () => void;
+  isAuthenticated: boolean;
 }) {
   const pathname = usePathname();
 
@@ -26,22 +26,20 @@ export default function SidebarNav({
         {isLegalRoute ? (
           <SidebarGroupLegal onNavigate={onNavigate} />
         ) : isSettingsRoute ? (
-          <SidebarGroupSettings onNavigate={onNavigate} />
+          <SidebarGroupSettings
+            onNavigate={onNavigate}
+            isAuthenticated={isAuthenticated}
+          />
         ) : (
-          <SidebarGroupDefault onNavigate={onNavigate} />
+          <SidebarGroupDefault
+            onNavigate={onNavigate}
+            isAuthenticated={isAuthenticated}
+          />
         )}
       </nav>
 
       {/* Placeholder: docs/support links */}
       <div className="border-t border-gray-100 px-3 py-4 text-sm">
-        <a
-          href="https://www.lightriderinc.com/"
-          target="_blank"
-          rel="noreferrer"
-          className="mb-1 flex items-center gap-2 default-radius px-2 py-1.5 transition-colors hover:bg-gray-100"
-        >
-          Light Rider website <MdArrowOutward />
-        </a>
         <a
           href="https://www.lightriderinc.com/contact"
           target="_blank"
@@ -49,6 +47,14 @@ export default function SidebarNav({
           className="flex items-center gap-2 default-radius px-2 py-1.5 transition-colors hover:bg-gray-100"
         >
           contact <MdArrowOutward />
+        </a>
+        <a
+          href="https://www.lightriderinc.com/"
+          target="_blank"
+          rel="noreferrer"
+          className="mb-1 flex items-center gap-2 default-radius px-2 py-1.5 transition-colors hover:bg-gray-100"
+        >
+          Light Rider website <MdArrowOutward />
         </a>
       </div>
     </>

@@ -1,7 +1,10 @@
 import BackendCatalog from "@/components/backends/BackendCatalog";
 import InfoBox from "@/components/InfoBox";
+import { getSession } from "@/lib/auth/session";
 
-export default function BackendsPage() {
+export default async function BackendsPage() {
+  const { isAuthenticated } = await getSession();
+
   return (
     <div className="animate-fade-in-up">
       <h1 className="text-2xl font-semibold text-gray-700">Backends</h1>
@@ -14,7 +17,7 @@ export default function BackendsPage() {
         </InfoBox>
       </div>
       <div className="mt-6">
-        <BackendCatalog />
+        <BackendCatalog isAuthenticated={isAuthenticated} />
       </div>
     </div>
   );

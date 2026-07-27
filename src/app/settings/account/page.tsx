@@ -24,13 +24,10 @@ import { findUserByPrimaryEmail, type LogtoUserSummary } from "@/lib/logto/manag
 import { getAccessToken, signOut } from "@logto/next/server-actions";
 import { refresh, revalidatePath } from "next/cache";
 import Image from "next/image";
-import { redirect } from "next/navigation";
 import ProfileActions from "./ProfileActions";
 
 export default async function AccountPage() {
-  const { isAuthenticated, userInfo } = await getSession();
-
-  if (!isAuthenticated) redirect("/");
+  const { userInfo } = await getSession();
 
   // Resolve the display name via the shared resolver so a brand-new user's full
   // name shows on first sign-in (session claims lag until the first refresh; the

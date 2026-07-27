@@ -156,6 +156,7 @@ h1 {
   font-size: 0.6875rem !important;
 }
 
+
 .brand-link {
   color: var(--brand-primary) !important;
 
@@ -163,4 +164,9 @@ h1 {
     color: #f25143 !important;
     text-decoration: underline !important;
   }
+}
+
+
+h1.hero {
+  font-size: 2.5rem !important;
 }
