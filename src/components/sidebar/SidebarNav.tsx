@@ -12,8 +12,10 @@ import SidebarGroupSettings from "./SidebarGroupSettings";
 // mobile menu. onNavigate lets the mobile drawer close itself on link click.
 export default function SidebarNav({
   onNavigate,
+  isAuthenticated,
 }: {
   onNavigate?: () => void;
+  isAuthenticated: boolean;
 }) {
   const pathname = usePathname();
 
@@ -28,7 +30,7 @@ export default function SidebarNav({
         ) : isSettingsRoute ? (
           <SidebarGroupSettings onNavigate={onNavigate} />
         ) : (
-          <SidebarGroupDefault onNavigate={onNavigate} />
+          <SidebarGroupDefault onNavigate={onNavigate} isAuthenticated={isAuthenticated} />
         )}
       </nav>
 

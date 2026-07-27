@@ -1,11 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
+import { getSession } from "@/lib/auth/session";
 import AuthenticationSection from "./AuthenticationSection";
 import MobileMenu from "./MobileMenu";
 
 // Server component: reads Logto auth state on the server so the Log in
 // button renders only for signed-out visitors, with no client-side flash.
 export default async function Header() {
+  const { isAuthenticated } = await getSession();
+
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-100 px-4">
       <div className="flex items-center gap-2">
@@ -25,7 +28,7 @@ export default async function Header() {
         <div className="hidden lg:block" data-tour="header-account">
           <AuthenticationSection />
         </div>
-        <MobileMenu>
+        <MobileMenu isAuthenticated={isAuthenticated}>
           <AuthenticationSection />
         </MobileMenu>
       </div>
