@@ -1,0 +1,59 @@
+import { handleSignIn } from "@/app/actions/auth";
+import { IoDocumentTextSharp } from "react-icons/io5";
+import { RiCpuFill } from "react-icons/ri";
+import LoginButton from "./auth/LoginButton";
+import WelcomePageCard from "./WelcomePageCard";
+
+export default function WelcomePage() {
+  return (
+    <div className="flex flex-col">
+      <main className="py-6">
+        <div className="flex flex-col mb-40">
+          <h1 className="hero font-semibold text-gray-700 mb-2">
+            Welcome to <br/> Light Rider{" "}
+            <span className="color-brand-primary">Cloud</span>.
+          </h1>
+          <h2 className="text-xl mb-12 text-gray-600">
+            Start running quantum circuits today.
+          </h2>
+        </div>
+        <div className="flex flex-col mb-12">
+          <h2 className="mb-4 font-semibold text-gray-600">
+            Login to access your dashboard or contact us for custom solutions.
+          </h2>
+          <div className="flex flex-row gap-2">
+            <div>
+              <LoginButton onSignIn={handleSignIn} />
+            </div>
+            <a href="https://www.lightriderinc.com/contact">
+              <button
+                type="button"
+                className="default-radius px-3 py-2 text-sm font-semibold text-brand-primary cursor-pointer btn-outline-brand transition-opacity min-w-[110px] w-full"
+              >
+                Contact us
+              </button>
+            </a>
+          </div>
+        </div>
+        <div>
+          <h2 className="mb-4 font-semibold text-gray-600">
+            Getting started
+          </h2>
+          <div className="flex flex-row gap-3">
+            <WelcomePageCard
+              href="/backends"
+              title="Explore available backends"
+              icon={RiCpuFill}
+            />
+            <WelcomePageCard
+              href="https://docs.lightriderinc.com/sdk/getting-started.html"
+              title="SDK documentation"
+              icon={IoDocumentTextSharp}
+              external
+            />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
