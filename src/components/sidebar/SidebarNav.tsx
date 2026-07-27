@@ -41,20 +41,20 @@ export default function SidebarNav({
       {/* Placeholder: docs/support links */}
       <div className="border-t border-gray-100 px-3 py-4 text-sm">
         <a
-          href="https://www.lightriderinc.com/"
-          target="_blank"
-          rel="noreferrer"
-          className="mb-1 flex items-center gap-2 default-radius px-2 py-1.5 transition-colors hover:bg-gray-100"
-        >
-          Light Rider website <MdArrowOutward />
-        </a>
-        <a
           href="https://www.lightriderinc.com/contact"
           target="_blank"
           rel="noreferrer"
           className="flex items-center gap-2 default-radius px-2 py-1.5 transition-colors hover:bg-gray-100"
         >
           contact <MdArrowOutward />
+        </a>
+        <a
+          href="https://www.lightriderinc.com/"
+          target="_blank"
+          rel="noreferrer"
+          className="mb-1 flex items-center gap-2 default-radius px-2 py-1.5 transition-colors hover:bg-gray-100"
+        >
+          Light Rider website <MdArrowOutward />
         </a>
       </div>
     </>
