@@ -44,7 +44,11 @@ async function fetchHasApiKey(): Promise<boolean> {
   return !!data.apiKey;
 }
 
-export default function BackendConnectSection({ backend }: { backend: Backend }) {
+export default function BackendConnectSection({
+  backend,
+}: {
+  backend: Backend;
+}) {
   const [copied, setCopied] = useState(false);
   const quantumBackendId = getQuantumBackendId(backend.id);
 
@@ -57,7 +61,11 @@ export default function BackendConnectSection({ backend }: { backend: Backend })
   if (backend.type !== "QPU") {
     return (
       <p className="mt-3 text-sm text-gray-600">
-        Simulators run without an API key — see the SDK docs.
+        Simulators run without an API key — see the{" "}
+        <a href="https://docs.lightriderinc.com/sdk/getting-started.html" target="_blank" rel="noopener noreferrer" className="brand-link">
+          SDK docs
+        </a>
+        .
       </p>
     );
   }
@@ -93,8 +101,10 @@ export default function BackendConnectSection({ backend }: { backend: Backend })
       </p>
 
       {!hasApiKey ? (
-        <div className="default-radius border border-gray-200 bg-gray-50 p-4">
-          <p className="mb-3 text-sm text-gray-700">Generate your API key first.</p>
+        <div className="default-radius bg-gray-50 p-4">
+          <p className="mb-3 text-sm text-gray-700">
+            Generate your API key first.
+          </p>
           <Link
             href="/settings/tokens"
             className="inline-block default-radius px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
@@ -106,7 +116,7 @@ export default function BackendConnectSection({ backend }: { backend: Backend })
       ) : (
         <>
           <div className="relative">
-            <pre className="default-radius border border-gray-800 bg-gray-900 p-4 pr-24 overflow-x-auto">
+            <pre className="default-radius bg-gray-900 p-4 pr-24 overflow-x-auto">
               <code className="whitespace-pre font-mono text-xs leading-relaxed text-gray-100">
                 {snippet}
               </code>
@@ -116,7 +126,11 @@ export default function BackendConnectSection({ backend }: { backend: Backend })
               onClick={handleCopy}
               className="absolute right-3 top-3 flex shrink-0 items-center gap-1.5 default-radius border border-gray-700 bg-gray-800 px-2.5 py-1 text-xs text-gray-200 transition-colors hover:bg-gray-700"
             >
-              {copied ? <MdCheck className="text-green-400" /> : <MdContentCopy />}
+              {copied ? (
+                <MdCheck className="text-green-400" />
+              ) : (
+                <MdContentCopy />
+              )}
               {copied ? "Copied" : "Copy code"}
             </button>
           </div>
