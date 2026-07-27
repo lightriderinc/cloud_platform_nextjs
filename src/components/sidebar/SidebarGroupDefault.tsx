@@ -1,5 +1,5 @@
 import { IoDocumentTextSharp } from "react-icons/io5";
-import { MdApps, MdBarChart, MdDashboard } from "react-icons/md";
+import { MdApps, MdBarChart, MdDashboard, MdPayments } from "react-icons/md";
 import { RiCpuFill } from "react-icons/ri";
 
 import TakeTourButtonClient from "../tour/TakeTourButtonClient";
@@ -71,7 +71,7 @@ export default function SidebarGroupDefault({
         <TakeTourButtonClient isAuthenticated={isAuthenticated} />
       </SidebarNavGroup>
 
-      {/* <SidebarNavGroup label="Platform">
+      <SidebarNavGroup label="Platform">
         <SidebarNavItem
           name="Pricing"
           href="/pricing"
@@ -79,7 +79,7 @@ export default function SidebarGroupDefault({
           onNavigate={onNavigate}
           tourId="sidebar-pricing"
         />
-      </SidebarNavGroup> */}
+      </SidebarNavGroup>
     </>
   );
 }
