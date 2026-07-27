@@ -1,3 +1,18 @@
+## [1.9.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.0...v1.9.1) (2026-07-27)
+
+
+### Bug Fixes
+
+* backend connect section prompt to login when signed out ([4682d0c](https://github.com/lightriderinc/cloud_platform_nextjs/commit/4682d0c091665f57cfe07733211881054c732125))
+* entropy coming soon ([99e648a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/99e648a7bbeb9c06999dd58159409734f2affc81))
+* jobs page pre sign in ([3228e83](https://github.com/lightriderinc/cloud_platform_nextjs/commit/3228e831c7529376488a34bbedbe50edd0629042))
+* login in responsive menu ([caec954](https://github.com/lightriderinc/cloud_platform_nextjs/commit/caec9547378a11d71779e447728010884019240e))
+* sdk link in backends ([e0c0b54](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e0c0b541796a59f1a2996e11047a28aacd5ff2ea))
+* take tour after login ([9185492](https://github.com/lightriderinc/cloud_platform_nextjs/commit/91854925ff1466b2d48906a4410c7840da259ddd))
+* unauthorized settings page ([f5a4ef7](https://github.com/lightriderinc/cloud_platform_nextjs/commit/f5a4ef7c1235f12913b63de39d9894b62fc85c5f))
+* update pre sign in state ([2ecbf38](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2ecbf383dca2c87670a43a3c44aea83ca2332f1e))
+* welcome page pre sign in ([4ae4692](https://github.com/lightriderinc/cloud_platform_nextjs/commit/4ae4692ed4bdcb3ad738c16787767c12a6678ce6))
+
 # [1.9.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.8.0...v1.9.0) (2026-07-26)
 
 
