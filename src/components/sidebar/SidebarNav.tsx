@@ -1,9 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import {
-  MdArrowOutward
-} from "react-icons/md";
+import { MdArrowOutward } from "react-icons/md";
 import SidebarGroupDefault from "./SidebarGroupDefault";
 import SidebarGroupLegal from "./SidebarGroupLegal";
 import SidebarGroupSettings from "./SidebarGroupSettings";
@@ -28,9 +26,15 @@ export default function SidebarNav({
         {isLegalRoute ? (
           <SidebarGroupLegal onNavigate={onNavigate} />
         ) : isSettingsRoute ? (
-          <SidebarGroupSettings onNavigate={onNavigate} />
+          <SidebarGroupSettings
+            onNavigate={onNavigate}
+            isAuthenticated={isAuthenticated}
+          />
         ) : (
-          <SidebarGroupDefault onNavigate={onNavigate} isAuthenticated={isAuthenticated} />
+          <SidebarGroupDefault
+            onNavigate={onNavigate}
+            isAuthenticated={isAuthenticated}
+          />
         )}
       </nav>
 
