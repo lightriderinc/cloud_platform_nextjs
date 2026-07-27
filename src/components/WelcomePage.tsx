@@ -7,15 +7,16 @@ import WelcomePageCard from "./WelcomePageCard";
 export default function WelcomePage() {
   return (
     <div className="flex flex-col">
-      <main className="py-6">
+      <main className="py-3">
         <div className="flex flex-col mb-40">
-          <h1 className="hero font-semibold text-gray-700 mb-2">
-            Welcome to <br/> Light Rider{" "}
+          <h1 className="hero font-semibold text-gray-700 mb-4">
+            Welcome to <br /> Light Rider{" "}
             <span className="color-brand-primary">Cloud</span>.
           </h1>
-          <h2 className="text-xl mb-12 text-gray-600">
-            Start running quantum circuits today.
-          </h2>
+          <p>
+            Start using quantum, today. <br />
+            Run circuits on quantum processors and simulators from IQM and Rigetti.
+          </p>
         </div>
         <div className="flex flex-col mb-12">
           <h2 className="mb-4 font-semibold text-gray-600">
@@ -36,9 +37,7 @@ export default function WelcomePage() {
           </div>
         </div>
         <div>
-          <h2 className="mb-4 font-semibold text-gray-600">
-            Getting started
-          </h2>
+          <h2 className="mb-4 font-semibold text-gray-600">Getting started</h2>
           <div className="flex flex-row gap-3">
             <WelcomePageCard
               href="/backends"
