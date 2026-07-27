@@ -43,7 +43,7 @@ export default async function Home() {
             functionality.
           </InfoBox>
         </div>
-        <div className="flex flex-row gap-4 mt-6">
+        <div className="flex flex-col lg:flex-row gap-4 mt-6">
           <DashboardDemoCircuit />
           <DashboardDemoEntropy />
         </div>
