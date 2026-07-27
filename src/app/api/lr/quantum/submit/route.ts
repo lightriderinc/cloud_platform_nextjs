@@ -1,5 +1,5 @@
 import { resolveCustomerFromRequest } from "@/lib/auth/resolveCustomer";
-import { hasEnoughCredits, isProCustomer } from "@/lib/billing/planCheck";
+import { hasEnoughCredits } from "@/lib/billing/planCheck";
 import { db } from "@/lib/billing/db";
 import { isValidBackend, QUANTUM_BACKENDS } from "@/lib/quantum/backends";
 import { NextResponse } from "next/server";
@@ -7,16 +7,20 @@ import { NextResponse } from "next/server";
 /**
  * POST /api/lr/quantum/submit
  *
- * Job submission to iqm-proxy, gated on the Pro plan and prepaid credit
- * balance. Accepts either a Logto browser session (DemoCircuitModal,
- * NewJobModal — in-app, same-origin calls) or an `Authorization: Bearer
- * lr_...` API key (external SDK/Colab callers) — see resolveCustomer.ts.
- * Either way, the Pro check goes through the Subscription table directly
- * (see planCheck.ts), not getAccessTier()/the Logto role, since that role
- * can silently drift from actual subscription state.
+ * Job submission to iqm-proxy. V2 product model: purely credit-balance
+ * gated, no Pro subscription check anywhere in this path (Pro
+ * infrastructure — isProCustomer(), the Stripe subscription flow,
+ * resync-pro-role — stays in the codebase, just unreachable from here).
+ * Mock backends cost 0 (see backends.ts), so hasEnoughCredits() is a
+ * natural no-op for them. Accepts either a Logto browser session
+ * (DemoCircuitModal, NewJobModal — in-app, same-origin calls) or an
+ * `Authorization: Bearer lr_...` API key (external SDK/Colab callers) —
+ * see resolveCustomer.ts. createIfMissing: true because this is commonly a
+ * signed-in user's very first relevant request — that's also where their
+ * free signup credit grant happens (see getOrCreateCustomer).
  */
 export async function POST(req: Request) {
-  const customer = await resolveCustomerFromRequest(req);
+  const customer = await resolveCustomerFromRequest(req, { createIfMissing: true });
   if (!customer) {
     return NextResponse.json(
       { error: "Not signed in, and no valid API key provided." },
@@ -37,18 +41,6 @@ export async function POST(req: Request) {
   }
 
   const config = QUANTUM_BACKENDS[backend];
-
-  if (config.requiresPro && !(await isProCustomer(customer))) {
-    return NextResponse.json(
-      {
-        error: "unauthorized",
-        message: `The '${backend}' backend requires a Pro subscription.`,
-        upgradeUrl: "/pricing/user-plans",
-      },
-      { status: 403 },
-    );
-  }
-
   const costCents = (shots ?? 1) * config.costPerShotCents;
 
   if (costCents > 0 && !hasEnoughCredits(customer, costCents)) {

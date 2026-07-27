@@ -1,12 +1,14 @@
+// V2 product model: no Pro subscription gate anywhere — access is purely
+// credit-balance-based (see /api/lr/quantum/submit). Mock backends are free
+// and unlimited (costPerShotCents: 0 makes the credit check a natural
+// no-op); real QPU backends cost credits, prepaid, no subscription involved.
 export const QUANTUM_BACKENDS = {
   "iqm-garnet-mock": {
     proxyPath: "/jobs",
-    requiresPro: true,
-    costPerShotCents: 1, // TODO: real pricing, placeholder only
+    costPerShotCents: 0, // free — mock backend, no credits required
   },
   "iqm-garnet": {
     proxyPath: "/jobs",
-    requiresPro: true,
     costPerShotCents: 1, // TODO: real pricing, placeholder only
   },
 } as const;

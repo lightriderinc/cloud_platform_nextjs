@@ -1,12 +1,10 @@
 import { handleSignIn } from "@/app/actions/auth";
-import { isPro } from "@/lib/auth";
 import { getDisplayName, getSession } from "@/lib/auth/session";
 import LoginButton from "./auth/LoginButton";
 import UserCard from "./UserCard";
 
 export default async function AuthenticationSection() {
   const { isAuthenticated } = await getSession();
-  const userIsPro = await isPro();
 
   return (
     <>
@@ -18,7 +16,6 @@ export default async function AuthenticationSection() {
       {isAuthenticated && (
         <UserCard
           name={(await getDisplayName()) ?? "Account"}
-          role={userIsPro ? "Pro user" : "Basic user"}
         />
       )}
     </>
