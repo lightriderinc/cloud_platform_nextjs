@@ -1,5 +1,6 @@
 "use client";
 
+import { handleSignIn } from "@/app/actions/auth";
 import { getQuantumBackendId } from "@/lib/quantum/backends";
 import type { Backend } from "@/types/backend";
 import { useQuery } from "@tanstack/react-query";
@@ -46,8 +47,10 @@ async function fetchHasApiKey(): Promise<boolean> {
 
 export default function BackendConnectSection({
   backend,
+  isAuthenticated,
 }: {
   backend: Backend;
+  isAuthenticated: boolean;
 }) {
   const [copied, setCopied] = useState(false);
   const quantumBackendId = getQuantumBackendId(backend.id);
@@ -55,8 +58,23 @@ export default function BackendConnectSection({
   const { data: hasApiKey, isLoading } = useQuery({
     queryKey: ["settings", "has-api-key"],
     queryFn: fetchHasApiKey,
-    enabled: backend.type === "QPU" && !!quantumBackendId,
+    enabled: isAuthenticated && backend.type === "QPU" && !!quantumBackendId,
   });
+
+  if (!isAuthenticated) {
+    return (
+      <p className="mt-3 text-sm text-gray-600">
+        <button
+          type="button"
+          onClick={() => handleSignIn()}
+          className="brand-link cursor-pointer"
+        >
+          Log in
+        </button>{" "}
+        to access backends.
+      </p>
+    );
+  }
 
   if (backend.type !== "QPU") {
     return (

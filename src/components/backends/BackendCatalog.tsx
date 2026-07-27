@@ -14,7 +14,11 @@ import BackendModal from "./BackendModal";
 // every provider's card data has arrived, then all cards appear together;
 // heavy details (fidelities, qubit map) keep streaming in behind the scenes
 // afterwards. Adding a provider = one more hook + spread below.
-export default function BackendCatalog() {
+export default function BackendCatalog({
+  isAuthenticated,
+}: {
+  isAuthenticated: boolean;
+}) {
   const [selected, setSelected] = useState<Backend | null>(null);
   const { data: iqmBackends = [], isLoading: iqmLoading } = useIqmBackends();
   const { data: rigettiBackends = [], isLoading: rigettiLoading } =
@@ -51,6 +55,7 @@ export default function BackendCatalog() {
         <BackendModal
           backend={allBackends.find((b) => b.id === selected.id) ?? selected}
           onClose={() => setSelected(null)}
+          isAuthenticated={isAuthenticated}
         />
       )}
     </>
