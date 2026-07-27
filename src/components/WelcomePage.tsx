@@ -26,7 +26,7 @@ export default function WelcomePage() {
             <div>
               <LoginButton onSignIn={handleSignIn} />
             </div>
-            <a href="https://www.lightriderinc.com/contact">
+            <a href="https://www.lightriderinc.com/contact" target="_blank" rel="noopener noreferrer">
               <button
                 type="button"
                 className="default-radius px-3 py-2 text-sm font-semibold text-brand-primary cursor-pointer btn-outline-brand transition-opacity min-w-[110px] w-full"
