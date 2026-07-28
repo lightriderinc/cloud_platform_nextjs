@@ -1,7 +1,6 @@
 import { requireLogtoUser } from "@/lib/auth/session";
-import { getOrCreateCustomer } from "@/lib/billing/customer";
+import { createCheckoutSession, getOrCreateCustomer } from "@/lib/billing/customer";
 import { API_PLANS, USER_PLANS, resolvePriceId } from "@/lib/billing/plans";
-import { stripe } from "@/lib/stripe/client";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -62,9 +61,8 @@ export async function POST(request: NextRequest) {
   const customer = await getOrCreateCustomer(user.sub, user.email);
 
   const origin = request.nextUrl.origin;
-  const session = await stripe.checkout.sessions.create({
+  const session = await createCheckoutSession(customer, {
     mode: "subscription",
-    customer: customer.stripeCustomerId,
     line_items: [{ price: priceId, quantity: 1 }],
     subscription_data: {
       metadata: { logtoUserId: user.sub, kind },

@@ -1,6 +1,5 @@
 import { requireLogtoUser } from "@/lib/auth/session";
-import { getOrCreateCustomer } from "@/lib/billing/customer";
-import { stripe } from "@/lib/stripe/client";
+import { createCheckoutSession, getOrCreateCustomer } from "@/lib/billing/customer";
 import { NextRequest, NextResponse } from "next/server";
 
 const MIN_TOPUP_USD = 5;
@@ -35,9 +34,8 @@ export async function POST(request: NextRequest) {
   const customer = await getOrCreateCustomer(user.sub, user.email);
   const origin = request.nextUrl.origin;
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await createCheckoutSession(customer, {
     mode: "payment",
-    customer: customer.stripeCustomerId,
     line_items: [
       {
         price_data: {

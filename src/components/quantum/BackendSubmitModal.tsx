@@ -55,7 +55,12 @@ export default function BackendSubmitModal({
     queryFn: () => fetchJson<Credits>("/api/billing/credits"),
     enabled: needsCredits,
   });
-  const outOfCredits = needsCredits && credits !== undefined && credits.remainingCents <= 0;
+  // Real QPU access requires having purchased credits at least once — the
+  // free signup grant alone doesn't unlock it, even if remainingCents > 0.
+  const blockedByCredits =
+    needsCredits &&
+    credits !== undefined &&
+    (credits.purchasedCents <= 0 || credits.remainingCents <= 0);
   const stillCheckingCredits = needsCredits && credits === undefined;
 
   useEffect(() => {
@@ -135,7 +140,7 @@ export default function BackendSubmitModal({
                     </button>
                   }
                 />
-              ) : stillCheckingCredits ? null : outOfCredits ? (
+              ) : stillCheckingCredits ? null : blockedByCredits ? (
                 <OutOfCreditsNotice />
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">

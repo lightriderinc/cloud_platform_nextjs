@@ -1,5 +1,5 @@
 import { resolveCustomerFromRequest } from "@/lib/auth/resolveCustomer";
-import { hasEnoughCredits } from "@/lib/billing/planCheck";
+import { hasEnoughCredits, hasPurchasedCredits } from "@/lib/billing/planCheck";
 import { db } from "@/lib/billing/db";
 import { isValidBackend, QUANTUM_BACKENDS } from "@/lib/quantum/backends";
 import { NextResponse } from "next/server";
@@ -42,6 +42,21 @@ export async function POST(req: Request) {
 
   const config = QUANTUM_BACKENDS[backend];
   const costCents = (shots ?? 1) * config.costPerShotCents;
+
+  // Real QPU access (any backend that actually costs credits) requires
+  // having purchased credits at least once — the free signup grant alone
+  // doesn't unlock it, even if it'd otherwise cover this job's cost. Mock/
+  // sample-circuit backends (costPerShotCents: 0) are unaffected.
+  if (config.costPerShotCents > 0 && !(await hasPurchasedCredits(customer.id))) {
+    return NextResponse.json(
+      {
+        error: "purchase_required",
+        message:
+          "Real QPU access requires purchasing credits first. Visit /settings/purchases/quantum-compute to buy credits.",
+      },
+      { status: 402 },
+    );
+  }
 
   if (costCents > 0 && !hasEnoughCredits(customer, costCents)) {
     return NextResponse.json(

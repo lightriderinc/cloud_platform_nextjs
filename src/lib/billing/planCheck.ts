@@ -25,3 +25,20 @@ export async function isProCustomer(customer: Customer): Promise<boolean> {
 export function hasEnoughCredits(customer: Customer, costCents: number): boolean {
   return customer.creditsBalanceCents >= costCents;
 }
+
+/**
+ * Real QPU access requires having bought credits at least once — the
+ * one-time signup grant (see customer.ts: SIGNUP_CREDIT_CENTS) doesn't
+ * count, even though it's still spendable dollar-for-dollar once a customer
+ * has purchased something. Checked against the ledger directly (not
+ * creditsBalanceCents) so a customer who has since spent their purchase back
+ * down to $0 still counts as "has purchased" — this gates access, not
+ * balance.
+ */
+export async function hasPurchasedCredits(customerId: string): Promise<boolean> {
+  const result = await db.creditLedgerEntry.aggregate({
+    where: { customerId, amountCents: { gt: 0 }, reason: { not: "signup_credit" } },
+    _sum: { amountCents: true },
+  });
+  return (result._sum.amountCents ?? 0) > 0;
+}

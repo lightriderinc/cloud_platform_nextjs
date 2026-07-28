@@ -1,5 +1,7 @@
 import { db } from "@/lib/billing/db";
 import { stripe } from "@/lib/stripe/client";
+import type { Customer } from "@prisma/client";
+import Stripe from "stripe";
 
 // 10 Light Rider tokens ($1/token), granted once per new customer, no
 // payment required — V2 product model.
@@ -53,4 +55,54 @@ export async function getCreditBalanceCents(customerId: string): Promise<number>
     _sum: { amountCents: true },
   });
   return result._sum.amountCents ?? 0;
+}
+
+/**
+ * Creates a Stripe Checkout Session for a Customer, recovering once from a
+ * stale `stripeCustomerId` — e.g. the Stripe customer was deleted directly
+ * in the Dashboard (routine in test mode) while our DB row still points at
+ * it, so every subsequent checkout attempt fails with "No such customer"
+ * until someone notices. On that specific error, mint a fresh Stripe
+ * customer, persist it, and retry exactly once; any other error — or a
+ * second failure — propagates as a real error rather than looping.
+ */
+export async function createCheckoutSession(
+  customer: Customer,
+  params: Omit<Stripe.Checkout.SessionCreateParams, "customer">,
+): Promise<Stripe.Checkout.Session> {
+  try {
+    return await stripe.checkout.sessions.create({
+      ...params,
+      customer: customer.stripeCustomerId,
+    });
+  } catch (err) {
+    if (!isStaleCustomerError(err)) {
+      throw err;
+    }
+
+    console.warn(
+      `[stripe] stripeCustomerId ${customer.stripeCustomerId} for customer ${customer.id} no longer exists in Stripe; minting a replacement.`,
+    );
+
+    const fresh = await stripe.customers.create({
+      email: customer.email ?? undefined,
+      metadata: { logtoUserId: customer.logtoUserId },
+    });
+    await db.customer.update({
+      where: { id: customer.id },
+      data: { stripeCustomerId: fresh.id },
+    });
+
+    return stripe.checkout.sessions.create({ ...params, customer: fresh.id });
+  }
+}
+
+function isStaleCustomerError(err: unknown): boolean {
+  return (
+    err instanceof Stripe.errors.StripeInvalidRequestError &&
+    err.code === "resource_missing" &&
+    err.param === "customer" &&
+    typeof err.message === "string" &&
+    err.message.includes("No such customer")
+  );
 }
