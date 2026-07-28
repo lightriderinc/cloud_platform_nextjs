@@ -1,3 +1,13 @@
+## [1.9.3](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.2...v1.9.3) (2026-07-28)
+
+
+### Bug Fixes
+
+* navigation active state ([7c0b84b](https://github.com/lightriderinc/cloud_platform_nextjs/commit/7c0b84b348ae528947b6094e4a7120f2cb3fe56c))
+* second navigation layer ([e2d4486](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e2d44865020286e79ffbee1adbf3628088201f4f))
+* secondary sidebar added ([4a26c5e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/4a26c5ea7e2994ba3add0192f2781c18a2ffdbb9))
+* separate main and secondary sidebars ([c1af44a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/c1af44a96fbd4c775c4521c7cebcd3736100a999))
+
 ## [1.9.2](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.1...v1.9.2) (2026-07-27)
 
 
