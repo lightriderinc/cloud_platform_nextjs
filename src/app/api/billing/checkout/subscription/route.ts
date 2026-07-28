@@ -70,8 +70,8 @@ export async function POST(request: NextRequest) {
       metadata: { logtoUserId: user.sub, kind },
     },
     metadata: { logtoUserId: user.sub, kind },
-    success_url: `${origin}/billing?checkout=success`,
-    cancel_url: `${origin}/pricing/${kind === "user_plan" ? "user-plans" : "api"}?checkout=canceled`,
+    success_url: `${origin}/settings/billing?checkout=success`,
+    cancel_url: `${origin}/settings/pricing/${kind === "user_plan" ? "user-plans" : "api"}?checkout=canceled`,
   });
 
   return NextResponse.json({ url: session.url });

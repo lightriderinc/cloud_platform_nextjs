@@ -1,8 +1,6 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { MdArrowOutward } from "react-icons/md";
-import SidebarGroupDefault from "./SidebarGroupDefault";
 import SidebarGroupLegal from "./SidebarGroupLegal";
 import SidebarGroupSettings from "./SidebarGroupSettings";
 
@@ -30,33 +28,8 @@ export default function SidebarNav({
             onNavigate={onNavigate}
             isAuthenticated={isAuthenticated}
           />
-        ) : (
-          <SidebarGroupDefault
-            onNavigate={onNavigate}
-            isAuthenticated={isAuthenticated}
-          />
-        )}
+        ): (<></>)}
       </nav>
-
-      {/* Placeholder: docs/support links */}
-      <div className="border-t border-gray-100 px-3 py-4 text-sm">
-        <a
-          href="https://www.lightriderinc.com/contact"
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-2 default-radius px-2 py-1.5 transition-colors hover:bg-gray-100"
-        >
-          contact <MdArrowOutward />
-        </a>
-        <a
-          href="https://www.lightriderinc.com/"
-          target="_blank"
-          rel="noreferrer"
-          className="mb-1 flex items-center gap-2 default-radius px-2 py-1.5 transition-colors hover:bg-gray-100"
-        >
-          Light Rider website <MdArrowOutward />
-        </a>
-      </div>
     </>
   );
 }

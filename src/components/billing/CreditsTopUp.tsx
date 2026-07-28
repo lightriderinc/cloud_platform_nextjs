@@ -21,10 +21,10 @@ export default function CreditsTopUp() {
   }
 
   return (
-    <div className="default-radius border border-gray-200 bg-gray-100 p-5">
+    <div className="default-radius border border-gray-100 bg-gray-100 p-5">
       <h2 className="text-lg font-bold text-gray-800">Buy compute credits</h2>
       <p className="mb-4 text-sm text-gray-600">
-        Credits are consumed as your jobs run, at the runtime rates above.
+        Credits are consumed at the runtime rates below as your jobs run.
       </p>
 
       <div className="mb-4 flex flex-wrap gap-2">
@@ -32,10 +32,10 @@ export default function CreditsTopUp() {
           <button
             key={preset}
             onClick={() => selectPreset(preset)}
-            className={`default-radius border px-4 py-2 text-sm font-medium transition-colors ${
+            className={`px-3 py-1.5 bg-white default-radius text-sm font-medium border transition-colors cursor-pointer ${
               amount === preset && !customValue
-                ? "border-[var(--brand-primary)] bg-white text-gray-900"
-                : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50"
+                ? "border-[var(--brand-primary)] bg-red-50 text-[var(--brand-primary)]"
+                : "border-gray-100 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
             }`}
           >
             ${preset}

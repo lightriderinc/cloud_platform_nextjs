@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
       metadata: { logtoUserId: user.sub, kind: "validation" },
     },
     metadata: { logtoUserId: user.sub, kind: "validation" },
-    success_url: `${origin}/billing?checkout=success`,
-    cancel_url: `${origin}/billing?checkout=canceled`,
+    success_url: `${origin}/settings/billing?checkout=success`,
+    cancel_url: `${origin}/settings/billing?checkout=canceled`,
   });
 
   return NextResponse.json({ url: session.url });

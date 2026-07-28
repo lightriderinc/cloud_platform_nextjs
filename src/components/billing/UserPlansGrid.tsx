@@ -23,40 +23,45 @@ export default function UserPlansGrid() {
       <PlanCard
         name="Basic"
         price="Free"
+        billedNote="+ Pay as you go"
         description="Included with your account."
         features={[
-          "Access to core applications",
-          "Simulator & demo circuits",
+          "Access to demo applications",
+          "Free access to simulator & demo circuits",
+          "Pay as you go QPU access",
           "Community support",
         ]}
         selected={selected === "basic"}
         onSelect={() => setSelected("basic")}
         action={
-          <div className="w-full default-radius border border-gray-200 px-4 py-2 text-center text-sm font-medium text-gray-500">
+          <div className="w-full default-radius border border-gray-100 px-4 py-2 text-center text-sm font-medium bg-gray-50 text-gray-400">
             Included with your account
           </div>
         }
       />
-      <PlanCard
-        name={pro.name}
-        price={`$${pro.monthlyUsd}`}
-        billedNote="/mo"
-        description="Run jobs on real quantum hardware."
-        badge="Coming soon"
-        features={[
-          "Everything in Basic",
-          "Run jobs on real QPUs",
-          `${pro.includedCreditsUsd} Light Rider tokens included`,
-          "Priority support",
-        ]}
-        selected={selected === "pro"}
-        onSelect={() => setSelected("pro")}
-        action={
-          <div className="w-full default-radius border border-gray-200 px-4 py-2 text-center text-sm font-medium text-gray-500">
-            Coming soon
+      <div className="opacity-80">
+        <PlanCard
+          name={pro.name}
+          price={`$${pro.monthlyUsd}`}
+          billedNote="/mo"
+          description="Access premium applications and services"
+          badge="Coming soon"
+          features={[
+            "Everything in Basic",
+            "Access to quantum applications",
+            "Access to error correction tools",
+            `${pro.includedCreditsUsd} Light Rider tokens included`,
+            "Priority support",
+          ]}
+          selected={selected === "pro"}
+          onSelect={() => setSelected("pro")}
+          action={
+            <div className="w-full default-radius border border-gray-100 px-4 py-2 text-center text-sm font-medium bg-gray-50 text-gray-400">
+            Monthly subscription
           </div>
-        }
-      />
+          }
+        />
+      </div>
     </div>
   );
 }

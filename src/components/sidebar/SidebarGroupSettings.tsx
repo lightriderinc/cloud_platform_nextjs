@@ -1,5 +1,5 @@
 import { handleSignIn } from "@/app/actions/auth";
-import { MdAccountCircle, MdPayments } from "react-icons/md";
+import { MdAccountCircle, MdLocalOffer, MdPayments } from "react-icons/md";
 import { RiLockPasswordFill } from "react-icons/ri";
 import SidebarNavGroup from "./SidebarNavGroup";
 import SidebarNavItem from "./SidebarNavItem";
@@ -23,17 +23,12 @@ export default function SidebarGroupSettings({
               onNavigate={onNavigate}
             />
             <SidebarNavItem
-              name="Access Tokens"
-              href="/settings/tokens"
+              name="API Keys"
+              href="/settings/keys"
               icon={RiLockPasswordFill}
               onNavigate={onNavigate}
             />
-            <SidebarNavItem
-              name="Payment & Subscription"
-              href="/settings/payment"
-              icon={MdPayments}
-              onNavigate={onNavigate}
-            />
+            
             {/* <SidebarNavItem
           name="Platform Settings"
           href="#"
@@ -42,6 +37,7 @@ export default function SidebarGroupSettings({
         /> */}
           </>
         )}
+
 
         {!isAuthenticated && (
           <>
@@ -58,6 +54,23 @@ export default function SidebarGroupSettings({
           </>
         )}
       </SidebarNavGroup>
+
+      {isAuthenticated && (
+          <SidebarNavGroup label="Usage & Payment">
+            <SidebarNavItem
+              name="Usage"
+              href="/settings/payment"
+              icon={MdPayments}
+              onNavigate={onNavigate}
+            />
+            <SidebarNavItem
+              name="Purchases"
+              href="/settings/pricing"
+              icon={MdLocalOffer}
+              onNavigate={onNavigate}
+            />
+          </SidebarNavGroup>
+        )}
     </>
   );
 }

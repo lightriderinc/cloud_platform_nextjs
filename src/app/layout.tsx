@@ -1,6 +1,8 @@
 import Header from "@/components/Header";
 import WelcomeModal from "@/components/onboarding/WelcomeModal";
 import Sidebar from "@/components/sidebar/Sidebar";
+import SidebarSecondary from "@/components/sidebar/SidebarSecondary";
+import SidebarSecondaryGate from "@/components/sidebar/SidebarSecondaryGate";
 import TermsGateModal from "@/components/TermsGateModal";
 import TourProvider from "@/components/tour/TourProvider";
 import type { Metadata } from "next";
@@ -47,7 +49,12 @@ export default function RootLayout({
           <Header />
           <div className="flex flex-1 min-h-0">
             <Sidebar />
-            <main className="flex-1 overflow-y-auto px-4 py-6 lg:px-8">{children}</main>
+            <SidebarSecondaryGate>
+              <SidebarSecondary />
+            </SidebarSecondaryGate>
+            <main className="flex-1 overflow-y-auto px-4 py-6 lg:px-8">
+              {children}
+            </main>
           </div>
         </Providers>
       </body>

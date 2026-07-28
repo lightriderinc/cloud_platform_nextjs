@@ -9,7 +9,7 @@ export default function OutOfCreditsNotice() {
         quantum hardware.
       </p>
       <Link
-        href="/pricing/quantum-compute"
+        href="/settings/pricing/quantum-compute"
         className="mt-3 inline-block default-radius px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
         style={{ backgroundColor: "var(--brand-primary)" }}
       >
