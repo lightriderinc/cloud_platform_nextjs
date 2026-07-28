@@ -28,18 +28,7 @@ export default function SidebarGroupSettings({
               icon={RiLockPasswordFill}
               onNavigate={onNavigate}
             />
-            <SidebarNavItem
-              name="Payment & Subscription"
-              href="/settings/payment"
-              icon={MdPayments}
-              onNavigate={onNavigate}
-            />
-            <SidebarNavItem
-              name="Pricing"
-              href="/settings/pricing"
-              icon={MdLocalOffer}
-              onNavigate={onNavigate}
-            />
+            
             {/* <SidebarNavItem
           name="Platform Settings"
           href="#"
@@ -48,6 +37,7 @@ export default function SidebarGroupSettings({
         /> */}
           </>
         )}
+
 
         {!isAuthenticated && (
           <>
@@ -64,6 +54,23 @@ export default function SidebarGroupSettings({
           </>
         )}
       </SidebarNavGroup>
+
+      {isAuthenticated && (
+          <SidebarNavGroup label="Usage & Payment">
+            <SidebarNavItem
+              name="Usage"
+              href="/settings/payment"
+              icon={MdPayments}
+              onNavigate={onNavigate}
+            />
+            <SidebarNavItem
+              name="Purchases"
+              href="/settings/pricing"
+              icon={MdLocalOffer}
+              onNavigate={onNavigate}
+            />
+          </SidebarNavGroup>
+        )}
     </>
   );
 }

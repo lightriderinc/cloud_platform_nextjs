@@ -65,7 +65,7 @@ export default function JobsList() {
 
   if (!jobs || jobs.length === 0) {
     return (
-      <div className="default-radius border border-dashed border-gray-300 p-16 text-center mt-5 text-sm text-gray-500">
+      <div className="default-radius border border-dashed border-gray-200 bg-gray-50 p-16 text-center mt-5 text-sm text-gray-500">
         Jobs you submit will appear here. You can track their status and view
         results once they complete.
       </div>
