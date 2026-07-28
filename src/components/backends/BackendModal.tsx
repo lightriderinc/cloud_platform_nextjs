@@ -1,7 +1,9 @@
 "use client";
 
+import BackendSubmitModal from "@/components/quantum/BackendSubmitModal";
+import { getQuantumBackendId } from "@/lib/quantum/backends";
 import type { Backend } from "@/types/backend";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { MdClose } from "react-icons/md";
 import BackendConnectSection from "./BackendConnectSection";
 import BackendStatusBadge from "./BackendStatusBadge";
@@ -27,6 +29,8 @@ export default function BackendModal({
   onClose: () => void;
   isAuthenticated: boolean;
 }) {
+  const [showSubmit, setShowSubmit] = useState(false);
+
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") onClose();
@@ -36,6 +40,7 @@ export default function BackendModal({
   }, [onClose]);
 
   const { name, status, queueDepth, type, qubits, provider, pricing } = backend;
+  const quantumBackendId = getQuantumBackendId(backend.id);
   const d = backend.details ?? {};
 
   const pct = (n?: number) => (n != null ? `${n} %` : undefined);
@@ -112,6 +117,23 @@ export default function BackendModal({
           )}
         </div>
 
+        {quantumBackendId && (
+          <div className="mb-8">
+            {isAuthenticated ? (
+              <button
+                type="button"
+                onClick={() => setShowSubmit(true)}
+                style={{ backgroundColor: "var(--brand-primary)" }}
+                className="default-radius cursor-pointer px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-80"
+              >
+                Submit a job
+              </button>
+            ) : (
+              <p className="text-sm text-gray-500">Log in to submit a job to {name}.</p>
+            )}
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-4">
           {specs.map((spec) => (
             <div key={spec.label}>
@@ -135,6 +157,14 @@ export default function BackendModal({
           <BackendConnectSection backend={backend} isAuthenticated={isAuthenticated} />
         </details>
       </div>
+
+      {showSubmit && quantumBackendId && (
+        <BackendSubmitModal
+          backend={quantumBackendId}
+          title={`Submit a job to ${name}`}
+          onClose={() => setShowSubmit(false)}
+        />
+      )}
     </div>
   );
 }
