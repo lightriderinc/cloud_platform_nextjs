@@ -32,7 +32,10 @@ export default function UsageSummary() {
     queryFn: () => fetchJson<Usage>("/api/billing/usage"),
   });
 
-  const showCredits = (credits.data?.purchasedCents ?? 0) > 0;
+  // CreditsSummary now renders its own "locked" state for purchasedCents <=
+  // 0 rather than hiding itself, so this only needs to wait for the data to
+  // load — not gate on having purchased anything.
+  const showCredits = credits.data !== undefined;
   const showUsage = !!usage.data?.plan;
 
   if (!showCredits && !showUsage) {
