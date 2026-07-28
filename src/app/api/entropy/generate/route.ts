@@ -26,7 +26,7 @@ const KNOWN_SOURCES = [
  * app's own pricing design already treats entropy as a separate "EaaS API
  * Pricing" product (usage-metered per call, its own Free/Starter/Developer/
  * Business tiers — see src/lib/billing/plans.ts's API_PLANS and
- * src/app/settings/pricing/api/page.tsx), not the same Pro+prepaid-credit model as
+ * src/app/settings/purchases/api/page.tsx), not the same Pro+prepaid-credit model as
  * quantum circuit jobs. No enforcement for that EaaS tier exists anywhere
  * in this app yet (reportApiUsage in billing/meter.ts has no callers — it's
  * designed for an external gateway), so this route doesn't invent

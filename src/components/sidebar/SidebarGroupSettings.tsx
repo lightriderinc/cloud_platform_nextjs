@@ -59,13 +59,13 @@ export default function SidebarGroupSettings({
           <SidebarNavGroup label="Usage & Payment">
             <SidebarNavItem
               name="Usage"
-              href="/settings/payment"
+              href="/settings/usage"
               icon={MdPayments}
               onNavigate={onNavigate}
             />
             <SidebarNavItem
               name="Purchases"
-              href="/settings/pricing"
+              href="/settings/purchases"
               icon={MdLocalOffer}
               onNavigate={onNavigate}
             />

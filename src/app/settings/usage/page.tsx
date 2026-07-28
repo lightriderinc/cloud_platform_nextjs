@@ -7,9 +7,9 @@ export default function PaymentPage() {
   return (
     <div>
       <h1 className="text-2xl font-semibold text-gray-700">
-        Payment & Subscription
+        Usage
       </h1>
-      <p className="mb-6 text-sm text-gray-600">
+      <p className="mb-12 text-sm text-gray-600">
         Manage your subscription and payment details.
       </p>
 

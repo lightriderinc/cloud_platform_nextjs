@@ -1,9 +1,10 @@
 import LowCreditsBanner from "@/components/billing/LowCreditsBanner";
 import DashboardDemoCircuit from "@/components/dashboard/DashboardDemoCircuit";
 import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntropy";
-import InfoBox from "@/components/InfoBox";
 import WelcomePage from "@/components/WelcomePage";
 import { getSession } from "@/lib/auth/session";
+import Link from "next/link";
+import { MdArrowOutward } from "react-icons/md";
 
 export default async function Home() {
   // const token = process.env.LR_TOKEN ?? "";
@@ -40,13 +41,6 @@ export default async function Home() {
             <h2 className="mb-3 text-xl font-bold text-gray-600">
               Getting started
             </h2>
-            <InfoBox>
-              The Light Rider cloud quantum platform is currently in active
-              development. <br />
-              All features will be fully available upon official launch. Below
-              is a limited demo intended to provide a preview of select
-              functionality.
-            </InfoBox>
           </div>
           <div className="flex flex-col lg:flex-row gap-4 mt-6">
             <DashboardDemoCircuit />
@@ -57,12 +51,17 @@ export default async function Home() {
         </div> */}
         </div>
       )}
-      {!isAuthenticated && (
-        <WelcomePage />
-      )
-      }
+      {!isAuthenticated && <WelcomePage />}
 
       <div className="flex flex-row gap-3 w-full justify-end pt-6 pb-2">
+        <Link
+          className="inline-flex items-center gap-1 text-xs text-gray-700 hover:text-gray-500"
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://www.lightriderinc.com/platform-feedback"
+        >
+          Send feedback <MdArrowOutward />
+        </Link>
         <a
           className="text-xs text-gray-700 hover:text-gray-500"
           href="/legal/privacy"

@@ -9,7 +9,7 @@ async function fetchSubscriptions(): Promise<Subscription[]> {
 
 /**
  * Client-side "is this signed-in user Pro" check, matching the same DB
- * subscription state /settings/payment displays (tier: "pro" + active/
+ * subscription state /settings/usage displays (tier: "pro" + active/
  * trialing) — the same source of truth the server-side gate in
  * /api/lr/quantum/submit now uses (isProCustomer). Deliberately NOT the
  * Logto role (/api/auth/access-tier) — that role is only ever set as a

@@ -56,7 +56,7 @@ export default function LowCreditsBanner() {
         to keep running jobs on real hardware.
       </p>
       <Link
-        href="/settings/pricing/quantum-compute"
+        href="/settings/purchases/quantum-compute"
         className="shrink-0 default-radius bg-amber-500 px-3 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-90"
       >
         Buy more tokens

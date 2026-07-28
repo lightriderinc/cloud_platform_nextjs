@@ -62,7 +62,7 @@ export default function GettingStartedChecklist() {
       key: "plan",
       label: "Choose a plan or add credits",
       done: status.hasPlanOrCredits,
-      href: "/settings/pricing",
+      href: "/settings/purchases",
     },
     {
       key: "job",
