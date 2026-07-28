@@ -1,3 +1,17 @@
+# [1.10.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.8...v1.10.0) (2026-07-28)
+
+
+### Bug Fixes
+
+* feedback link added ([3716122](https://github.com/lightriderinc/cloud_platform_nextjs/commit/371612246c9a289306430a964316082955ac322e))
+* info box icon shrink ([cf2e727](https://github.com/lightriderinc/cloud_platform_nextjs/commit/cf2e72795599a577be3f49b491a272c371a225a5))
+* pricing -> purchases, payment-> usage ([5647f40](https://github.com/lightriderinc/cloud_platform_nextjs/commit/5647f40b61dfbb8cde315f545c8bcb0a484d162e))
+
+
+### Features
+
+* IQM backends wired + renamed pricing and usage pages ([42d60b4](https://github.com/lightriderinc/cloud_platform_nextjs/commit/42d60b4b54ece054b35a651da2001d9a90ef918b))
+
 ## [1.9.8](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.7...v1.9.8) (2026-07-28)
 
 
