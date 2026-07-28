@@ -1,6 +1,5 @@
 "use client";
 
-import TiltCard from "@/components/ui/TiltCard";
 
 export default function PlanCard({
   name,
@@ -24,16 +23,16 @@ export default function PlanCard({
   onSelect?: () => void;
 }) {
   return (
-    <TiltCard
+    <div
       onClick={onSelect}
-      className={`flex cursor-pointer flex-col gap-4 default-radius border bg-white p-5 ${
+      className={`flex flex-col gap-4 default-radius border bg-gray-100 p-5 ${
         selected
-          ? "border-[var(--brand-primary)] shadow-md"
-          : "border-gray-200 hover:border-gray-300"
+          ? "border-gray-100 card-hover-primary"
+          : "border-gray-100 card-hover-primary"
       }`}
     >
       {badge && (
-        <span className="w-fit default-radius bg-gray-900 px-2 py-0.5 text-xs font-medium text-white">
+        <span className="w-fit default-radius px-2 py-0.5 text-xs font-medium text-white" style={{ backgroundColor: "var(--brand-tertiary)" }}>
           {badge}
         </span>
       )}
@@ -59,6 +58,6 @@ export default function PlanCard({
       </ul>
       {/* Stop clicks on the CTA from also toggling card selection twice */}
       <div onClick={(e) => e.stopPropagation()}>{action}</div>
-    </TiltCard>
+    </div>
   );
 }

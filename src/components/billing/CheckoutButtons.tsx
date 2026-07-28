@@ -128,7 +128,7 @@ export function ManageBillingButton({ className }: { className?: string }) {
         disabled={loading}
         className={
           className ??
-          "default-radius border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-60"
+          "default-radius px-3 py-2 text-sm font-semibold text-brand-primary cursor-pointer btn-outline-brand transition-opacity min-w-[110px] w-full"
         }
       >
         {loading ? "Loading…" : "Manage billing"}
