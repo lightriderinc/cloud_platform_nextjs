@@ -1,4 +1,5 @@
 import TiltCard from "@/components/ui/TiltCard";
+import { getQuantumBackendId } from "@/lib/quantum/backends";
 import type { Backend } from "@/types/backend";
 import BackendSpec from "./BackendSpec";
 import BackendStatusBadge from "./BackendStatusBadge";
@@ -16,6 +17,7 @@ export default function BackendCard({
   onSelect?: (backend: Backend) => void;
 }) {
   const { name, type, status, qubits, provider } = backend;
+  const comingSoon = getQuantumBackendId(backend.id) === null;
 
   return (
     <TiltCard
@@ -32,8 +34,13 @@ export default function BackendCard({
         <BackendSpec label="Provider" value={provider} />
       </div>
 
-      <div className="mt-auto">
+      <div className="mt-auto flex items-center gap-2">
         <BackendTypeTag type={type} />
+        {comingSoon && (
+          <span className="w-fit default-radius bg-gray-900 px-2 py-0.5 text-xs font-medium text-white">
+            Coming soon
+          </span>
+        )}
       </div>
     </TiltCard>
   );
