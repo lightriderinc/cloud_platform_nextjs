@@ -1,3 +1,11 @@
+## [1.9.8](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.7...v1.9.8) (2026-07-28)
+
+
+### Bug Fixes
+
+* settings navigation + minor styles ([b43e7b9](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b43e7b90b3ff072aa865639cf6bee1780fa9e302))
+* settings navigation + minor styles ([42cda5d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/42cda5d6410e6e1566adb38624c0c66d25e44c02))
+
 ## [1.9.7](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.6...v1.9.7) (2026-07-28)
 
 
