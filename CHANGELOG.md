@@ -1,3 +1,11 @@
+## [1.9.5](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.4...v1.9.5) (2026-07-28)
+
+
+### Bug Fixes
+
+* user plans styles updated ([d6d3076](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d6d3076b6b034a40bbbabb8a541b235940a3a806))
+* user plans styles updated ([55d5488](https://github.com/lightriderinc/cloud_platform_nextjs/commit/55d5488e1dd191a8b093b00b4bb924922a635a33))
+
 ## [1.9.4](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.3...v1.9.4) (2026-07-28)
 
 
