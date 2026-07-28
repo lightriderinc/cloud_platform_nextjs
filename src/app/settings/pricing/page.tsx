@@ -4,27 +4,27 @@ import { PiUserFocusFill } from "react-icons/pi";
 
 const PRICING_PAGES = [
   {
-    href: "/pricing/quantum-compute",
+    href: "/settings/pricing/quantum-compute",
     name: "Quantum Compute",
     description:
       "Pay for quantum runtime by the second when your applications or workflows use quantum resources.",
   },
   {
-    href: "/pricing/user-plans",
+    href: "/settings/pricing/user-plans",
     name: "User Plans",
     description:
       "Monthly platform access for teams and individuals, with credits included.",
   },
-  // Hidden for V2 (two-tier Basic/Pro simplification) — the /pricing/api and
-  // /pricing/enterprise routes/pages are untouched, just not linked from
-  // here for now. Uncomment to bring them back.
+  // Hidden for V2 (two-tier Basic/Pro simplification) — the /settings/pricing/api
+  // and /settings/pricing/enterprise routes/pages are untouched, just not linked
+  // from here for now. Uncomment to bring them back.
   // {
-  //   href: "/pricing/api",
+  //   href: "/settings/pricing/api",
   //   name: "API Pricing",
   //   description: "Usage-based pricing for Entropy-as-a-Service (EaaS) API calls.",
   // },
   // {
-  //   href: "/pricing/enterprise",
+  //   href: "/settings/pricing/enterprise",
   //   name: "Enterprise & Government",
   //   description: "Custom deployments, security, and SLAs for large organizations.",
   // },
@@ -41,13 +41,13 @@ export default function PricingOverviewPage() {
 
       <div className="flex flex-row gap-3">
         <PricingNavCard
-          href="/pricing/quantum-compute"
+          href="/settings/pricing/quantum-compute"
           title="Quantum Compute"
           description="Pay for quantum runtime by the second when your applications or workflows use quantum resources."
           icon={GiProcessor}
         />
         <PricingNavCard
-          href="/pricing/user-plans"
+          href="/settings/pricing/user-plans"
           title="User Plans"
           description="Monthly platform access for teams and individuals, with credits included."
           icon={PiUserFocusFill}

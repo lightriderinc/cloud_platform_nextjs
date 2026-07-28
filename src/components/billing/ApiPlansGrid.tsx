@@ -65,7 +65,7 @@ export default function ApiPlansGrid() {
         onSelect={() => setSelected("enterprise")}
         action={
           <a
-            href="/pricing/enterprise"
+            href="/settings/pricing/enterprise"
             className="block w-full default-radius border border-gray-300 px-4 py-2 text-center text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
           >
             Contact Sales
