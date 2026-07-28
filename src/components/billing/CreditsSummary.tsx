@@ -74,7 +74,7 @@ export default function CreditsSummary() {
       <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-gray-800">
         {formatUsd(credits.data.remainingCents)} Light Rider tokens remaining
         of {formatUsd(credits.data.purchasedCents)} purchased
-        <HintIcon text="Remaining reflects Light Rider tokens granted so far — nothing is deducted yet since job usage isn't metered." />
+        <HintIcon text="Mock and sample-circuit jobs are free and never deduct tokens. Real backend jobs (Garnet, Emerald, Sirius) deduct tokens per shot at submission time." />
       </p>
       <ProgressBar
         fraction={credits.data.remainingCents / credits.data.purchasedCents}
