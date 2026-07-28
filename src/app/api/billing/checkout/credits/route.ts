@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       },
     ],
     metadata: { logtoUserId: user.sub, kind: "credits" },
-    success_url: `${origin}/billing?checkout=success`,
+    success_url: `${origin}/settings/billing?checkout=success`,
     cancel_url: `${origin}/settings/pricing/quantum-compute?checkout=canceled`,
   });
 
