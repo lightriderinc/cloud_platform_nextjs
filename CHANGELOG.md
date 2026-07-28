@@ -1,3 +1,10 @@
+## [1.10.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.0...v1.10.1) (2026-07-28)
+
+
+### Bug Fixes
+
+* low credits banner text size ([878375e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/878375eb2bf54b7d04ed2fde3f90d0bfaa75fd59))
+
 # [1.10.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.8...v1.10.0) (2026-07-28)
 
 
