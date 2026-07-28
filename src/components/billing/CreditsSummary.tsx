@@ -2,6 +2,7 @@
 
 import HintIcon from "@/components/HintIcon";
 import { useQuery } from "@tanstack/react-query";
+import { MdLockOutline } from "react-icons/md";
 
 export type Credits = {
   purchasedCents: number;
@@ -48,8 +49,24 @@ export default function CreditsSummary() {
     queryFn: () => fetchJson<Credits>("/api/billing/credits"),
   });
 
-  if (!credits.data || credits.data.purchasedCents <= 0) {
+  if (!credits.data) {
     return null;
+  }
+
+  // Same purchasedCents <= 0 check BackendSubmitModal uses to gate real QPU
+  // access — this is purely cosmetic (nothing here blocks anything), just
+  // making it visible that the signup grant shown below isn't spendable on
+  // real hardware yet.
+  if (credits.data.purchasedCents <= 0) {
+    return (
+      <div className="default-radius border border-gray-200 bg-white p-4 opacity-50">
+        <p className="mb-1 flex items-center gap-1.5 text-sm font-medium text-gray-800">
+          <MdLockOutline className="text-gray-400" />
+          {formatUsd(credits.data.remainingCents)} Light Rider tokens
+        </p>
+        <p className="text-xs text-gray-500">Unlocks after your first purchase.</p>
+      </div>
+    );
   }
 
   return (
