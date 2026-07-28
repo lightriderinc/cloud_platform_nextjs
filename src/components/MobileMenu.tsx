@@ -1,8 +1,11 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { MdClose, MdMenu } from "react-icons/md";
-import SidebarNav from "./sidebar/SidebarNav";
+import SidebarGroupLegal from "./sidebar/SidebarGroupLegal";
+import SidebarGroupSettings from "./sidebar/SidebarGroupSettings";
+import SidebarNavMain from "./sidebar/SidebarNavMain";
 
 // Below the lg breakpoint, replaces the header user card with a hamburger that
 // opens an animated drawer (slide-in panel + backdrop fade) holding the
@@ -15,6 +18,11 @@ export default function MobileMenu({
   isAuthenticated: boolean;
 }) {
   const [open, setOpen] = useState(false);
+
+  const pathname = usePathname();
+
+  const isLegalRoute = pathname?.startsWith("/legal");
+  const isSettingsRoute = pathname?.startsWith("/settings");
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -65,11 +73,24 @@ export default function MobileMenu({
             </button>
           </div>
 
-          <SidebarNav onNavigate={() => setOpen(false)} isAuthenticated={isAuthenticated} />
-
-          <div className="border-t border-gray-100 p-3">
-            {children}
+          <div className="border-b border-gray-100 px-3 py-4">
+            {isLegalRoute ? (
+              <SidebarGroupLegal onNavigate={() => setOpen(false)} />
+            ) : isSettingsRoute ? (
+              <SidebarGroupSettings
+                onNavigate={() => setOpen(false)}
+                isAuthenticated={isAuthenticated}
+              />
+            ) : (
+              <></>
+            )}
           </div>
+          <SidebarNavMain
+            onNavigate={() => setOpen(false)}
+            isAuthenticated={isAuthenticated}
+          />
+
+          <div className="border-t border-gray-100 p-3">{children}</div>
         </div>
       </div>
     </div>
