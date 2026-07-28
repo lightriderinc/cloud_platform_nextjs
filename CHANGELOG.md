@@ -1,3 +1,13 @@
+## [1.9.4](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.3...v1.9.4) (2026-07-28)
+
+
+### Bug Fixes
+
+* mobile nav menu + minor style changes ([d1e1c4e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d1e1c4e16aec3931c66a36856d9ec3595c5a6e13))
+* mobile navigation menu ([398768c](https://github.com/lightriderinc/cloud_platform_nextjs/commit/398768cf13b091b4b05f456ec88440dbf7fad391))
+* pricing cards styles updated ([75f6329](https://github.com/lightriderinc/cloud_platform_nextjs/commit/75f63299f27184d55bdcdcba107aa3dbb9444dbf))
+* pricing quantum compute style updated ([73f7f1c](https://github.com/lightriderinc/cloud_platform_nextjs/commit/73f7f1cceeefa9d57eb52d19094c329b81edb1bd))
+
 ## [1.9.3](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.2...v1.9.3) (2026-07-28)
 
 
