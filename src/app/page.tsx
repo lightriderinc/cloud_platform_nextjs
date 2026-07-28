@@ -1,7 +1,6 @@
 import LowCreditsBanner from "@/components/billing/LowCreditsBanner";
 import DashboardDemoCircuit from "@/components/dashboard/DashboardDemoCircuit";
 import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntropy";
-import InfoBox from "@/components/InfoBox";
 import WelcomePage from "@/components/WelcomePage";
 import { getSession } from "@/lib/auth/session";
 import Link from "next/link";
@@ -42,13 +41,6 @@ export default async function Home() {
             <h2 className="mb-3 text-xl font-bold text-gray-600">
               Getting started
             </h2>
-            <InfoBox>
-              The Light Rider cloud quantum platform is currently in active
-              development. <br />
-              All features will be fully available upon official launch. Below
-              is a limited demo intended to provide a preview of select
-              functionality.
-            </InfoBox>
           </div>
           <div className="flex flex-col lg:flex-row gap-4 mt-6">
             <DashboardDemoCircuit />
