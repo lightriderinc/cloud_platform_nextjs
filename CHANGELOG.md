@@ -1,3 +1,13 @@
+## [1.9.7](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.6...v1.9.7) (2026-07-28)
+
+
+### Bug Fixes
+
+* billing now under settings ([f7871b2](https://github.com/lightriderinc/cloud_platform_nextjs/commit/f7871b2ae5482271b56a32b0eb3f54cc49db2009))
+* pricing now under settings ([37fa9ae](https://github.com/lightriderinc/cloud_platform_nextjs/commit/37fa9ae1cbd91e500ea816d7eec4dd46d67967bd))
+* tokens page name change ([ea96151](https://github.com/lightriderinc/cloud_platform_nextjs/commit/ea961513cb18a098cb04454a3a66fdefc13479e6))
+* updated settings page ([b64ebb1](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b64ebb1d4a969ba2edecdef11ad64217f01f9cad))
+
 ## [1.9.6](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.5...v1.9.6) (2026-07-28)
 
 
