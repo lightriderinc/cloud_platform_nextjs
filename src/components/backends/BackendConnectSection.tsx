@@ -124,7 +124,7 @@ export default function BackendConnectSection({
             Generate your API key first.
           </p>
           <Link
-            href="/settings/tokens"
+            href="/settings/keys"
             className="inline-block default-radius px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
             style={{ backgroundColor: "var(--brand-primary)" }}
           >
