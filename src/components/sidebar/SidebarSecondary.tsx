@@ -1,14 +1,12 @@
 import { getSession } from "@/lib/auth/session";
-import SidebarNavMain from "./SidebarNavMain";
+import SidebarNav from "./SidebarNav";
 
-export default async function Sidebar() {
+export default async function SidebarSecondary() {
   const { isAuthenticated } = await getSession();
-  
 
   return (
     <aside className="hidden w-56 shrink-0 flex-col border-r border-gray-100 lg:flex">
-      <SidebarNavMain isAuthenticated={isAuthenticated} />
+      <SidebarNav isAuthenticated={isAuthenticated} />
     </aside>
-
   );
 }

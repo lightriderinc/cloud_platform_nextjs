@@ -1,7 +1,7 @@
 "use client";
 
-import ProGateNotice from "@/components/billing/ProGateNotice";
-import { fetchIsProFromSubscriptions } from "@/lib/billing/clientAccessCheck";
+import { fetchJson, type Credits } from "@/components/billing/CreditsSummary";
+import OutOfCreditsNotice from "@/components/billing/OutOfCreditsNotice";
 import { CIRCUIT_PAYLOADS, submitQuantumJob } from "@/lib/quantum/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -18,15 +18,16 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
   const [shots, setShots] = useState(1000);
 
   // Real hardware ("iqm-garnet") — this is the Jobs page's real submission
-  // form, not a demo. Actual enforcement (Pro + credits) is server-side in
-  // /api/lr/quantum/submit; this proactive check reads the same DB
-  // subscription state /settings/payment does, not the Logto role (which
-  // can silently drift from it — see clientAccessCheck.ts and the identical
-  // fix in DemoCircuitModal).
-  const { data: isPro } = useQuery({
-    queryKey: ["billing", "is-pro"],
-    queryFn: fetchIsProFromSubscriptions,
+  // form, not a demo. V2 product model: no Pro subscription check anywhere
+  // — access is purely credit-balance-based. Actual enforcement is
+  // server-side in /api/lr/quantum/submit; this proactive check just shows
+  // the "out of credits" prompt before filling out the form instead of
+  // after submitting, same pattern as the low-credit dashboard banner.
+  const { data: credits } = useQuery({
+    queryKey: ["billing", "credits"],
+    queryFn: () => fetchJson<Credits>("/api/billing/credits"),
   });
+  const hasCredits = credits !== undefined && credits.remainingCents > 0;
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -73,8 +74,8 @@ export default function NewJobModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        {isPro === undefined ? null : !isPro ? (
-          <ProGateNotice />
+        {credits === undefined ? null : !hasCredits ? (
+          <OutOfCreditsNotice />
         ) : (
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>

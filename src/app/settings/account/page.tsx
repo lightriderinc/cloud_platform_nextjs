@@ -1,7 +1,6 @@
 import { logtoConfig } from "@/app/logto";
 import LogoutButton from "@/components/auth/LogoutButton";
 import CurrentPlanBadge from "@/components/billing/CurrentPlanBadge";
-import { isPro } from "@/lib/auth";
 import {
   getAccountProfile,
   getDisplayName,
@@ -49,7 +48,6 @@ export default async function AccountPage() {
   }
   const email = userInfo?.email ?? null;
   const avatarUrl = userInfo?.picture ?? null;
-  const userIsPro = await isPro();
 
   const initials = name
     ? name
@@ -211,7 +209,6 @@ export default async function AccountPage() {
               {name}
             </p>
           )}
-          <span className="text-sm text-gray-500">{userIsPro ? "Pro user" : "Basic user"}</span>
           <CurrentPlanBadge />
         </div>
       </div>

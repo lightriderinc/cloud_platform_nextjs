@@ -20,7 +20,8 @@ export default function SidebarNavItem({
   tourId?: string;
 }) {
   const pathname = usePathname();
-  const active = pathname === href;
+  const active =
+    href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
   return (
     <li data-tour={tourId}>
       <Link

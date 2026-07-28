@@ -31,6 +31,17 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // V2 product model: Pro (User Pricing) checkout is disabled — hiding the
+  // "Choose Pro" button alone doesn't stop a direct request to this shared
+  // route, so it's blocked here too. api_plan (EaaS) checkout is a separate,
+  // unaffected product and must keep working.
+  if (kind === "user_plan" && tier === "pro") {
+    return NextResponse.json(
+      { error: "Pro plan checkout is not currently available." },
+      { status: 403 },
+    );
+  }
+
   const planTable = kind === "user_plan" ? USER_PLANS : API_PLANS;
   const plan = (planTable as Record<string, { priceEnvVar: string }>)[tier];
   if (!plan) {

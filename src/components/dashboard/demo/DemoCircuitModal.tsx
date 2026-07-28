@@ -1,10 +1,8 @@
 "use client";
 
-import ProGateNotice from "@/components/billing/ProGateNotice";
-import { fetchIsProFromSubscriptions } from "@/lib/billing/clientAccessCheck";
 import { CIRCUIT_PAYLOADS, submitQuantumJob } from "@/lib/quantum/client";
 import type { Job } from "@/types/job";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { MdClose } from "react-icons/md";
 import CircuitSchematic, { type CircuitType } from "./CircuitSchematic";
@@ -28,17 +26,10 @@ export default function DemoCircuitModal({ onClose }: { onClose: () => void }) {
   const [shots, setShots] = useState(1000);
   const [submittedJob, setSubmittedJob] = useState<Job | null>(null);
 
-  // Submits to the "iqm-garnet-mock" backend, matching this tile's own
-  // "simulator" framing — actual enforcement (Pro + credits) is server-side
-  // in /api/lr/quantum/submit; this proactive check just shows the upsell
-  // before filling out the form instead of after submitting. Reads the same
-  // DB subscription state /settings/payment does (not the Logto role, which
-  // can silently drift from it — see clientAccessCheck.ts).
-  const { data: isPro } = useQuery({
-    queryKey: ["billing", "is-pro"],
-    queryFn: fetchIsProFromSubscriptions,
-  });
-
+  // Submits to the "iqm-garnet-mock" backend — free and unlimited for any
+  // signed-in user (see backends.ts: costPerShotCents: 0), no Pro/credit
+  // gate here at all. Server-side enforcement (still checked, just always
+  // passes for this backend) lives in /api/lr/quantum/submit.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -105,8 +96,6 @@ export default function DemoCircuitModal({ onClose }: { onClose: () => void }) {
                   job={submittedJob}
                   onTryAnother={handleTryAnother}
                 />
-              ) : isPro === undefined ? null : !isPro ? (
-                <ProGateNotice />
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>

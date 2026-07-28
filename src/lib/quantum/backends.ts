@@ -1,12 +1,23 @@
+// V2 product model: no Pro subscription gate anywhere — access is purely
+// credit-balance-based (see /api/lr/quantum/submit). Mock backends are free
+// and unlimited (costPerShotCents: 0 makes the credit check a natural
+// no-op); real QPU backends cost credits, prepaid, no subscription involved.
+//
+// deviceInstance: the literal string iqm-proxy's per-request device registry
+// (proto/device-instance-routing branch, iqm-proxy/app.py DEVICE_REGISTRY)
+// expects in the outgoing `device_instance` field — verified directly against
+// that registry, not assumed. Without it, iqm-proxy falls back to whatever
+// its own IQM_SERVER env var's trailing alias is, which is exactly the
+// single-hardcoded-device behavior this is meant to replace.
 export const QUANTUM_BACKENDS = {
   "iqm-garnet-mock": {
     proxyPath: "/jobs",
-    requiresPro: true,
-    costPerShotCents: 1, // TODO: real pricing, placeholder only
+    deviceInstance: "garnet:mock",
+    costPerShotCents: 0, // free — mock backend, no credits required
   },
   "iqm-garnet": {
     proxyPath: "/jobs",
-    requiresPro: true,
+    deviceInstance: "garnet",
     costPerShotCents: 1, // TODO: real pricing, placeholder only
   },
 } as const;
