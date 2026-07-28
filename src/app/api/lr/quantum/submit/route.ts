@@ -59,7 +59,11 @@ export async function POST(req: Request) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.QUANTUM_PROXY_SERVICE_KEY}`,
     },
-    body: JSON.stringify({ circuit, shots }),
+    // device_instance tells iqm-proxy's per-request device registry which
+    // QPU alias to route to (see backends.ts) — auth is unchanged, same
+    // QUANTUM_PROXY_SERVICE_KEY bearer token as before, just an added body
+    // field.
+    body: JSON.stringify({ circuit, shots, device_instance: config.deviceInstance }),
   }).catch((err) => {
     console.error("iqm-proxy unreachable:", err);
     return null;
