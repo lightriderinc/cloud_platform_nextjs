@@ -1,3 +1,11 @@
+## [1.9.6](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.5...v1.9.6) (2026-07-28)
+
+
+### Bug Fixes
+
+* api keys page ([f5f7b26](https://github.com/lightriderinc/cloud_platform_nextjs/commit/f5f7b268b10c0a3fe6b7feed6abcf0802f510f33))
+* api keys page styles ([669800f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/669800f17145310b89b2d438c3dd24f6bcaeea5c))
+
 ## [1.9.5](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.4...v1.9.5) (2026-07-28)
 
 
