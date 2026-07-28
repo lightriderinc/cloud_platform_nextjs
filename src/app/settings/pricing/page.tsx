@@ -33,10 +33,11 @@ const PRICING_PAGES = [
 export default function PricingOverviewPage() {
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-gray-700">Pricing</h1>
+      <h1 className="text-2xl font-semibold text-gray-700">Purchases</h1>
       <p className="mb-12 text-sm text-gray-600">
-        Light Rider pricing is modular. Start with platform access, then scale
-        into quantum runtime, APIs, and enterprise services as you grow.
+        Light Rider purchases are modular. <br /> Start with quantum compute
+        tokens, manage platform access, then scale into quantum runtime, APIs,
+        and enterprise services as you grow.
       </p>
 
       <div className="flex flex-row gap-3">

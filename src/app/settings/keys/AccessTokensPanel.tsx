@@ -94,7 +94,7 @@ export default function AccessTokensPanel() {
       )}
 
       {!apiKey && (
-        <div className="default-radius border border-gray-100 border-dashed bg-gray-50 p-4">
+        <div className="default-radius border border-gray-200 border-dashed bg-gray-50 p-4">
           <p className="mb-3 text-sm text-gray-600">
             No API key yet. Generate one to authenticate SDK requests.
           </p>
