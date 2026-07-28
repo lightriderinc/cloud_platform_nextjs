@@ -51,7 +51,7 @@ export default function LowCreditsBanner() {
   return (
     <div className="mb-6 flex items-start gap-2 default-radius border-l-2 border-amber-400 bg-amber-50 py-2 pl-3 pr-3">
       <MdWarningAmber className="mt-0.5 shrink-0 text-lg text-amber-500" />
-      <p className="flex-1 text-sm text-black">
+      <p className="flex-1 text-xs text-black">
         Only {formatUsd(data!.remainingCents)} Light Rider tokens left — top up
         to keep running jobs on real hardware.
       </p>
