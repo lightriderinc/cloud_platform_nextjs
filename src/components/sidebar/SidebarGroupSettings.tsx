@@ -23,8 +23,8 @@ export default function SidebarGroupSettings({
               onNavigate={onNavigate}
             />
             <SidebarNavItem
-              name="Access Tokens"
-              href="/settings/tokens"
+              name="API Keys"
+              href="/settings/keys"
               icon={RiLockPasswordFill}
               onNavigate={onNavigate}
             />

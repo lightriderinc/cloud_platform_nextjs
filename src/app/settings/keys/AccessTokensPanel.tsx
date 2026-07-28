@@ -77,7 +77,7 @@ export default function AccessTokensPanel() {
   return (
     <div className="flex flex-col gap-4">
       {revealedKey && (
-        <div className="default-radius border border-red-200 bg-red-50 p-4">
+        <div className="default-radius border border-red-100 bg-red-50 p-4">
           <p className="text-sm font-medium text-red-700">
             Copy your key now — it won&apos;t be shown again.
           </p>
@@ -94,7 +94,7 @@ export default function AccessTokensPanel() {
       )}
 
       {!apiKey && (
-        <div className="default-radius border border-gray-200 bg-white p-4">
+        <div className="default-radius border border-gray-100 border-dashed bg-gray-50 p-4">
           <p className="mb-3 text-sm text-gray-600">
             No API key yet. Generate one to authenticate SDK requests.
           </p>
@@ -102,7 +102,7 @@ export default function AccessTokensPanel() {
             type="button"
             onClick={() => generate.mutate()}
             disabled={generate.isPending}
-            className="default-radius px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+            className="default-radius px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60 cursor-pointer"
             style={{ backgroundColor: "var(--brand-primary)" }}
           >
             {generate.isPending ? "Generating…" : "Generate API Key"}
@@ -111,16 +111,16 @@ export default function AccessTokensPanel() {
       )}
 
       {apiKey && (
-        <div className="default-radius border border-gray-200 bg-white p-4">
+        <div className="default-radius border border-gray-50 bg-gray-50 p-4">
           <p className="font-mono text-sm text-gray-800">
             {apiKey.keyPrefix}
             {"•".repeat(16)}
           </p>
           <p className="mt-2 text-xs text-gray-500">
-            Created {new Date(apiKey.createdAt).toLocaleString()}
+            Created: {new Date(apiKey.createdAt).toLocaleString()}
           </p>
           <p className="text-xs text-gray-500">
-            Last used{" "}
+            Last used:{" "}
             {apiKey.lastUsedAt
               ? new Date(apiKey.lastUsedAt).toLocaleString()
               : "never"}
@@ -174,14 +174,14 @@ export default function AccessTokensPanel() {
                 <button
                   type="button"
                   onClick={() => setConfirming("rotate")}
-                  className="flex items-center gap-1.5 default-radius border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                  className="flex items-center gap-1.5 default-radius border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 cursor-pointer"
                 >
                   <MdAutorenew /> Rotate key
                 </button>
                 <button
                   type="button"
                   onClick={() => setConfirming("revoke")}
-                  className="flex items-center gap-1.5 default-radius border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                  className="flex items-center gap-1.5 default-radius border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 cursor-pointer"
                 >
                   <MdDeleteOutline /> Revoke
                 </button>
