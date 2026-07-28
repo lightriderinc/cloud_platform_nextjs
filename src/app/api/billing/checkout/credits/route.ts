@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     ],
     metadata: { logtoUserId: user.sub, kind: "credits" },
     success_url: `${origin}/billing?checkout=success`,
-    cancel_url: `${origin}/pricing/quantum-compute?checkout=canceled`,
+    cancel_url: `${origin}/settings/pricing/quantum-compute?checkout=canceled`,
   });
 
   return NextResponse.json({ url: session.url });
