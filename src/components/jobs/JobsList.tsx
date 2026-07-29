@@ -118,6 +118,7 @@ export default function JobsList() {
           job={{
             uuid: selectedJob.jobId,
             status: selectedJob.status,
+            backend: selectedJob.backend,
             shots: selectedJob.shots,
             created_at: selectedJob.createdAt,
           }}

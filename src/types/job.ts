@@ -4,6 +4,7 @@ export type JobStatus = "PENDING" | "WAITING" | "PROCESSING" | "COMPLETED" | "FA
 export interface Job {
   uuid: string;
   gate?: string;
+  backend?: string;
   shots?: number;
   status: JobStatus;
   created_at?: string;

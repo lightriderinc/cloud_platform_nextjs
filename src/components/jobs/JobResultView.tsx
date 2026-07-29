@@ -54,6 +54,12 @@ export default function JobResultView({ job, footer }: Props) {
       </div>
 
       <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+        {job.backend && (
+          <div>
+            <p className="text-xs text-gray-500">Backend</p>
+            <p className="mt-0.5 font-medium">{job.backend}</p>
+          </div>
+        )}
         {job.shots !== undefined && (
           <div>
             <p className="text-xs text-gray-500">Shots</p>

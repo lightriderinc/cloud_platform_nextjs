@@ -75,7 +75,7 @@ export default function BackendSubmitModal({
     mutationFn: () => submitQuantumJob(backend, CIRCUIT_PAYLOADS[circuit], shots),
     onSuccess: (job) => {
       queryClient.invalidateQueries({ queryKey: ["lr-jobs-list"] });
-      setSubmittedJob({ ...job, status: job.status ?? "PENDING", gate: circuit, shots });
+      setSubmittedJob({ ...job, status: job.status ?? "PENDING", gate: circuit, backend, shots });
     },
   });
 
