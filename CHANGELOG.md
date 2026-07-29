@@ -1,3 +1,11 @@
+## [1.11.4](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.3...v1.11.4) (2026-07-29)
+
+
+### Bug Fixes
+
+* account card dropdown ([00df9e5](https://github.com/lightriderinc/cloud_platform_nextjs/commit/00df9e56446d5f5f7564175145eb049c5bcf6386))
+* account card dropdown ([20eb8bc](https://github.com/lightriderinc/cloud_platform_nextjs/commit/20eb8bc17a59201cc9d8dd78dbfda49bd2651435))
+
 ## [1.11.3](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.2...v1.11.3) (2026-07-29)
 
 
