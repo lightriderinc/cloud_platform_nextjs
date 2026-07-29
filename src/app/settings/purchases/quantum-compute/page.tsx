@@ -39,12 +39,20 @@ export default function QuantumComputePricingPage() {
         <div className="block lg:flex">
           <CreditsTopUp />
         </div>
-        
+
         <div className="lg:col-span-2">
           <h2 className="mb-3 text-lg font-semibold text-gray-600">
             Runtime pricing
           </h2>
-          <div className="overflow-hidden default-radius border border-gray-100 bg-gray-50 mb-3">
+          <div className="mb-3">
+            <InfoBox>
+              Underlying QPU provider costs may be included or quoted separately
+              depending on workload, backend, reservation type, and enterprise
+              requirements.
+            </InfoBox>
+          </div>
+
+          <div className="overflow-hidden default-radius border border-gray-100 bg-gray-50">
             <table className="w-full text-left text-sm">
               <tbody>
                 {RUNTIME_TIERS.map((tier) => (
@@ -64,12 +72,6 @@ export default function QuantumComputePricingPage() {
               </tbody>
             </table>
           </div>
-
-          <InfoBox>
-            Underlying QPU provider costs may be included or quoted separately
-            depending on workload, backend, reservation type, and enterprise
-            requirements.
-          </InfoBox>
         </div>
       </div>
     </div>
