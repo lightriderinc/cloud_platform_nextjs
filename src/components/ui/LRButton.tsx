@@ -13,17 +13,17 @@ export interface LRButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const baseClasses =
-  "inline-flex items-center justify-center default-radius text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center default-radius text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer transition-all duration-200 ease-in-out";
 
 const variantClasses: Record<LRButtonVariant, string> = {
   primary:
-    "bg-[var(--brand-primary)] text-white hover:opacity-90 focus-visible:ring-[var(--brand-primary)]",
+    "bg-[var(--brand-primary)] border border-[var(--brand-primary)] text-white hover:bg-[var(--brand-primary-light)] hover:border-[var(--brand-primary-light)] focus-visible:ring-[var(--brand-primary)]",
   "primary-outline":
-    "bg-transparent text-[var(--brand-primary)] border border-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/10 focus-visible:ring-[var(--brand-primary)]",
+    "bg-transparent font-semibold text-[var(--brand-primary)] border border-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/10 focus-visible:ring-[var(--brand-primary)]",
   secondary:
-    "bg-white text-gray-700 border border-gray-300 hover:bg-gray-200 focus-visible:ring-gray-400",
+    "bg-gray-700 text-white border border-gray-700 hover:bg-gray-500 hover:border-gray-500 focus-visible:ring-gray-400",
   "secondary-outline":
-    "bg-transparent text-gray-700 border border-gray-300 hover:bg-gray-200 focus-visible:ring-gray-400",
+    "bg-transparent text-gray-800 font-semibold border border-gray-400 hover:bg-gray-200/50 focus-visible:ring-gray-400",
 };
 
 const LRButton = forwardRef<HTMLButtonElement, LRButtonProps>(function LRButton(
