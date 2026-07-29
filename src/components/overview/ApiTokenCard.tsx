@@ -1,8 +1,8 @@
 "use client";
 
+import LRButton from "@/components/ui/LRButton";
 import { useState } from "react";
 import { MdCheck, MdContentCopy, MdVisibility, MdVisibilityOff } from "react-icons/md";
-import LRButton from "@/components/ui/LRButton";
 
 function maskToken(token: string): string {
   const prefix = "lr_";
@@ -25,7 +25,7 @@ export default function ApiTokenCard({ token }: { token: string }) {
   }
 
   return (
-    <div className="default-radius border border-gray-100 p-2">
+    <div className="default-radius border border-gray-200 p-2">
       <div className="flex items-center gap-2">
         <code className="min-w-0 flex-1 truncate  bg-white px-3 py-2 font-mono text-sm text-gray-800">
           {token ? (revealed ? token : maskToken(token)) : "—"}
@@ -36,7 +36,7 @@ export default function ApiTokenCard({ token }: { token: string }) {
             onClick={() => setRevealed((v) => !v)}
             disabled={!token}
             aria-label={revealed ? "Hide token" : "Reveal token"}
-            variant="secondary"
+            variant="secondary-outline"
             icon={revealed ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
             iconPosition="left"
             className="shrink-0"
@@ -49,7 +49,7 @@ export default function ApiTokenCard({ token }: { token: string }) {
             onClick={handleCopy}
             disabled={!token}
             aria-label="Copy token"
-            variant="secondary"
+            variant="secondary-outline"
             icon={copied ? <MdCheck className="text-green-500" size={16} /> : <MdContentCopy size={16} />}
             iconPosition="left"
             className="shrink-0"
