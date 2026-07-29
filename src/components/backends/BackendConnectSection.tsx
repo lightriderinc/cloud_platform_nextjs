@@ -159,7 +159,7 @@ export default function BackendConnectSection({
       ) : (
         <>
           <div className="relative mb-6">
-            <pre className="default-radius bg-gray-900 p-4 pr-24 overflow-x-auto">
+            <pre className="default-radius bg-gray-800 p-4 pr-24 overflow-x-auto">
               <code className="whitespace-pre font-mono text-xs leading-relaxed text-gray-100">
                 {snippet}
               </code>
