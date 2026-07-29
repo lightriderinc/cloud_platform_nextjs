@@ -4,7 +4,6 @@ import JobDetailModal from "@/components/jobs/JobDetailModal";
 import JobRowSkeleton from "@/components/jobs/JobRowSkeleton";
 import { fetchJobs, JobRowStatus } from "@/components/jobs/JobsList";
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
 import { useState } from "react";
 
 const LATEST_JOBS_LIMIT = 3;
@@ -82,14 +81,6 @@ export default function DashboardLatestJobs() {
         ))}
       </ul>
 
-      <div className="mt-3 flex justify-end">
-        <Link
-          href="/jobs"
-          className="text-xs font-medium text-gray-600 hover:text-gray-500"
-        >
-          View all jobs →
-        </Link>
-      </div>
 
       {selectedJob && (
         <JobDetailModal

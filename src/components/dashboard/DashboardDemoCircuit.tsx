@@ -1,9 +1,9 @@
 "use client";
 
+import LRButton from "@/components/ui/LRButton";
 import { useState } from "react";
 import { MdArrowForward } from "react-icons/md";
 import { PiCircuitryFill } from "react-icons/pi";
-import LRButton from "@/components/ui/LRButton";
 import DemoCircuitModal from "./demo/DemoCircuitModal";
 
 export default function DashboardDemoCircuit() {
@@ -11,7 +11,7 @@ export default function DashboardDemoCircuit() {
 
   return (
     <>
-      <div className="flex flex-col w-full gap-10 min-w-50 bg-gray-100 p-4 default-radius border border-gray-100 card-hover-primary">
+      <div className="flex flex-col w-full gap-10 min-w-50 bg-gray-50 p-4 default-radius border border-gray-50">
         <div className="flex flex-row gap-4">
           <div>
             <PiCircuitryFill className="text-2xl text-gray-400" />

@@ -1,17 +1,21 @@
 "use client";
 
-import { fetchJson, type Credits } from "@/components/billing/CreditsSummary";
-import OutOfCreditsNotice from "@/components/billing/OutOfCreditsNotice";
+import CreditsSummary, { fetchJson, type Credits } from "@/components/billing/CreditsSummary";
 import JobResultView from "@/components/jobs/JobResultView";
-import CircuitSchematic, { type CircuitType } from "@/components/quantum/CircuitSchematic";
+import CircuitSchematic, {
+  type CircuitType,
+} from "@/components/quantum/CircuitSchematic";
 import ShotsInput from "@/components/quantum/ShotsInput";
-import { QUANTUM_BACKENDS, type QuantumBackendId } from "@/lib/quantum/backends";
+import LRButton from "@/components/ui/LRButton";
+import {
+  QUANTUM_BACKENDS,
+  type QuantumBackendId,
+} from "@/lib/quantum/backends";
 import { CIRCUIT_PAYLOADS, submitQuantumJob } from "@/lib/quantum/client";
 import type { Job } from "@/types/job";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { MdClose } from "react-icons/md";
-import LRButton from "@/components/ui/LRButton";
+import { MdArrowLeft, MdClose } from "react-icons/md";
 
 const CIRCUITS: { value: CircuitType; label: string; description: string }[] = [
   { value: "h", label: "H gate", description: "1-qubit superposition" },
@@ -72,11 +76,24 @@ export default function BackendSubmitModal({
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const { mutate, isPending, isError, error, reset: resetMutation } = useMutation({
-    mutationFn: () => submitQuantumJob(backend, CIRCUIT_PAYLOADS[circuit], shots),
+  const {
+    mutate,
+    isPending,
+    isError,
+    error,
+    reset: resetMutation,
+  } = useMutation({
+    mutationFn: () =>
+      submitQuantumJob(backend, CIRCUIT_PAYLOADS[circuit], shots),
     onSuccess: (job) => {
       queryClient.invalidateQueries({ queryKey: ["lr-jobs-list"] });
-      setSubmittedJob({ ...job, status: job.status ?? "PENDING", gate: circuit, backend, shots });
+      setSubmittedJob({
+        ...job,
+        status: job.status ?? "PENDING",
+        gate: circuit,
+        backend,
+        shots,
+      });
     },
   });
 
@@ -125,7 +142,13 @@ export default function BackendSubmitModal({
 
         {/* Body */}
         <div className="overflow-y-auto px-8 pb-8">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-[1fr_220px]">
+          <div
+            className={
+              blockedByCredits
+                ? "grid grid-cols-1"
+                : "grid grid-cols-1 gap-8 md:grid-cols-[1fr_220px]"
+            }
+          >
             {/* Left: form or results */}
             <div className="min-w-0">
               {submittedJob ? (
@@ -134,15 +157,17 @@ export default function BackendSubmitModal({
                   footer={
                     <LRButton
                       variant="secondary-outline"
+                      icon={<MdArrowLeft className="text-lg" />}
+                      iconPosition="left"
                       onClick={handleTryAnother}
                       className="mt-1 w-fit"
                     >
-                      ← Try Another
+                      Try Another
                     </LRButton>
                   }
                 />
               ) : stillCheckingCredits ? null : blockedByCredits ? (
-                <OutOfCreditsNotice />
+                <CreditsSummary />
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
@@ -190,10 +215,12 @@ export default function BackendSubmitModal({
               )}
             </div>
 
-            {/* Right: circuit schematic (persists across both views) */}
-            <div>
-              <CircuitSchematic circuit={activeCircuit} />
-            </div>
+            {/* Right: circuit schematic (persists across both views, hidden when blocked by credits) */}
+            {!blockedByCredits && (
+              <div>
+                <CircuitSchematic circuit={activeCircuit} />
+              </div>
+            )}
           </div>
         </div>
       </div>

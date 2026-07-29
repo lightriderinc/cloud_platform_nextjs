@@ -1,6 +1,7 @@
 "use client";
 
 import { handleSignIn } from "@/app/actions/auth";
+import LRButton from "@/components/ui/LRButton";
 import { getQuantumBackendId } from "@/lib/quantum/backends";
 import type { Backend } from "@/types/backend";
 import { useQuery } from "@tanstack/react-query";
@@ -48,9 +49,11 @@ async function fetchHasApiKey(): Promise<boolean> {
 export default function BackendConnectSection({
   backend,
   isAuthenticated,
+  onSubmitJob,
 }: {
   backend: Backend;
   isAuthenticated: boolean;
+  onSubmitJob?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const quantumBackendId = getQuantumBackendId(backend.id);
@@ -78,13 +81,35 @@ export default function BackendConnectSection({
 
   if (backend.type !== "QPU") {
     return (
-      <p className="mt-3 text-sm text-gray-600">
-        Simulators run without an API key — see the{" "}
-        <a href="https://docs.lightriderinc.com/sdk/getting-started.html" target="_blank" rel="noopener noreferrer" className="brand-link">
-          SDK docs
-        </a>
-        .
-      </p>
+      <>
+        <p className="mt-3 mb-6 text-sm text-gray-600">
+          Simulators run without an API key — see the{" "}
+          <a
+            href="https://docs.lightriderinc.com/sdk/getting-started.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="brand-link"
+          >
+            SDK docs
+          </a>
+          .
+        </p>
+        <div className="flex flex-row gap-3">
+          <a
+            href={COLAB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-fit items-center gap-1.5 default-radius border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+          >
+            Google Colab quickstart <MdOpenInNew className="text-base" />
+          </a>
+          {onSubmitJob && (
+            <LRButton variant="primary" onClick={onSubmitJob}>
+              Submit a sample circuit
+            </LRButton>
+          )}
+        </div>
+      </>
     );
   }
 
@@ -133,7 +158,7 @@ export default function BackendConnectSection({
         </div>
       ) : (
         <>
-          <div className="relative">
+          <div className="relative mb-6">
             <pre className="default-radius bg-gray-900 p-4 pr-24 overflow-x-auto">
               <code className="whitespace-pre font-mono text-xs leading-relaxed text-gray-100">
                 {snippet}
@@ -152,15 +177,21 @@ export default function BackendConnectSection({
               {copied ? "Copied" : "Copy code"}
             </button>
           </div>
-
-          <a
-            href={COLAB_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex w-fit items-center gap-1.5 default-radius border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
-          >
-            Open in Google Colab <MdOpenInNew className="text-base" />
-          </a>
+          <div className="flex flex-row gap-3">
+            <a
+              href={COLAB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-fit items-center gap-1.5 default-radius border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+            >
+              Google Colab quickstart <MdOpenInNew className="text-base" />
+            </a>
+            {onSubmitJob && (
+              <LRButton variant="primary" onClick={onSubmitJob}>
+                Submit a sample circuit
+              </LRButton>
+            )}
+          </div>
         </>
       )}
     </div>

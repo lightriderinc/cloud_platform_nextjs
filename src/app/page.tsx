@@ -6,7 +6,7 @@ import DashboardLatestJobs from "@/components/dashboard/DashboardLatestJobs";
 import WelcomePage from "@/components/WelcomePage";
 import { getSession } from "@/lib/auth/session";
 import Link from "next/link";
-import { MdArrowOutward } from "react-icons/md";
+import { MdArrowForward, MdArrowOutward } from "react-icons/md";
 
 export default async function Home() {
   // const token = process.env.LR_TOKEN ?? "";
@@ -48,9 +48,20 @@ export default async function Home() {
             </div>
           </div>
           <div className="mb-8">
-            <h2 className="mb-4 text-xl font-bold text-gray-600">
-              Latest jobs
-            </h2>
+            <div className="flex flex-row justify-between">
+              <h2 className="mb-4 text-xl font-bold text-gray-600">
+                Latest jobs
+              </h2>
+              <div className="mt-3 flex justify-end">
+                <Link
+                  href="/jobs"
+                  className="text-sm font-medium text-gray-700 inline-flex items-center gap-2 hover:text-[var(--brand-primary)]"
+                >
+                  View all jobs <MdArrowForward />
+                </Link>
+              </div>
+            </div>
+
             <div>
               <DashboardLatestJobs />
             </div>
