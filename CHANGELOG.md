@@ -1,3 +1,13 @@
+## [1.10.8](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.7...v1.10.8) (2026-07-29)
+
+
+### Bug Fixes
+
+* added LR button component ([62a2517](https://github.com/lightriderinc/cloud_platform_nextjs/commit/62a25174f3aa24c9d73821599a8cdd700f52a10d))
+* LRButton component added ([40ab0bd](https://github.com/lightriderinc/cloud_platform_nextjs/commit/40ab0bd86be603ab33e23360db79581433b01aaa))
+* LRButton styles ([95c7adf](https://github.com/lightriderinc/cloud_platform_nextjs/commit/95c7adffcaab148da55773629e87cef32eec79b1))
+* LRButton substitutes action buttons ([2e7db4d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2e7db4daa14be216eb587a09143ddd462b4c7dc4))
+
 ## [1.10.7](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.6...v1.10.7) (2026-07-29)
 
 
