@@ -1,3 +1,11 @@
+## [1.11.3](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.2...v1.11.3) (2026-07-29)
+
+
+### Bug Fixes
+
+* minor style changes + job count ([6fe5204](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6fe5204b3e153e3f45c96c24b00dabb6f39f61bb))
+* total jobs count added ([03dc3cc](https://github.com/lightriderinc/cloud_platform_nextjs/commit/03dc3cc2e2f7fa71cfc4533d7dfb9240a381d8c8))
+
 ## [1.11.2](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.1...v1.11.2) (2026-07-29)
 
 
