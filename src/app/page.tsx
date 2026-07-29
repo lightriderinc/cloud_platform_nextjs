@@ -1,6 +1,8 @@
+import CreditsSummary from "@/components/billing/CreditsSummary";
 import LowCreditsBanner from "@/components/billing/LowCreditsBanner";
 import DashboardDemoCircuit from "@/components/dashboard/DashboardDemoCircuit";
 import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntropy";
+import DashboardLatestJobs from "@/components/dashboard/DashboardLatestJobs";
 import WelcomePage from "@/components/WelcomePage";
 import { getSession } from "@/lib/auth/session";
 import Link from "next/link";
@@ -37,12 +39,28 @@ export default async function Home() {
         </div>
       </div> */}
           <LowCreditsBanner />
+          <div className="mb-8">
+            <h2 className="mb-4 text-xl font-bold text-gray-600">
+              Compute tokens
+            </h2>
+            <div className="w-1/2">
+              <CreditsSummary />
+            </div>
+          </div>
+          <div className="mb-8">
+            <h2 className="mb-4 text-xl font-bold text-gray-600">
+              Latest jobs
+            </h2>
+            <div>
+              <DashboardLatestJobs />
+            </div>
+          </div>
           <div>
-            <h2 className="mb-3 text-xl font-bold text-gray-600">
+            <h2 className="mb-4 text-xl font-bold text-gray-600">
               Getting started
             </h2>
           </div>
-          <div className="flex flex-col lg:flex-row gap-4 mt-6">
+          <div className="flex flex-col lg:flex-row gap-4">
             <DashboardDemoCircuit />
             <DashboardDemoEntropy />
           </div>
