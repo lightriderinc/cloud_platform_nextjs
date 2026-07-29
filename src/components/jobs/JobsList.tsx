@@ -1,6 +1,7 @@
 "use client";
 
 import JobDetailModal from "@/components/jobs/JobDetailModal";
+import JobRowSkeleton from "@/components/jobs/JobRowSkeleton";
 import JobStatusBadge from "@/components/jobs/JobStatusBadge";
 import { fetchQuantumJobDetail } from "@/lib/quantum/client";
 import type { JobStatus } from "@/types/job";
@@ -62,7 +63,15 @@ export default function JobsList() {
   });
 
   if (isLoading) {
-    return <p className="mt-5 text-sm text-gray-500">Loading jobs…</p>;
+    return (
+      <ul className="mt-5 flex flex-col gap-2 animate-pulse">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <li key={i}>
+            <JobRowSkeleton />
+          </li>
+        ))}
+      </ul>
+    );
   }
 
   if (error) {
