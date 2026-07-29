@@ -73,18 +73,20 @@ export default function MobileMenu({
             </button>
           </div>
 
-          <div className="border-b border-gray-100 px-3 py-4">
-            {isLegalRoute ? (
+          {isLegalRoute ? (
+            <div className="border-b border-gray-100 px-3 py-4">
               <SidebarGroupLegal onNavigate={() => setOpen(false)} />
-            ) : isSettingsRoute ? (
+            </div>
+          ) : isSettingsRoute ? (
+            <div className="border-b border-gray-100 px-3 py-4">
               <SidebarGroupSettings
                 onNavigate={() => setOpen(false)}
                 isAuthenticated={isAuthenticated}
               />
-            ) : (
-              <></>
-            )}
-          </div>
+            </div>
+          ) : (
+            <></>
+          )}
           <SidebarNavMain
             onNavigate={() => setOpen(false)}
             isAuthenticated={isAuthenticated}

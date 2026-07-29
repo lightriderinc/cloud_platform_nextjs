@@ -22,30 +22,32 @@ export default function SidebarNavMain({
           isAuthenticated={isAuthenticated}
         />
       </nav>
-
+      
       <div className="border-t border-gray-100 px-3 py-4">
-        {isAuthenticated && (
+        <ul>
+          {isAuthenticated && (
+            <SidebarNavItem
+              name="Settings & Account"
+              icon={MdSettings}
+              href="/settings"
+              onNavigate={onNavigate}
+            />
+          )}
+
           <SidebarNavItem
-            name="Settings & Account"
-            icon={MdSettings}
-            href="/settings"
+            name="Contact"
+            icon={MdHelpCenter}
+            href="https://www.lightriderinc.com/contact"
+            external
             onNavigate={onNavigate}
           />
-        )}
-
-        <SidebarNavItem
-          name="Contact"
-          icon={MdHelpCenter}
-          href="https://www.lightriderinc.com/contact"
-          external
-          onNavigate={onNavigate}
-        />
-        <SidebarNavItem
-          name="Legal"
-          icon={MdGavel}
-          href="/legal"
-          onNavigate={onNavigate}
-        />
+          <SidebarNavItem
+            name="Legal"
+            icon={MdGavel}
+            href="/legal"
+            onNavigate={onNavigate}
+          />
+        </ul>
       </div>
     </>
   );
