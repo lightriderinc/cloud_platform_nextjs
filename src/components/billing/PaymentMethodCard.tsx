@@ -43,7 +43,7 @@ export default function PaymentMethodCard() {
 
   return (
     <div className="default-radius border border-gray-50 bg-gray-50 p-4">
-      <h2 className="mb-2 text-sm font-medium text-gray-800">Payment method</h2>
+      <h2 className="mb-2 font-semibold text-gray-800">Payment method</h2>
       {error ? (
         <p className="text-sm text-red-600">
           {error instanceof Error ? error.message : "Something went wrong."}
@@ -53,7 +53,7 @@ export default function PaymentMethodCard() {
       ) : paymentMethod ? (
         <p className="text-sm text-gray-600">{describe(paymentMethod)}</p>
       ) : (
-        <p className="text-sm text-gray-500">No payment method on file.</p>
+        <p className="text-sm text-gray-400">No payment method on file.</p>
       )}
       <div className="flex flex-col gap-3 mt-6">
         <p className="text-sm text-gray-600">

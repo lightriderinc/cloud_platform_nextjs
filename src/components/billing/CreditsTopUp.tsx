@@ -22,9 +22,9 @@ export default function CreditsTopUp() {
 
   return (
     <div className="default-radius border border-gray-100 bg-gray-100 p-5">
-      <h2 className="text-lg font-bold text-gray-800">Buy compute credits</h2>
+      <h2 className="text-lg font-bold text-gray-800">Buy compute tokens</h2>
       <p className="mb-4 text-sm text-gray-600">
-        Credits are consumed at the runtime rates below as your jobs run.
+        Tokens are consumed at the runtime rates below as your jobs run.
       </p>
 
       <div className="mb-4 flex flex-wrap gap-2">
@@ -58,7 +58,7 @@ export default function CreditsTopUp() {
 
       <CreditsCheckoutButton
         amountUsd={amount}
-        label={`Buy $${amount} in credits`}
+        label={`Buy $${amount} in tokens`}
         className="w-full default-radius bg-[var(--brand-primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:opacity-90"
       />
     </div>

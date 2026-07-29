@@ -10,7 +10,7 @@ export default function PaymentPage() {
         Usage
       </h1>
       <p className="mb-12 text-sm text-gray-600">
-        Manage your subscription and payment details.
+        Manage your tokens, subscriptions, and payment details.
       </p>
 
       <div className="flex flex-col gap-4">
