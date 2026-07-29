@@ -1,3 +1,11 @@
+## [1.10.2](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.1...v1.10.2) (2026-07-29)
+
+
+### Bug Fixes
+
+* jobs list styles ([95ae995](https://github.com/lightriderinc/cloud_platform_nextjs/commit/95ae995f1af6f2b625f3a66c9e9525cbe6e7ea72))
+* jobs list styles ([5e2e373](https://github.com/lightriderinc/cloud_platform_nextjs/commit/5e2e37362ff9e6b21b6d122e58bff680090a3f26))
+
 ## [1.10.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.0...v1.10.1) (2026-07-28)
 
 
