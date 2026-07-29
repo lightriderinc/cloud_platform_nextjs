@@ -30,7 +30,7 @@ export default function JobResultView({ job, footer }: Props) {
 
   const currentStatus = detail?.status ?? job.status;
 
-  const { data: counts } = useQuery({
+  const { data: counts, isLoading: isCountsLoading } = useQuery({
     queryKey: ["lr-job-result", job.uuid],
     queryFn: () => fetchQuantumJobResult(job.uuid),
     enabled: currentStatus === "COMPLETED",
@@ -54,6 +54,12 @@ export default function JobResultView({ job, footer }: Props) {
       </div>
 
       <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+        {job.backend && (
+          <div>
+            <p className="text-xs text-gray-500">Backend</p>
+            <p className="mt-0.5 font-medium">{job.backend}</p>
+          </div>
+        )}
         {job.shots !== undefined && (
           <div>
             <p className="text-xs text-gray-500">Shots</p>
@@ -70,7 +76,30 @@ export default function JobResultView({ job, footer }: Props) {
         )}
       </div>
 
+      {currentStatus === "COMPLETED" && isCountsLoading && (
+        <div>
+          <h4 className="mb-3 text-sm font-medium text-gray-700">
+            Measurement Results
+          </h4>
+          <div className="space-y-2.5">
+            {[100, 75, 50, 30].map((width, i) => (
+              <div key={i} className="flex items-center gap-3 animate-pulse">
+                <span className="h-4 w-10 shrink-0 rounded bg-gray-100" />
+                <div className="h-5 flex-1 overflow-hidden rounded bg-gray-100">
+                  <div
+                    className="h-5 rounded bg-gray-200"
+                    style={{ width: `${width}%` }}
+                  />
+                </div>
+                <span className="h-4 w-24 shrink-0 rounded bg-gray-100" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {currentStatus === "COMPLETED" &&
+        !isCountsLoading &&
         counts &&
         Object.keys(counts).length > 0 && (
           <div>
