@@ -1,9 +1,7 @@
 import Header from "@/components/Header";
-import WelcomeModal from "@/components/onboarding/WelcomeModal";
 import Sidebar from "@/components/sidebar/Sidebar";
 import SidebarSecondary from "@/components/sidebar/SidebarSecondary";
 import SidebarSecondaryGate from "@/components/sidebar/SidebarSecondaryGate";
-import TourProvider from "@/components/tour/TourProvider";
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Science_Gothic } from "next/font/google";
 import "./globals.css";
@@ -42,8 +40,8 @@ export default function RootLayout({
     >
       <body className="h-full flex flex-col overflow-hidden">
         <Providers>
-          <WelcomeModal />
-          <TourProvider />
+          {/* <WelcomeModal />
+          <TourProvider /> */}
           <Header />
           <div className="flex flex-1 min-h-0">
             <Sidebar />
