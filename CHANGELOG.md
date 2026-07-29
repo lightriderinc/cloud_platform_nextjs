@@ -1,3 +1,18 @@
+# [1.11.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.8...v1.11.0) (2026-07-29)
+
+
+### Bug Fixes
+
+* api token card styles updated ([ccd4e7a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/ccd4e7a70aef0b144aeb30ccd7e67c7b17a3dcd6))
+* skeleton load for jobs ([8a2ad53](https://github.com/lightriderinc/cloud_platform_nextjs/commit/8a2ad53a983bd05aa619957a22a7d0a2fe72cf42))
+* updated primary-outline buttons to secondary ([b5fa451](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b5fa4512141cac0a61a81ba5b04eec1cf0058ab5))
+
+
+### Features
+
+* dashboard latest jobs ([096181d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/096181d215cf94ca510168623889e4ff782725a0))
+* dashboard latest jobs ([df1b6cb](https://github.com/lightriderinc/cloud_platform_nextjs/commit/df1b6cba642aa6d54e850a7cfce75fa82c460c6f))
+
 ## [1.10.8](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.7...v1.10.8) (2026-07-29)
 
 
