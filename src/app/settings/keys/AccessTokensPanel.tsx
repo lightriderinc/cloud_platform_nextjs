@@ -1,10 +1,10 @@
 "use client";
 
 import ApiTokenCard from "@/components/overview/ApiTokenCard";
+import LRButton from "@/components/ui/LRButton";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { MdAutorenew, MdDeleteOutline } from "react-icons/md";
-import LRButton from "@/components/ui/LRButton";
 
 type StoredApiKey = {
   keyPrefix: string;
@@ -131,14 +131,15 @@ export default function AccessTokensPanel() {
                 <span className="text-sm text-gray-600">
                   This immediately invalidates the current key.
                 </span>
-                <button
+                <LRButton
                   type="button"
+                  variant="primary-outline"
                   onClick={() => rotate.mutate()}
                   disabled={rotate.isPending}
                   className="default-radius border border-red-300 px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
                 >
                   {rotate.isPending ? "Rotating…" : "Confirm rotate"}
-                </button>
+                </LRButton>
                 <LRButton
                   variant="secondary-outline"
                   onClick={() => setConfirming(null)}
@@ -151,14 +152,15 @@ export default function AccessTokensPanel() {
                 <span className="text-sm text-gray-600">
                   This deletes the key entirely.
                 </span>
-                <button
+                <LRButton
                   type="button"
+                  variant="primary-outline"
                   onClick={() => revoke.mutate()}
                   disabled={revoke.isPending}
                   className="default-radius border border-red-300 px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
                 >
                   {revoke.isPending ? "Revoking…" : "Confirm revoke"}
-                </button>
+                </LRButton>
                 <LRButton
                   variant="secondary-outline"
                   onClick={() => setConfirming(null)}
