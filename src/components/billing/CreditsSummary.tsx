@@ -52,9 +52,10 @@ export default function CreditsSummary() {
   if (!credits.data) {
     return (
       <div className="animate-pulse">
-        <div className="default-radius border border-gray-50 bg-gray-50 flex-col gap-2 flex p-4">
-          <div className="h-4 bg-gray-200 w-200 rounded"></div>
-          <div className="h-2 bg-gray-200 w-full rounded"></div>
+        <div className="bg-gray-100 default-radius flex-col gap-2 flex p-4">
+          <div className="h-5 bg-gray-200 w-40 rounded"></div>
+          <div className="h-3 bg-gray-200 w-200 rounded"></div>
+          <div className="h-3 bg-gray-200 w-150 rounded"></div>
         </div>
       </div>
     );
@@ -66,7 +67,7 @@ export default function CreditsSummary() {
   // real hardware yet.
   if (credits.data.purchasedCents <= 0) {
     return (
-      <div className="default-radius border border-gray-50 bg-50 p-4 opacity-50">
+      <div className="default-radius border border-gray-50 bg-gray-50 p-4 opacity-80">
         <p className="mb-1 flex items-center gap-1.5 text-sm font-medium text-gray-800">
           <MdLockOutline className="text-gray-400" />
           {formatUsd(credits.data.remainingCents)} Light Rider tokens
