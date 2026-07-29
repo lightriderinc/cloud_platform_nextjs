@@ -1,6 +1,7 @@
 "use client";
 
 import LRButton from "@/components/ui/LRButton";
+import { MdLogout } from "react-icons/md";
 
 type Props = {
   onSignOut: () => Promise<void>;
@@ -12,6 +13,8 @@ export default function LogoutButton({ onSignOut }: Props) {
   return (
     <LRButton
       type="button"
+      icon={<MdLogout className="text-lg" />}
+      iconPosition="left"
       onClick={() => onSignOut()}
       variant="secondary"
       className="min-w-[90px]"

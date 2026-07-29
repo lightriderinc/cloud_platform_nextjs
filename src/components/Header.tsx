@@ -24,9 +24,8 @@ export default async function Header() {
 
       <div className="flex items-center gap-1 mr-2">
         {/* Desktop: account button. Mobile: hamburger that opens the menu. */}
-        {/* <UserCard className="hidden lg:flex" /> */}
         <div className="hidden lg:block" data-tour="header-account">
-          <AuthenticationSection />
+          <AuthenticationSection dropdown />
         </div>
         <MobileMenu isAuthenticated={isAuthenticated}>
           <AuthenticationSection />
