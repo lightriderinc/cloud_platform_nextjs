@@ -1,28 +1,40 @@
 import CreditsTopUp from "@/components/billing/CreditsTopUp";
 import InfoBox from "@/components/InfoBox";
 
+// Current pricing metric: priced per token, where every 100 shots equals 1 token.
 const RUNTIME_TIERS = [
-  {
-    range: "0 to 10 minutes",
-    rate: "$5/sec",
-    use: "Interactive apps, APIs, synthetic data, password generation, quantum randomness",
-  },
-  {
-    range: "11 to 20 minutes",
-    rate: "$4/sec",
-    use: "Research, calibration, QEC testing, model exploration",
-  },
-  {
-    range: "21 to 60 minutes",
-    rate: "$3/sec",
-    use: "Optimization, simulation, AI workflows, larger experiments",
-  },
-  {
-    range: "1+ hour",
-    rate: "Contact Sales",
-    use: "Enterprise workloads, dedicated research, government use",
-  },
+  { range: "100 shots", rate: "1 token" },
+  { range: "1,000 shots", rate: "10 tokens" },
+  { range: "10,000 shots", rate: "100 tokens" },
 ];
+
+/*
+ * NOTE: Legacy runtime pricing chart data. Temporarily commented out because
+ * these rates no longer match our current metrics. Do NOT delete — this will be
+ * reused as our pricing metric in the future.
+ */
+// const RUNTIME_TIERS = [
+//   {
+//     range: "0 to 10 minutes",
+//     rate: "$5/sec",
+//     use: "Interactive apps, APIs, synthetic data, password generation, quantum randomness",
+//   },
+//   {
+//     range: "11 to 20 minutes",
+//     rate: "$4/sec",
+//     use: "Research, calibration, QEC testing, model exploration",
+//   },
+//   {
+//     range: "21 to 60 minutes",
+//     rate: "$3/sec",
+//     use: "Optimization, simulation, AI workflows, larger experiments",
+//   },
+//   {
+//     range: "1+ hour",
+//     rate: "Contact Sales",
+//     use: "Enterprise workloads, dedicated research, government use",
+//   },
+// ];
 
 export default function QuantumComputePricingPage() {
   return (
@@ -40,6 +52,44 @@ export default function QuantumComputePricingPage() {
           <CreditsTopUp />
         </div>
 
+        <div className="lg:col-span-2">
+          <h2 className="mb-3 text-lg font-semibold text-gray-600">
+            Runtime pricing
+          </h2>
+          <div className="mb-3">
+            <InfoBox>
+              Runtime is priced per token, where every 100 shots equals 1 token.
+            </InfoBox>
+          </div>
+
+          <div className="overflow-hidden default-radius border border-gray-100 bg-gray-50">
+            <table className="w-full text-left text-sm">
+              <tbody>
+                {RUNTIME_TIERS.map((tier) => (
+                  <tr
+                    key={tier.range}
+                    className="border-b border-gray-100 last:border-0"
+                  >
+                    <td className="whitespace-nowrap px-4 py-3 font-medium text-gray-800">
+                      {tier.range}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                      {tier.rate}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/*
+          NOTE: Legacy runtime pricing chart. Temporarily commented out because
+          these rates no longer match our current metrics. Do NOT delete — this
+          will be reused as our pricing metric in the future. The new pricing
+          chart is rendered above via <TokenPricingChart />.
+        */}
+        {/*
         <div className="lg:col-span-2">
           <h2 className="mb-3 text-lg font-semibold text-gray-600">
             Runtime pricing
@@ -73,6 +123,7 @@ export default function QuantumComputePricingPage() {
             </table>
           </div>
         </div>
+        */}
       </div>
     </div>
   );
