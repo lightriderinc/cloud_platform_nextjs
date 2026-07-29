@@ -49,7 +49,7 @@ export default async function Home() {
           </div>
           <div className="mb-8">
             <div className="flex flex-row justify-between">
-              <h2 className="mb-4 text-xl font-bold text-gray-600">
+              <h2 className="text-xl font-bold text-gray-600">
                 Latest jobs
               </h2>
               <div className="mt-3 flex justify-end">
