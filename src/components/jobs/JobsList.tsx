@@ -30,7 +30,13 @@ async function fetchJobs(): Promise<JobRow[]> {
  * doesn't force N live iqm-proxy calls on every page load — only the ones
  * still in flight.
  */
-function JobRowStatus({ jobId, cachedStatus }: { jobId: string; cachedStatus: JobStatus }) {
+function JobRowStatus({
+  jobId,
+  cachedStatus,
+}: {
+  jobId: string;
+  cachedStatus: JobStatus;
+}) {
   const { data: detail } = useQuery({
     queryKey: ["lr-job-detail", jobId],
     queryFn: () => fetchQuantumJobDetail(jobId),
@@ -46,7 +52,11 @@ function JobRowStatus({ jobId, cachedStatus }: { jobId: string; cachedStatus: Jo
 export default function JobsList() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 
-  const { data: jobs, isLoading, error } = useQuery({
+  const {
+    data: jobs,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["lr-jobs-list"],
     queryFn: fetchJobs,
   });
@@ -82,21 +92,21 @@ export default function JobsList() {
             <button
               type="button"
               onClick={() => setSelectedJobId(job.jobId)}
-              className="flex w-full items-center justify-between gap-4 default-radius border border-gray-200 bg-white p-4 text-left transition-colors hover:bg-gray-50"
+              className="flex w-full items-end justify-between gap-4 default-radius border border-gray-100 bg-gray-100 p-3 text-left transition-colors card-hover-primary cursor-pointer"
             >
               <div className="min-w-0">
-                <p className="truncate font-mono text-xs text-gray-500">
+                <p className="truncate font-mono text-xs text-gray-400">
                   {job.jobId}
                 </p>
-                <p className="mt-0.5 text-sm text-gray-700">
+                <p className="mt-1 font-medium text-sm text-gray-600">
                   {job.backend} · {job.shots.toLocaleString()} shots
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-3">
-                <span className="text-xs text-gray-400">
+                <JobRowStatus jobId={job.jobId} cachedStatus={job.status} />
+                <span className="text-xs text-gray-500 font-medium">
                   {new Date(job.createdAt).toLocaleString()}
                 </span>
-                <JobRowStatus jobId={job.jobId} cachedStatus={job.status} />
               </div>
             </button>
           </li>
