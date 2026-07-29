@@ -1,3 +1,18 @@
+## [1.11.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.0...v1.11.1) (2026-07-29)
+
+
+### Bug Fixes
+
+* backend connection section ([d067ad7](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d067ad7b6973ad5619bd744372923baaf459dd31))
+* entropy selection unavailable tag updated ([d2a8fc8](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d2a8fc8b3c088a0d7cb805d8348d15c1f6ea51b8))
+* getting started styles fixed ([6f8034a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6f8034ab8596cece3bd041f676943e964c573ac2))
+* no circuit schematic when block by credits ([fb64fc4](https://github.com/lightriderinc/cloud_platform_nextjs/commit/fb64fc4dc951eb02fa7fe224d1de4455ae0f5751))
+* quickstart links in backend connection ([e9bae22](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e9bae22b8bea89a329c94347afc8baa8bbb4d7d4))
+* submit sample job moved to connection section ([f0ed619](https://github.com/lightriderinc/cloud_platform_nextjs/commit/f0ed6192414bbb54f897205f1675f4ca7cf0536d))
+* take tour commented for now ([d3674f6](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d3674f6de47308bb1c365fd9208cc9f23e5e8fe5))
+* token summary shown in qpu submit modal ([192cc35](https://github.com/lightriderinc/cloud_platform_nextjs/commit/192cc35d664a7336e0992ff777bc30902628dd4e))
+* view all jobs link fixed ([5edf27a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/5edf27af8ba902ae88fc25375719c141f0e6c750))
+
 # [1.11.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.8...v1.11.0) (2026-07-29)
 
 
