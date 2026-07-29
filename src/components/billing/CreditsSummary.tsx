@@ -67,12 +67,24 @@ export default function CreditsSummary() {
   // real hardware yet.
   if (credits.data.purchasedCents <= 0) {
     return (
-      <div className="default-radius border border-gray-50 bg-gray-50 p-4 opacity-80">
-        <p className="mb-1 flex items-center gap-1.5 text-sm font-medium text-gray-800">
+      <div className="default-radius border border-gray-50 bg-gray-50 p-4">
+        <p className="mb-1 flex items-center gap-1.5 text-sm font-medium text-gray-800 opacity-80">
           <MdLockOutline className="text-gray-400" />
           {formatUsd(credits.data.remainingCents)} Light Rider tokens
         </p>
-        <p className="text-xs text-gray-500">Unlocks after your first purchase.</p>
+        <p className="text-xs text-gray-500">
+          Unlocks after your first purchase.
+        </p>
+        <div className="flex mt-6">
+          <a href="/settings/purchases/quantum-compute">
+            <button
+              style={{ backgroundColor: "var(--brand-primary)" }}
+              className="default-radius cursor-pointer px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-80"
+            >
+              Purchase compute tokens
+            </button>
+          </a>
+        </div>
       </div>
     );
   }
@@ -80,13 +92,23 @@ export default function CreditsSummary() {
   return (
     <div className="default-radius border border-gray-50 bg-gray-50 p-4">
       <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-gray-800">
-        {formatUsd(credits.data.remainingCents)} Light Rider tokens remaining
-        of {formatUsd(credits.data.purchasedCents)} purchased
+        {formatUsd(credits.data.remainingCents)} Light Rider tokens remaining of{" "}
+        {formatUsd(credits.data.purchasedCents)} purchased
         <HintIcon text="Simulator (mock) jobs are free and never deduct tokens. QPU jobs (Garnet, Emerald, Sirius) deduct tokens per shot at submission time." />
       </p>
       <ProgressBar
         fraction={credits.data.remainingCents / credits.data.purchasedCents}
       />
+      <div className="flex mt-6">
+        <a href="/settings/purchases/quantum-compute">
+          <button
+            style={{ backgroundColor: "var(--brand-primary)" }}
+            className="default-radius cursor-pointer px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-80"
+          >
+            Purchase compute tokens
+          </button>
+        </a>
+      </div>
     </div>
   );
 }
