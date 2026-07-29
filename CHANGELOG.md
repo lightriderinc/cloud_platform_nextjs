@@ -1,3 +1,13 @@
+## [1.10.7](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.6...v1.10.7) (2026-07-29)
+
+
+### Bug Fixes
+
+* checkout buttons open in new tab + credits -> called tokens ([0d413ee](https://github.com/lightriderinc/cloud_platform_nextjs/commit/0d413ee3dc313eaf1c371dc3bd70cfbe82a585aa))
+* payment card ([5b96e8e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/5b96e8ecde10e0237bebeb717a746613b1cc733f))
+* payment pages update ([4d6320a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/4d6320acba0d2f103cbb73bdaca9df02cd3ded1d))
+* removed manage plan action from plans page ([98336fb](https://github.com/lightriderinc/cloud_platform_nextjs/commit/98336fb64e18b1f726f89139d6e27bd2e9381001))
+
 ## [1.10.6](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.5...v1.10.6) (2026-07-29)
 
 
