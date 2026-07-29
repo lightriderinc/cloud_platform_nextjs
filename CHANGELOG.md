@@ -1,3 +1,11 @@
+## [1.10.6](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.5...v1.10.6) (2026-07-29)
+
+
+### Bug Fixes
+
+* usage page action buttons ([c98d69b](https://github.com/lightriderinc/cloud_platform_nextjs/commit/c98d69b5775d78260a00bfe18151db63cf6b9057))
+* usage page action buttons ([2d2998f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2d2998f8aed560d48f69ffb1882443e9f877d44e))
+
 ## [1.10.5](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.4...v1.10.5) (2026-07-29)
 
 
