@@ -2,6 +2,7 @@
 
 import { startTour } from "@/lib/tour/startTour";
 import { useSyncExternalStore } from "react";
+import LRButton from "@/components/ui/LRButton";
 
 const STORAGE_KEY = "lr_welcome_seen";
 
@@ -75,14 +76,13 @@ export default function WelcomeModal() {
         </p>
 
         <div className="flex w-full flex-col gap-2">
-          <button
-            type="button"
+          <LRButton
+            variant="primary"
             onClick={handleTakeTour}
-            className="w-full py-3 px-6 text-white text-sm font-semibold default-radius cursor-pointer transition-opacity hover:opacity-90 active:opacity-80"
-            style={{ backgroundColor: "var(--brand-primary)" }}
+            className="w-full"
           >
             Take the tour
-          </button>
+          </LRButton>
 
           <button
             type="button"

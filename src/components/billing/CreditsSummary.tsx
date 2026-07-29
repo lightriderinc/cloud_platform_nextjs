@@ -1,6 +1,7 @@
 "use client";
 
 import HintIcon from "@/components/HintIcon";
+import LRButton from "@/components/ui/LRButton";
 import { useQuery } from "@tanstack/react-query";
 import { MdLockOutline } from "react-icons/md";
 
@@ -77,12 +78,7 @@ export default function CreditsSummary() {
         </p>
         <div className="flex mt-6">
           <a href="/settings/purchases/quantum-compute">
-            <button
-              style={{ backgroundColor: "var(--brand-primary)" }}
-              className="default-radius cursor-pointer px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-80"
-            >
-              Purchase compute tokens
-            </button>
+            <LRButton variant="primary">Purchase compute tokens</LRButton>
           </a>
         </div>
       </div>
@@ -101,12 +97,7 @@ export default function CreditsSummary() {
       />
       <div className="flex mt-6">
         <a href="/settings/purchases/quantum-compute">
-          <button
-            style={{ backgroundColor: "var(--brand-primary)" }}
-            className="default-radius cursor-pointer px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-80"
-          >
-            Purchase compute tokens
-          </button>
+          <LRButton variant="primary">Purchase compute tokens</LRButton>
         </a>
       </div>
     </div>

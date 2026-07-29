@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MdCheck, MdContentCopy, MdVisibility, MdVisibilityOff } from "react-icons/md";
+import LRButton from "@/components/ui/LRButton";
 
 function maskToken(token: string): string {
   const prefix = "lr_";
@@ -30,31 +31,31 @@ export default function ApiTokenCard({ token }: { token: string }) {
           {token ? (revealed ? token : maskToken(token)) : "—"}
         </code>
         <div className="flex gap-1">
-          <button
+          <LRButton
             type="button"
             onClick={() => setRevealed((v) => !v)}
             disabled={!token}
             aria-label={revealed ? "Hide token" : "Reveal token"}
-            className="flex shrink-0 items-center gap-1.5 border border-gray-100 bg-white px-3 py-2 text-xs text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-40"
+            variant="secondary"
+            icon={revealed ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
+            iconPosition="left"
+            className="shrink-0"
           >
-            {revealed ? <MdVisibilityOff size={16} /> : <MdVisibility size={16} />}
             {revealed ? "Hide" : "Reveal"}
-          </button>
+          </LRButton>
 
-          <button
+          <LRButton
             type="button"
             onClick={handleCopy}
             disabled={!token}
             aria-label="Copy token"
-            className="flex shrink-0 items-center gap-1.5 border border-gray-100 bg-white px-3 py-2 text-xs text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-40"
+            variant="secondary"
+            icon={copied ? <MdCheck className="text-green-500" size={16} /> : <MdContentCopy size={16} />}
+            iconPosition="left"
+            className="shrink-0"
           >
-            {copied ? (
-              <MdCheck className="text-green-500" size={16} />
-            ) : (
-              <MdContentCopy size={16} />
-            )}
             {copied ? "Copied" : "Copy"}
-          </button>
+          </LRButton>
         </div>
       </div>
     </div>

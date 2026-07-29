@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import LRButton from '@/components/ui/LRButton';
 import VerifyIdentity from '@/components/profile/VerifyIdentity';
 
 type Props = {
@@ -78,15 +79,15 @@ export default function DisableMfaModal({
         {step === 'done' && (
           <div className="pt-2 text-center">
             <p className="text-sm text-gray-700 mb-4">Two-factor authentication is off.</p>
-            <button
+            <LRButton
+              variant="primary-outline"
               onClick={() => {
                 onSuccess();
                 onClose();
               }}
-              className="default-radius px-4 py-2 text-sm font-semibold btn-outline-brand cursor-pointer"
             >
               Done
-            </button>
+            </LRButton>
           </div>
         )}
       </div>

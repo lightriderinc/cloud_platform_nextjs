@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import LRButton from "@/components/ui/LRButton";
 
 export default function EnterpriseLeadForm() {
   const [status, setStatus] = useState<"idle" | "submitting" | "sent" | "error">("idle");
@@ -102,13 +103,14 @@ export default function EnterpriseLeadForm() {
         />
       </label>
 
-      <button
+      <LRButton
+        variant="primary"
         type="submit"
         disabled={status === "submitting"}
-        className="w-full default-radius bg-[var(--brand-primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-60"
+        className="w-full"
       >
         {status === "submitting" ? "Sending…" : "Get Custom Pricing"}
-      </button>
+      </LRButton>
       {status === "error" && (
         <p className="text-xs text-red-600">
           Something went wrong — please try again.

@@ -38,9 +38,11 @@ const LRButton = forwardRef<HTMLButtonElement, LRButtonProps>(function LRButton(
   ref,
 ) {
   const paddingClasses = icon
-    ? iconPosition === "right"
-      ? "pl-4 pr-3 gap-2"
-      : "pl-3 pr-4 gap-2"
+    ? children
+      ? iconPosition === "right"
+        ? "pl-4 pr-3 gap-2"
+        : "pl-3 pr-4 gap-2"
+      : "px-3"
     : "px-4";
 
   const classes = [

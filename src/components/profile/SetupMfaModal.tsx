@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import CopyButton from '@/components/ui/CopyButton';
+import LRButton from '@/components/ui/LRButton';
 import QrCode from '@/components/ui/QrCode';
 import VerifyIdentity from '@/components/profile/VerifyIdentity';
 
@@ -138,16 +139,16 @@ export default function SetupMfaModal({
               </code>
               <CopyButton value={secret} label={null} />
             </div>
-            <button
+            <LRButton
+              variant="primary"
               onClick={() => {
                 setError('');
                 setStep('confirm');
               }}
-              className="w-full default-radius px-4 py-2 text-sm font-semibold text-white cursor-pointer transition-opacity"
-              style={{ backgroundColor: 'var(--brand-primary)' }}
+              className="w-full"
             >
               Next
-            </button>
+            </LRButton>
           </>
         )}
 
@@ -169,14 +170,14 @@ export default function SetupMfaModal({
               placeholder="000000"
             />
             {error && <p className="text-xs text-red-500 mb-3">{error}</p>}
-            <button
+            <LRButton
+              variant="primary"
               onClick={handleBind}
               disabled={loading || code.length < 6}
-              className="w-full default-radius px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 cursor-pointer transition-opacity"
-              style={{ backgroundColor: loading || code.length < 6 ? '#aaa' : 'var(--brand-primary)' }}
+              className="w-full"
             >
               {loading ? 'Verifying…' : 'Enable 2FA'}
-            </button>
+            </LRButton>
           </>
         )}
 
@@ -186,15 +187,15 @@ export default function SetupMfaModal({
               Two-factor authentication is on. You will be asked for a code from your authenticator
               app when you sign in.
             </p>
-            <button
+            <LRButton
+              variant="primary-outline"
               onClick={() => {
                 onSuccess();
                 onClose();
               }}
-              className="default-radius px-4 py-2 text-sm font-semibold btn-outline-brand cursor-pointer"
             >
               Done
-            </button>
+            </LRButton>
           </div>
         )}
       </div>

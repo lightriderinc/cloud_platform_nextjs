@@ -8,6 +8,7 @@ import {
   MdContentCopy,
   MdRefresh,
 } from "react-icons/md";
+import LRButton from "@/components/ui/LRButton";
 import EntropySourceSelector, { SOURCES } from "./EntropySourceSelector";
 import ModalShell from "./ModalShell";
 import StepIndicator from "./StepIndicator";
@@ -261,18 +262,21 @@ export default function PasswordModal({ onClose }: { onClose: () => void }) {
                 <p className="text-sm font-bold text-gray-700">
                   Generated Password
                 </p>
-                <button
+                <LRButton
                   type="button"
+                  variant="secondary-outline"
                   onClick={handleCopy}
-                  className="flex items-center gap-1.5 px-2.5 py-1 default-radius border border-gray-100 text-xs text-gray-600 hover:bg-gray-50 cursor-pointer transition-colors"
+                  icon={
+                    copied ? (
+                      <MdCheck className="text-green-700" />
+                    ) : (
+                      <MdContentCopy />
+                    )
+                  }
+                  iconPosition="left"
                 >
-                  {copied ? (
-                    <MdCheck className="text-green-700" />
-                  ) : (
-                    <MdContentCopy />
-                  )}
                   {copied ? "Copied" : "Copy"}
-                </button>
+                </LRButton>
               </div>
               <div className="default-radius border border-gray-800 bg-gray-800 p-4 overflow-x-auto">
                 <p className="font-mono text-xs text-green-300 break-all leading-relaxed">
@@ -289,37 +293,38 @@ export default function PasswordModal({ onClose }: { onClose: () => void }) {
         {step === 1 && (
           <>
             <div />
-            <button
+            <LRButton
               type="button"
+              variant="primary"
               disabled={!selectedSourceId}
               onClick={() => setStep(2)}
-              style={{ backgroundColor: "var(--brand-primary)" }}
-              className="default-radius px-4 py-2 text-sm font-medium text-white transition-opacity cursor-pointer hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
+              icon={<MdArrowForward />}
+              iconPosition="right"
             >
-              Continue{" "}
-              <MdArrowForward className="inline-block ml-1 text-base align-text-bottom" />
-            </button>
+              Continue
+            </LRButton>
           </>
         )}
 
         {step === 2 && (
           <>
-            <button
+            <LRButton
               type="button"
+              variant="secondary-outline"
               onClick={() => setStep(1)}
-              className="flex items-center gap-1 default-radius border border-gray-100 px-4 py-2 text-sm text-gray-600 cursor-pointer hover:bg-gray-50 transition-colors"
+              icon={<MdArrowBack />}
+              iconPosition="left"
             >
-              <MdArrowBack className="text-base" /> Back
-            </button>
-            <button
+              Back
+            </LRButton>
+            <LRButton
               type="button"
+              variant="primary"
               disabled={!lengthValid}
               onClick={handleGenerate}
-              style={{ backgroundColor: "var(--brand-primary)" }}
-              className="default-radius px-4 py-2 text-sm font-medium text-white transition-opacity cursor-pointer hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Generate Password
-            </button>
+            </LRButton>
           </>
         )}
 
@@ -327,20 +332,22 @@ export default function PasswordModal({ onClose }: { onClose: () => void }) {
           <>
             <div />
             <div className="flex gap-2">
-              <button
+              <LRButton
                 type="button"
+                variant="secondary-outline"
                 onClick={handleRegenerate}
-                className="flex items-center gap-1.5 default-radius border border-gray-100 px-4 py-2 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-50 transition-colors"
+                icon={<MdRefresh />}
+                iconPosition="left"
               >
-                <MdRefresh className="text-base" /> Regenerate
-              </button>
-              <button
+                Regenerate
+              </LRButton>
+              <LRButton
                 type="button"
+                variant="secondary-outline"
                 onClick={handleReset}
-                className="default-radius border border-gray-100 px-4 py-2 text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors"
               >
                 New Password
-              </button>
+              </LRButton>
             </div>
           </>
         )}

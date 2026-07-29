@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import LRButton from '@/components/ui/LRButton';
+
 type Props = {
   /** The user's current email, used for the email-code verification path. */
   email: string;
@@ -100,14 +102,9 @@ export default function VerifyIdentity({
     }`;
 
   const primaryBtn = (label: string, onClick: () => void, isDisabled: boolean) => (
-    <button
-      onClick={onClick}
-      disabled={isDisabled}
-      className="w-full default-radius px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 cursor-pointer transition-opacity"
-      style={{ backgroundColor: isDisabled ? '#aaa' : 'var(--brand-primary)' }}
-    >
+    <LRButton variant="primary" onClick={onClick} disabled={isDisabled} className="w-full">
       {label}
-    </button>
+    </LRButton>
   );
 
   return (
