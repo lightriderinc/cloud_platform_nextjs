@@ -1,9 +1,16 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { ManageBillingButton } from "./CheckoutButtons";
 
 type PaymentMethod =
-  | { type: "card"; brand: string; last4: string; expMonth: number; expYear: number }
+  | {
+      type: "card";
+      brand: string;
+      last4: string;
+      expMonth: number;
+      expYear: number;
+    }
   | { type: "link"; email: string | null };
 
 async function fetchPaymentMethod(): Promise<PaymentMethod | null> {
@@ -35,19 +42,27 @@ export default function PaymentMethodCard() {
   });
 
   return (
-    <div className="default-radius border border-gray-200 bg-white p-4">
+    <div className="default-radius border border-gray-50 bg-gray-50 p-4">
       <h2 className="mb-2 text-sm font-medium text-gray-800">Payment method</h2>
       {error ? (
         <p className="text-sm text-red-600">
           {error instanceof Error ? error.message : "Something went wrong."}
         </p>
       ) : paymentMethod === undefined ? (
-        <p className="text-sm text-gray-500">Loading…</p>
+        <div className="h-3 bg-gray-200 w-full rounded animate-pulse"></div>
       ) : paymentMethod ? (
         <p className="text-sm text-gray-600">{describe(paymentMethod)}</p>
       ) : (
         <p className="text-sm text-gray-500">No payment method on file.</p>
       )}
+
+      <p className="text-sm text-gray-600">
+        Update your payment method, view invoices, or change plans in the
+        billing portal.
+      </p>
+      <div className="flex">
+        <ManageBillingButton />
+      </div>
     </div>
   );
 }

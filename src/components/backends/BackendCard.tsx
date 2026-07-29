@@ -37,7 +37,10 @@ export default function BackendCard({
       <div className="mt-auto flex items-center gap-2">
         <BackendTypeTag type={type} />
         {comingSoon && (
-          <span className="w-fit default-radius bg-gray-900 px-2 py-0.5 text-xs font-medium text-white">
+          <span
+            className="w-fit default-radius px-2 py-0.5 text-xs font-medium text-white"
+            style={{ backgroundColor: "var(--brand-tertiary)" }}
+          >
             Coming soon
           </span>
         )}

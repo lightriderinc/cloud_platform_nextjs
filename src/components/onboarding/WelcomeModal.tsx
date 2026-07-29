@@ -1,10 +1,5 @@
 "use client";
 
-import {
-  getServerSnapshot as getTermsServerSnapshot,
-  getSnapshot as getTermsSnapshot,
-  subscribe as subscribeToTerms,
-} from "@/components/TermsGateModal";
 import { startTour } from "@/lib/tour/startTour";
 import { useSyncExternalStore } from "react";
 
@@ -28,29 +23,18 @@ function getSeenSnapshot() {
 }
 
 // Match "seen" on the server so nothing renders during SSR; the client
-// corrects this on hydration, same as TermsGateModal does for its own state.
+// corrects this on hydration.
 function getSeenServerSnapshot() {
   return true;
 }
 
 export default function WelcomeModal() {
-  // Wait for the legal terms modal (src/components/TermsGateModal.tsx) to be
-  // accepted first, so a brand-new visitor never sees two modals stacked on
-  // top of each other. `show` is derived fresh every render from both
-  // external stores rather than cached in local state — otherwise a stale
-  // read during the hydration correction window can "stick" the modal
-  // visible even after termsPending flips back to true.
-  const termsPending = useSyncExternalStore(
-    subscribeToTerms,
-    getTermsSnapshot,
-    getTermsServerSnapshot,
-  );
   const seen = useSyncExternalStore(
     subscribeToSeen,
     getSeenSnapshot,
     getSeenServerSnapshot,
   );
-  const show = !termsPending && !seen;
+  const show = !seen;
 
   function dismiss() {
     localStorage.setItem(STORAGE_KEY, "true");

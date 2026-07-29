@@ -20,7 +20,9 @@ async function fetchSubscriptions(): Promise<Subscription[]> {
 
 function planLabel(subscription: Subscription): string {
   if (subscription.tier) {
-    return subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1);
+    return (
+      subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1)
+    );
   }
   return subscription.kind === "API_PLAN" ? "API" : "User";
 }
@@ -59,11 +61,19 @@ export default function SubscriptionsList() {
   }
 
   if (!subscriptions) {
-    return <p className="text-sm text-gray-500">Loading subscriptions…</p>;
+    return (
+      <div className="animate-pulse">
+        <div className="bg-gray-100 default-radius flex-col gap-2 flex p-4">
+          <div className="h-5 bg-gray-200 w-40 rounded"></div>
+          <div className="h-3 bg-gray-200 w-200 rounded"></div>
+          <div className="h-3 bg-gray-200 w-150 rounded"></div>
+        </div>
+      </div>
+    );
   }
 
   if (subscriptions.length === 0) {
-    return <p className="text-sm text-gray-500">No subscriptions yet.</p>;
+    return <></>;
   }
 
   return (
@@ -91,7 +101,7 @@ export default function SubscriptionsList() {
             <button
               onClick={() => toggle.mutate(subscription)}
               disabled={isPending}
-              className="default-radius border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-60"
+              className="default-radius border border-gray-50 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-60"
             >
               {isPending
                 ? "Working…"
