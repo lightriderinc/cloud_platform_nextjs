@@ -1,3 +1,12 @@
+## [1.10.3](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.2...v1.10.3) (2026-07-29)
+
+
+### Bug Fixes
+
+* job backend displayed on results modal ([ddf342a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/ddf342ae23d6457593998f2ac94f3e58e0faf3b8))
+* skeleton loading for job results ([e9330a4](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e9330a42cf7f125daee5172b3724f7858057aaa9))
+* updated job results modal ([772afc7](https://github.com/lightriderinc/cloud_platform_nextjs/commit/772afc777a3df04860cb24d710cdc9aa7493f2fa))
+
 ## [1.10.2](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.1...v1.10.2) (2026-07-29)
 
 
