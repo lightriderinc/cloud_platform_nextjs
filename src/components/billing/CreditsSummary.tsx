@@ -59,7 +59,7 @@ export default function CreditsSummary() {
   // real hardware yet.
   if (credits.data.purchasedCents <= 0) {
     return (
-      <div className="default-radius border border-gray-200 bg-white p-4 opacity-50">
+      <div className="default-radius border border-gray-50 bg-50 p-4 opacity-50">
         <p className="mb-1 flex items-center gap-1.5 text-sm font-medium text-gray-800">
           <MdLockOutline className="text-gray-400" />
           {formatUsd(credits.data.remainingCents)} Light Rider tokens
@@ -70,11 +70,11 @@ export default function CreditsSummary() {
   }
 
   return (
-    <div className="default-radius border border-gray-200 bg-white p-4">
+    <div className="default-radius border border-gray-50 bg-gray-50 p-4">
       <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-gray-800">
         {formatUsd(credits.data.remainingCents)} Light Rider tokens remaining
         of {formatUsd(credits.data.purchasedCents)} purchased
-        <HintIcon text="Mock and sample-circuit jobs are free and never deduct tokens. Real backend jobs (Garnet, Emerald, Sirius) deduct tokens per shot at submission time." />
+        <HintIcon text="Simulator (mock) jobs are free and never deduct tokens. QPU jobs (Garnet, Emerald, Sirius) deduct tokens per shot at submission time." />
       </p>
       <ProgressBar
         fraction={credits.data.remainingCents / credits.data.purchasedCents}

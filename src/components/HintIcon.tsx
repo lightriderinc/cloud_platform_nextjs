@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MdInfoOutline } from "react-icons/md";
 
 /**
  * Small "ⓘ" affordance for a short tooltip next to a specific non-obvious
@@ -19,7 +20,7 @@ export default function HintIcon({ text }: { text: string }) {
         onMouseLeave={() => setOpen(false)}
         className="flex h-4 w-4 items-center justify-center text-xs leading-none text-gray-400 transition-colors hover:text-gray-600"
       >
-        ⓘ
+        <MdInfoOutline />
       </button>
       {open && (
         <span
