@@ -1,9 +1,9 @@
 import { handleSignIn } from "@/app/actions/auth";
+import LRButton from "@/components/ui/LRButton";
 import { IoDocumentTextSharp } from "react-icons/io5";
 import { RiCpuFill } from "react-icons/ri";
 import LoginButton from "./auth/LoginButton";
 import WelcomePageCard from "./WelcomePageCard";
-import LRButton from "@/components/ui/LRButton";
 
 export default function WelcomePage() {
   return (
@@ -30,7 +30,7 @@ export default function WelcomePage() {
             <a href="https://www.lightriderinc.com/contact" target="_blank" rel="noopener noreferrer">
               <LRButton
                 type="button"
-                variant="primary-outline"
+                variant="secondary"
                 className="min-w-[110px] w-full"
               >
                 Contact us

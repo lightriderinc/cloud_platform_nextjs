@@ -1,5 +1,5 @@
-import Link from "next/link";
 import LRButton from "@/components/ui/LRButton";
+import Link from "next/link";
 
 export default function NotAuthorized() {
   return (
@@ -18,7 +18,7 @@ export default function NotAuthorized() {
       <Link href="/">
         <LRButton
           type="button"
-          variant="primary-outline"
+          variant="secondary"
           className="min-w-[110px] w-full"
         >
           Take me back home

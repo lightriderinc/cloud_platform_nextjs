@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 
+import VerifyIdentity from '@/components/profile/VerifyIdentity';
 import CopyButton from '@/components/ui/CopyButton';
 import LRButton from '@/components/ui/LRButton';
 import QrCode from '@/components/ui/QrCode';
-import VerifyIdentity from '@/components/profile/VerifyIdentity';
 
 type Props = {
   email: string;
@@ -188,7 +188,7 @@ export default function SetupMfaModal({
               app when you sign in.
             </p>
             <LRButton
-              variant="primary-outline"
+              variant="secondary"
               onClick={() => {
                 onSuccess();
                 onClose();

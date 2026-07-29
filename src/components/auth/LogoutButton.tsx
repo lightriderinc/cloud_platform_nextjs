@@ -13,7 +13,7 @@ export default function LogoutButton({ onSignOut }: Props) {
     <LRButton
       type="button"
       onClick={() => onSignOut()}
-      variant="primary-outline"
+      variant="secondary"
       className="min-w-[90px]"
     >
       Log out
