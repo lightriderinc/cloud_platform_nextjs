@@ -1,3 +1,12 @@
+## [1.10.5](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.4...v1.10.5) (2026-07-29)
+
+
+### Bug Fixes
+
+* credit summary skeleton ([6a15a3c](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6a15a3c360848dd6447df98c0a4f2f8b3f6a97bb))
+* payment card ([453379f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/453379f5e50ba53fb7e772433c6783dfca36ba89))
+* usage styles ([80ba46f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/80ba46f2041c450d2d8dc6ddd0530fa9d65a182c))
+
 ## [1.10.4](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.3...v1.10.4) (2026-07-29)
 
 
