@@ -1,4 +1,3 @@
-import { ManageBillingButton } from "@/components/billing/CheckoutButtons";
 import UserPlansGrid from "@/components/billing/UserPlansGrid";
 import InfoBox from "@/components/InfoBox";
 
@@ -20,7 +19,7 @@ export default function UserPricingPage() {
         <UserPlansGrid />
       </div>
 
-      <div className="mt-8 flex flex-col gap-3 default-radius p-4">
+      {/* <div className="mt-8 flex flex-col gap-3 default-radius p-4">
         <p className="text-sm text-gray-600">
           Already on a plan? Update your payment method, view invoices, or
           change plans in the billing portal.
@@ -28,7 +27,7 @@ export default function UserPricingPage() {
         <div className="flex">
           <ManageBillingButton />
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
