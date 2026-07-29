@@ -142,7 +142,13 @@ export default function BackendSubmitModal({
 
         {/* Body */}
         <div className="overflow-y-auto px-8 pb-8">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-[1fr_220px]">
+          <div
+            className={
+              blockedByCredits
+                ? "grid grid-cols-1"
+                : "grid grid-cols-1 gap-8 md:grid-cols-[1fr_220px]"
+            }
+          >
             {/* Left: form or results */}
             <div className="min-w-0">
               {submittedJob ? (
@@ -209,10 +215,12 @@ export default function BackendSubmitModal({
               )}
             </div>
 
-            {/* Right: circuit schematic (persists across both views) */}
-            <div>
-              <CircuitSchematic circuit={activeCircuit} />
-            </div>
+            {/* Right: circuit schematic (persists across both views, hidden when blocked by credits) */}
+            {!blockedByCredits && (
+              <div>
+                <CircuitSchematic circuit={activeCircuit} />
+              </div>
+            )}
           </div>
         </div>
       </div>
