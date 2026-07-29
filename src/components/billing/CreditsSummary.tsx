@@ -50,7 +50,14 @@ export default function CreditsSummary() {
   });
 
   if (!credits.data) {
-    return null;
+    return (
+      <div className="animate-pulse">
+        <div className="default-radius border border-gray-50 bg-gray-50 flex-col gap-2 flex p-4">
+          <div className="h-4 bg-gray-200 w-200 rounded"></div>
+          <div className="h-2 bg-gray-200 w-full rounded"></div>
+        </div>
+      </div>
+    );
   }
 
   // Same purchasedCents <= 0 check BackendSubmitModal uses to gate real QPU
