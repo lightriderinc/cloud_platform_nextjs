@@ -7,6 +7,7 @@ import CircuitSchematic, {
 } from "@/components/quantum/CircuitSchematic";
 import ShotsInput from "@/components/quantum/ShotsInput";
 import LRButton from "@/components/ui/LRButton";
+import WarningBox from "@/components/WarningBox";
 import {
   QUANTUM_BACKENDS,
   type QuantumBackendId,
@@ -197,6 +198,12 @@ export default function BackendSubmitModal({
                         ? error.message
                         : "Failed to submit job. Please try again."}
                     </p>
+                  )}
+
+                  {needsCredits && (
+                    <WarningBox>
+                      Submitting circuits to QPUs will cost you tokens
+                    </WarningBox>
                   )}
 
                   <div className="flex justify-end gap-3 pt-1">
