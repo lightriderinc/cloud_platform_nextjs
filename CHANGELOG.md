@@ -1,3 +1,15 @@
+## [1.10.4](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.3...v1.10.4) (2026-07-29)
+
+
+### Bug Fixes
+
+* backend tag styles updated ([2143bea](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2143bea29d0a05c217845a31259a62b15afde413))
+* responsive menu issues ([bbda43c](https://github.com/lightriderinc/cloud_platform_nextjs/commit/bbda43c57c9d3a08e9d5741ec37a09a150e1f3e2))
+* skeleton load added for subscription list ([5d530de](https://github.com/lightriderinc/cloud_platform_nextjs/commit/5d530de83d9cc68fdee527cfabbc4e486cfe9760))
+* skeleton loading for credits summary ([9f6199f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9f6199f762ba5df90f3b1cb882bbe4478390b6bd))
+* update usage page ([6ca5b45](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6ca5b453b45c320f39993c6e3ca587579f8ee7c4))
+* updated payment card ([82c9d31](https://github.com/lightriderinc/cloud_platform_nextjs/commit/82c9d317ce1e1f7e306a6fe35cce82bb2dac2801))
+
 ## [1.10.3](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.2...v1.10.3) (2026-07-29)
 
 
