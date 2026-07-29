@@ -1,7 +1,7 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import LRButton from "@/components/ui/LRButton";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 type Subscription = {
   id: string;
@@ -66,8 +66,8 @@ export default function SubscriptionsList() {
       <div className="animate-pulse">
         <div className="bg-gray-100 default-radius flex-col gap-2 flex p-4">
           <div className="h-5 bg-gray-200 w-40 rounded"></div>
-          <div className="h-3 bg-gray-200 w-200 rounded"></div>
-          <div className="h-3 bg-gray-200 w-150 rounded"></div>
+          <div className="h-3 bg-gray-200 w-full rounded"></div>
+          <div className="h-3 bg-gray-200 w-3/4 rounded"></div>
         </div>
       </div>
     );

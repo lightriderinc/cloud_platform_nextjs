@@ -55,8 +55,8 @@ export default function CreditsSummary() {
       <div className="animate-pulse">
         <div className="bg-gray-100 default-radius flex-col gap-2 flex p-4">
           <div className="h-5 bg-gray-200 w-40 rounded"></div>
-          <div className="h-3 bg-gray-200 w-200 rounded"></div>
-          <div className="h-3 bg-gray-200 w-150 rounded"></div>
+          <div className="h-3 bg-gray-200 w-full rounded"></div>
+          <div className="h-3 bg-gray-200 w-3/4 rounded"></div>
         </div>
       </div>
     );

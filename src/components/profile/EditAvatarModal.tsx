@@ -52,7 +52,7 @@ export default function EditAvatarModal({ currentAvatar, initials, onUpdateAvata
         {done ? (
           <div className="text-center pt-2">
             <p className="text-sm text-gray-700 mb-4">Avatar updated. Refresh to see it.</p>
-            <LRButton variant="primary-outline" onClick={onClose}>
+            <LRButton variant="secondary" onClick={onClose}>
               Done
             </LRButton>
           </div>

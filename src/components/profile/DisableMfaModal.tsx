@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 
-import LRButton from '@/components/ui/LRButton';
 import VerifyIdentity from '@/components/profile/VerifyIdentity';
+import LRButton from '@/components/ui/LRButton';
 
 type Props = {
   email: string;
@@ -80,7 +80,7 @@ export default function DisableMfaModal({
           <div className="pt-2 text-center">
             <p className="text-sm text-gray-700 mb-4">Two-factor authentication is off.</p>
             <LRButton
-              variant="primary-outline"
+              variant="secondary"
               onClick={() => {
                 onSuccess();
                 onClose();

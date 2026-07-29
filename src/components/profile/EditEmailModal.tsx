@@ -188,7 +188,7 @@ export default function EditEmailModal({
               <span className="font-medium">{newEmail}</span>.
             </p>
             <p className="text-xs text-gray-500 mb-4">Sign in again to see the change take effect.</p>
-            <LRButton variant="primary-outline" onClick={onClose}>
+            <LRButton variant="secondary" onClick={onClose}>
               Done
             </LRButton>
           </div>

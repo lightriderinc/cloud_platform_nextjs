@@ -19,7 +19,7 @@ export default function DashboardDemoEntropy() {
       <div className="flex justify-end">
         <Link
           href=""
-          className="default-radius inline-flex items-center justify-center pl-4 pr-3 py-2.5 text-sm font-medium text-gray-600 cursor-pointer transition-opacity opacity-80 min-w-[110px] bg-gray-200"
+          className="default-radius inline-flex items-center justify-center pl-4 pr-4 py-2.5 text-sm font-medium text-gray-600 cursor-pointer transition-opacity opacity-80 min-w-[110px] bg-gray-200"
         >
           Coming soon
         </Link>

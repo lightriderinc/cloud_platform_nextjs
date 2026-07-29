@@ -230,7 +230,7 @@ export default async function AccountPage() {
         onDisableMfa={doDisableMfa}
       />
 
-      <div className="mt-8 pt-8">
+      <div className="mt-6">
         <LogoutButton onSignOut={doSignOut} />
       </div>
     </div>

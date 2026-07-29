@@ -127,7 +127,7 @@ export function ManageBillingButton({ className }: { className?: string }) {
       <LRButton
         onClick={handleClick}
         disabled={loading}
-        variant="primary-outline"
+        variant="secondary"
         className={className ?? "min-w-[110px] w-full"}
       >
         {loading ? "Loading…" : "Manage billing"}

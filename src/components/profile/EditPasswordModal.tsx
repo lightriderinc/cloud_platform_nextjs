@@ -126,7 +126,7 @@ export default function EditPasswordModal({ onVerifyPassword, onUpdatePassword, 
         {step === 'done' && (
           <div className="pt-2 text-center">
             <p className="text-sm text-gray-700 mb-4">Your password has been updated.</p>
-            <LRButton variant="primary-outline" onClick={onClose}>
+            <LRButton variant="secondary" onClick={onClose}>
               Done
             </LRButton>
           </div>

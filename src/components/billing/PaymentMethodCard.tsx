@@ -49,7 +49,7 @@ export default function PaymentMethodCard() {
           {error instanceof Error ? error.message : "Something went wrong."}
         </p>
       ) : paymentMethod === undefined ? (
-        <div className="h-5 bg-gray-200 w-200 rounded animate-pulse"></div>
+        <div className="h-5 bg-gray-200 w-full rounded animate-pulse"></div>
       ) : paymentMethod ? (
         <p className="text-sm text-gray-600">{describe(paymentMethod)}</p>
       ) : (
