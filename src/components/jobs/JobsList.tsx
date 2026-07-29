@@ -95,6 +95,9 @@ export default function JobsList() {
 
   return (
     <>
+      <p className="mb-6 text-md text-gray-950">
+        {jobs.length} {jobs.length === 1 ? "Job" : "Jobs"} Submitted
+      </p>
       <ul className="mt-5 flex flex-col gap-2">
         {jobs.map((job) => (
           <li key={job.jobId}>
