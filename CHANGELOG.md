@@ -1,3 +1,13 @@
+## [1.11.2](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.1...v1.11.2) (2026-07-29)
+
+
+### Bug Fixes
+
+* backend card queue removed for now ([3dc2151](https://github.com/lightriderinc/cloud_platform_nextjs/commit/3dc21510f1f4d97ecb8049dc63860c37565b815b))
+* backend sample circuits ([6546f95](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6546f95ed8f58b742c999fe0b520183b5ec9a332))
+* warning message - sample qpu circuit submission ([31d8ee8](https://github.com/lightriderinc/cloud_platform_nextjs/commit/31d8ee8fe11521e788b5fab74fb85242f0eaa8f2))
+* welcome modal + quick tour commented out for time being ([bb99907](https://github.com/lightriderinc/cloud_platform_nextjs/commit/bb999075349bf532dc7aca0faaeba4203c8cdc6e))
+
 ## [1.11.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.0...v1.11.1) (2026-07-29)
 
 
