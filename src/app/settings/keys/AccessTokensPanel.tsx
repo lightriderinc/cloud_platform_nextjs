@@ -4,6 +4,7 @@ import ApiTokenCard from "@/components/overview/ApiTokenCard";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { MdAutorenew, MdDeleteOutline } from "react-icons/md";
+import LRButton from "@/components/ui/LRButton";
 
 type StoredApiKey = {
   keyPrefix: string;
@@ -98,15 +99,13 @@ export default function AccessTokensPanel() {
           <p className="mb-3 text-sm text-gray-600">
             No API key yet. Generate one to authenticate SDK requests.
           </p>
-          <button
-            type="button"
+          <LRButton
+            variant="primary"
             onClick={() => generate.mutate()}
             disabled={generate.isPending}
-            className="default-radius px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60 cursor-pointer"
-            style={{ backgroundColor: "var(--brand-primary)" }}
           >
             {generate.isPending ? "Generating…" : "Generate API Key"}
-          </button>
+          </LRButton>
         </div>
       )}
 
@@ -140,13 +139,12 @@ export default function AccessTokensPanel() {
                 >
                   {rotate.isPending ? "Rotating…" : "Confirm rotate"}
                 </button>
-                <button
-                  type="button"
+                <LRButton
+                  variant="secondary-outline"
                   onClick={() => setConfirming(null)}
-                  className="default-radius border border-gray-300 px-3 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100"
                 >
                   Cancel
-                </button>
+                </LRButton>
               </>
             ) : confirming === "revoke" ? (
               <>
@@ -161,30 +159,29 @@ export default function AccessTokensPanel() {
                 >
                   {revoke.isPending ? "Revoking…" : "Confirm revoke"}
                 </button>
-                <button
-                  type="button"
+                <LRButton
+                  variant="secondary-outline"
                   onClick={() => setConfirming(null)}
-                  className="default-radius border border-gray-300 px-3 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100"
                 >
                   Cancel
-                </button>
+                </LRButton>
               </>
             ) : (
               <>
-                <button
-                  type="button"
+                <LRButton
+                  variant="secondary-outline"
+                  icon={<MdAutorenew />}
                   onClick={() => setConfirming("rotate")}
-                  className="flex items-center gap-1.5 default-radius border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 cursor-pointer"
                 >
-                  <MdAutorenew /> Rotate key
-                </button>
-                <button
-                  type="button"
+                  Rotate key
+                </LRButton>
+                <LRButton
+                  variant="secondary-outline"
+                  icon={<MdDeleteOutline />}
                   onClick={() => setConfirming("revoke")}
-                  className="flex items-center gap-1.5 default-radius border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 cursor-pointer"
                 >
-                  <MdDeleteOutline /> Revoke
-                </button>
+                  Revoke
+                </LRButton>
               </>
             )}
           </div>

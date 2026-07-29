@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import LRButton from '@/components/ui/LRButton';
 import PasswordRequirements, { meetsLivePasswordRequirements } from '@/components/ui/PasswordRequirements';
 
 type Props = {
@@ -79,14 +80,14 @@ export default function EditPasswordModal({ onVerifyPassword, onUpdatePassword, 
               className="w-full default-radius border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-gray-400 mb-4"
             />
             {error && <p className="text-xs text-red-500 mb-3">{error}</p>}
-            <button
+            <LRButton
+              variant="primary"
               onClick={handleVerify}
               disabled={loading || !currentPwd}
-              className="w-full default-radius px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 cursor-pointer transition-opacity"
-              style={{ backgroundColor: loading || !currentPwd ? '#aaa' : 'var(--brand-primary)' }}
+              className="w-full"
             >
               {loading ? 'Verifying…' : 'Continue'}
-            </button>
+            </LRButton>
           </>
         )}
 
@@ -111,23 +112,23 @@ export default function EditPasswordModal({ onVerifyPassword, onUpdatePassword, 
               className="w-full default-radius border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-gray-400 mb-4"
             />
             {error && <p className="text-xs text-red-500 mb-3">{error}</p>}
-            <button
+            <LRButton
+              variant="primary"
               onClick={handleUpdate}
               disabled={loading || !newPwd || !confirmPwd}
-              className="w-full default-radius px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 cursor-pointer transition-opacity"
-              style={{ backgroundColor: loading || !newPwd || !confirmPwd ? '#aaa' : 'var(--brand-primary)' }}
+              className="w-full"
             >
               {loading ? 'Updating…' : 'Update Password'}
-            </button>
+            </LRButton>
           </>
         )}
 
         {step === 'done' && (
           <div className="pt-2 text-center">
             <p className="text-sm text-gray-700 mb-4">Your password has been updated.</p>
-            <button onClick={onClose} className="default-radius px-4 py-2 text-sm font-semibold btn-outline-brand cursor-pointer">
+            <LRButton variant="primary-outline" onClick={onClose}>
               Done
-            </button>
+            </LRButton>
           </div>
         )}
       </div>

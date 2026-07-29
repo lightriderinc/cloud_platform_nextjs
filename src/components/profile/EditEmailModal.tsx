@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import LRButton from '@/components/ui/LRButton';
+
 type Props = {
   currentEmail: string;
   onVerifyPassword: (password: string) => Promise<string>;
@@ -83,14 +85,9 @@ export default function EditEmailModal({
   }
 
   const btn = (label: string, onClick: () => void, disabled: boolean) => (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className="w-full default-radius px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 cursor-pointer transition-opacity"
-      style={{ backgroundColor: disabled ? '#aaa' : 'var(--brand-primary)' }}
-    >
+    <LRButton variant="primary" onClick={onClick} disabled={disabled} className="w-full">
       {label}
-    </button>
+    </LRButton>
   );
 
   return (
@@ -191,9 +188,9 @@ export default function EditEmailModal({
               <span className="font-medium">{newEmail}</span>.
             </p>
             <p className="text-xs text-gray-500 mb-4">Sign in again to see the change take effect.</p>
-            <button onClick={onClose} className="default-radius px-4 py-2 text-sm font-semibold btn-outline-brand cursor-pointer">
+            <LRButton variant="primary-outline" onClick={onClose}>
               Done
-            </button>
+            </LRButton>
           </div>
         )}
       </div>

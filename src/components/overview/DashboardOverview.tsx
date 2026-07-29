@@ -1,6 +1,7 @@
 "use client";
 
 import NewJobModal from "@/components/jobs/NewJobModal";
+import LRButton from "@/components/ui/LRButton";
 import { fetchJobs } from "@/lib/lr/client";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -34,14 +35,16 @@ export default function DashboardOverview() {
             You can use the &quot;New job&quot; button to submit sample circuits.
           </InfoBox>
 
-          <button
+          <LRButton
             type="button"
             onClick={() => setShowModal(true)}
-            style={{ backgroundColor: "var(--brand-primary)" }}
-            className="default-radius pl-4 pr-3 py-2.5 text-sm font-medium text-white cursor-pointer transition-opacity hover:opacity-80 min-w-[110px]"
+            variant="primary"
+            icon={<MdAdd className="text-lg" />}
+            iconPosition="right"
+            className="min-w-[110px]"
           >
-            New Job <MdAdd className="inline-block ml-1 text-lg" />
-          </button>
+            New Job
+          </LRButton>
         </div>
       </div>
 

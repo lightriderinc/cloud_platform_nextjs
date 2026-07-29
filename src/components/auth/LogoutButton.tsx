@@ -1,5 +1,7 @@
 "use client";
 
+import LRButton from "@/components/ui/LRButton";
+
 type Props = {
   onSignOut: () => Promise<void>;
 };
@@ -8,12 +10,13 @@ type Props = {
 // LoginButton). Clears the local session cookie and ends the Logto session.
 export default function LogoutButton({ onSignOut }: Props) {
   return (
-    <button
+    <LRButton
       type="button"
       onClick={() => onSignOut()}
-      className="default-radius px-3 py-2 text-sm font-semibold text-brand-primary cursor-pointer btn-outline-brand transition-opacity min-w-[90px]"
+      variant="primary-outline"
+      className="min-w-[90px]"
     >
       Log out
-    </button>
+    </LRButton>
   );
 }

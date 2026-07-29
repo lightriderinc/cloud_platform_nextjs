@@ -1,5 +1,6 @@
 "use client";
 
+import LRButton from "@/components/ui/LRButton";
 import { useState } from "react";
 
 type SubscriptionCheckoutProps = {
@@ -89,16 +90,14 @@ export function CreditsCheckoutButton({
 
   return (
     <div className="flex flex-col gap-1">
-      <button
+      <LRButton
         onClick={handleClick}
         disabled={loading}
-        className={
-          className ??
-          "w-full default-radius bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-60"
-        }
+        variant="primary"
+        className={className ?? "w-full"}
       >
         {loading ? "Redirecting…" : label}
-      </button>
+      </LRButton>
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );
@@ -125,16 +124,14 @@ export function ManageBillingButton({ className }: { className?: string }) {
 
   return (
     <div className="flex flex-col gap-1">
-      <button
+      <LRButton
         onClick={handleClick}
         disabled={loading}
-        className={
-          className ??
-          "default-radius px-3 py-2 text-sm font-semibold text-brand-primary cursor-pointer btn-outline-brand transition-opacity min-w-[110px] w-full"
-        }
+        variant="primary-outline"
+        className={className ?? "min-w-[110px] w-full"}
       >
         {loading ? "Loading…" : "Manage billing"}
-      </button>
+      </LRButton>
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );

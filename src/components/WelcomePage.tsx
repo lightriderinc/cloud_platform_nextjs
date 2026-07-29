@@ -3,6 +3,7 @@ import { IoDocumentTextSharp } from "react-icons/io5";
 import { RiCpuFill } from "react-icons/ri";
 import LoginButton from "./auth/LoginButton";
 import WelcomePageCard from "./WelcomePageCard";
+import LRButton from "@/components/ui/LRButton";
 
 export default function WelcomePage() {
   return (
@@ -27,12 +28,13 @@ export default function WelcomePage() {
               <LoginButton onSignIn={handleSignIn} />
             </div>
             <a href="https://www.lightriderinc.com/contact" target="_blank" rel="noopener noreferrer">
-              <button
+              <LRButton
                 type="button"
-                className="default-radius px-3 py-2 text-sm font-semibold text-brand-primary cursor-pointer btn-outline-brand transition-opacity min-w-[110px] w-full"
+                variant="primary-outline"
+                className="min-w-[110px] w-full"
               >
                 Contact us
-              </button>
+              </LRButton>
             </a>
           </div>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import DiceIcon, { type DiceSides } from "@/components/dice/DiceIcon";
+import LRButton from "@/components/ui/LRButton";
 import { useState } from "react";
 import { MdArrowBack, MdArrowForward, MdRefresh } from "react-icons/md";
 import EntropySourceSelector, { SOURCES } from "./EntropySourceSelector";
@@ -223,37 +224,38 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
         {step === 1 && (
           <>
             <div />
-            <button
+            <LRButton
               type="button"
+              variant="primary"
               disabled={selectedSides === null}
               onClick={() => setStep(2)}
-              style={{ backgroundColor: "var(--brand-primary)" }}
-              className="default-radius px-4 py-2 text-sm font-medium text-white transition-opacity cursor-pointer hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
+              icon={<MdArrowForward />}
+              iconPosition="right"
             >
-              Continue{" "}
-              <MdArrowForward className="inline-block ml-1 text-base align-text-bottom" />
-            </button>
+              Continue
+            </LRButton>
           </>
         )}
 
         {step === 2 && (
           <>
-            <button
+            <LRButton
               type="button"
+              variant="secondary-outline"
               onClick={() => setStep(1)}
-              className="flex items-center gap-1 default-radius border border-gray-100 px-4 py-2 text-sm text-gray-600 cursor-pointer hover:bg-gray-50 transition-colors"
+              icon={<MdArrowBack />}
+              iconPosition="left"
             >
-              <MdArrowBack className="text-base" /> Back
-            </button>
-            <button
+              Back
+            </LRButton>
+            <LRButton
               type="button"
+              variant="primary"
               disabled={!selectedSourceId}
               onClick={handleRoll}
-              style={{ backgroundColor: "var(--brand-primary)" }}
-              className="default-radius px-4 py-2 text-sm font-medium text-white transition-opacity cursor-pointer hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Roll Die
-            </button>
+            </LRButton>
           </>
         )}
 
@@ -261,20 +263,22 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
           <>
             <div />
             <div className="flex gap-2">
-              <button
+              <LRButton
                 type="button"
+                variant="secondary-outline"
                 onClick={handleRollAgain}
-                className="flex items-center gap-1.5 default-radius border border-gray-100 px-4 py-2 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-50 transition-colors"
+                icon={<MdRefresh />}
+                iconPosition="left"
               >
-                <MdRefresh className="text-base" /> Roll Again
-              </button>
-              <button
+                Roll Again
+              </LRButton>
+              <LRButton
                 type="button"
+                variant="secondary-outline"
                 onClick={handleReset}
-                className="default-radius border border-gray-100 px-4 py-2 text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors"
               >
                 New Roll
-              </button>
+              </LRButton>
             </div>
           </>
         )}

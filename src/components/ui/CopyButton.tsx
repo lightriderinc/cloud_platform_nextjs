@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MdCheck, MdContentCopy } from "react-icons/md";
+import LRButton from "@/components/ui/LRButton";
 
 interface CopyButtonProps {
   /** Text written to the clipboard on click. */
@@ -33,17 +34,16 @@ export default function CopyButton({
   }
 
   return (
-    <button
+    <LRButton
       type="button"
       onClick={handleCopy}
       aria-label={label ?? (copied ? "Copied" : "Copy")}
-      className={[
-        "flex items-center gap-1.5 px-2.5 py-1 default-radius border border-gray-100 text-xs text-gray-600 hover:bg-gray-50 cursor-pointer transition-colors",
-        className,
-      ].join(" ")}
+      variant="secondary-outline"
+      icon={copied ? <MdCheck className="text-green-700" /> : <MdContentCopy />}
+      iconPosition="left"
+      className={className}
     >
-      {copied ? <MdCheck className="text-green-700" /> : <MdContentCopy />}
       {label !== null && (copied ? "Copied" : label)}
-    </button>
+    </LRButton>
   );
 }

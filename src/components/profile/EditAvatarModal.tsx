@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import { useState } from 'react';
 
+import LRButton from '@/components/ui/LRButton';
+
 type Props = {
   currentAvatar: string | null;
   initials: string;
@@ -50,9 +52,9 @@ export default function EditAvatarModal({ currentAvatar, initials, onUpdateAvata
         {done ? (
           <div className="text-center pt-2">
             <p className="text-sm text-gray-700 mb-4">Avatar updated. Refresh to see it.</p>
-            <button onClick={onClose} className="default-radius px-4 py-2 text-sm font-semibold btn-outline-brand cursor-pointer">
+            <LRButton variant="primary-outline" onClick={onClose}>
               Done
-            </button>
+            </LRButton>
           </div>
         ) : (
           <>
@@ -88,14 +90,14 @@ export default function EditAvatarModal({ currentAvatar, initials, onUpdateAvata
 
             {error && <p className="text-xs text-red-500 mb-3">{error}</p>}
 
-            <button
+            <LRButton
+              variant="primary"
               onClick={handleSave}
               disabled={loading || !preview}
-              className="w-full default-radius px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 cursor-pointer transition-opacity"
-              style={{ backgroundColor: loading || !preview ? '#aaa' : 'var(--brand-primary)' }}
+              className="w-full"
             >
               {loading ? 'Saving…' : 'Save Avatar'}
-            </button>
+            </LRButton>
           </>
         )}
       </div>

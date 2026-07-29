@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import LRButton from "@/components/ui/LRButton";
 
 export function ProRoleToggle() {
   const [loading, setLoading] = useState(false);
@@ -36,21 +37,23 @@ export function ProRoleToggle() {
     <div className="flex flex-col my-5">
       <p className="mb-5">Dev: Pro role allocation test</p>
       <div className="flex flex-row gap-2">
-        <button
-          className="flex flex-row gap-2 items-center default-radius cursor-pointer border border-gray-200 pl-3 pr-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 flex-shrink-0"
+        <LRButton
+          variant="secondary-outline"
+          className="flex-shrink-0"
           disabled={loading}
           onClick={() => toggle("grant")}
         >
           Grant Pro
-        </button>
-        <button
-          className="flex flex-row gap-2 items-center default-radius cursor-pointer border border-gray-200 pl-3 pr-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 flex-shrink-0"
+        </LRButton>
+        <LRButton
+          variant="secondary-outline"
+          className="flex-shrink-0"
           disabled={loading}
           onClick={() => toggle("revoke")}
           style={{ marginLeft: 8 }}
         >
           Revoke Pro
-        </button>
+        </LRButton>
       </div>
     </div>
   );

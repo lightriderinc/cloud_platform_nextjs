@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { MdArrowForward } from "react-icons/md";
 import { PiCircuitryFill } from "react-icons/pi";
+import LRButton from "@/components/ui/LRButton";
 import DemoCircuitModal from "./demo/DemoCircuitModal";
 
 export default function DashboardDemoCircuit() {
@@ -24,15 +25,16 @@ export default function DashboardDemoCircuit() {
         </div>
 
         <div className="flex justify-end">
-          <button
+          <LRButton
             type="button"
             onClick={() => setShowModal(true)}
-            style={{ backgroundColor: "var(--brand-primary)" }}
-            className="default-radius pl-4 pr-3 py-2.5 text-sm font-medium text-white cursor-pointer transition-opacity hover:opacity-80 min-w-[110px]"
+            variant="primary"
+            icon={<MdArrowForward className="text-lg" />}
+            iconPosition="right"
+            className="min-w-[110px]"
           >
-            Try it out{" "}
-            <MdArrowForward className="inline-block ml-1 text-lg" />
-          </button>
+            Try it out
+          </LRButton>
         </div>
       </div>
 

@@ -11,6 +11,7 @@ import type { Job } from "@/types/job";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { MdClose } from "react-icons/md";
+import LRButton from "@/components/ui/LRButton";
 
 const CIRCUITS: { value: CircuitType; label: string; description: string }[] = [
   { value: "h", label: "H gate", description: "1-qubit superposition" },
@@ -131,13 +132,13 @@ export default function BackendSubmitModal({
                 <JobResultView
                   job={submittedJob}
                   footer={
-                    <button
-                      type="button"
+                    <LRButton
+                      variant="secondary-outline"
                       onClick={handleTryAnother}
-                      className="default-radius mt-1 w-fit cursor-pointer border border-gray-100 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                      className="mt-1 w-fit"
                     >
                       ← Try Another
-                    </button>
+                    </LRButton>
                   }
                 />
               ) : stillCheckingCredits ? null : blockedByCredits ? (
@@ -174,21 +175,16 @@ export default function BackendSubmitModal({
                   )}
 
                   <div className="flex justify-end gap-3 pt-1">
-                    <button
-                      type="button"
-                      onClick={onClose}
-                      className="default-radius cursor-pointer border border-gray-100 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
-                    >
+                    <LRButton variant="secondary-outline" onClick={onClose}>
                       Cancel
-                    </button>
-                    <button
+                    </LRButton>
+                    <LRButton
+                      variant="primary"
                       type="submit"
                       disabled={isPending}
-                      style={{ backgroundColor: "var(--brand-primary)" }}
-                      className="default-radius cursor-pointer px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-80 disabled:opacity-50"
                     >
                       {isPending ? "Submitting…" : "Submit Job"}
-                    </button>
+                    </LRButton>
                   </div>
                 </form>
               )}

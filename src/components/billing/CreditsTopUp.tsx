@@ -59,7 +59,6 @@ export default function CreditsTopUp() {
       <CreditsCheckoutButton
         amountUsd={amount}
         label={`Buy $${amount} in tokens`}
-        className="w-full default-radius bg-[var(--brand-primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:opacity-90"
       />
     </div>
   );

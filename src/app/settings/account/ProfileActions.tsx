@@ -4,6 +4,7 @@ import DisableMfaModal from "@/components/profile/DisableMfaModal";
 import EditEmailModal from "@/components/profile/EditEmailModal";
 import EditPasswordModal from "@/components/profile/EditPasswordModal";
 import SetupMfaModal from "@/components/profile/SetupMfaModal";
+import LRButton from "@/components/ui/LRButton";
 import { useState } from "react";
 import { MdEditSquare } from "react-icons/md";
 
@@ -201,13 +202,14 @@ function InlineEditButton({
   onClick: () => void;
 }) {
   return (
-    <button
+    <LRButton
       onClick={onClick}
-      className="flex flex-row gap-2 items-center default-radius cursor-pointer border border-gray-100 pl-3 pr-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 flex-shrink-0 ml-4"
+      variant="secondary-outline"
+      icon={<MdEditSquare />}
+      className="flex-shrink-0 ml-4"
     >
-      <MdEditSquare />
       {label}
-    </button>
+    </LRButton>
   );
 }
 
@@ -261,16 +263,14 @@ function AddBirthdateModal({
           className="w-full default-radius border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-gray-400 mb-4"
         />
         {error && <p className="text-xs text-red-500 mb-3">{error}</p>}
-        <button
+        <LRButton
           onClick={handleSave}
           disabled={loading || !date}
-          className="w-full default-radius px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 cursor-pointer transition-opacity"
-          style={{
-            backgroundColor: loading || !date ? "#aaa" : "var(--brand-primary)",
-          }}
+          variant="primary"
+          className="w-full"
         >
           {loading ? "Saving…" : "Save Birthdate"}
-        </button>
+        </LRButton>
       </div>
     </div>
   );

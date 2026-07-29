@@ -5,6 +5,7 @@ import { MdArrowForward } from "react-icons/md";
 import EntropySourceSelector, {
   SOURCES,
 } from "@/components/applications/EntropySourceSelector";
+import LRButton from "@/components/ui/LRButton";
 import PresetSelector from "@/components/ui/PresetSelector";
 import {
   BYTE_PRESETS,
@@ -90,22 +91,17 @@ export default function EntropyConsole() {
             <p className="text-xs text-[var(--brand-primary)]">{error}</p>
           )}
 
-          <button
+          <LRButton
             type="button"
             disabled={!canGenerate}
             onClick={handleGenerate}
-            style={{ backgroundColor: "var(--brand-primary)" }}
-            className="mt-auto flex items-center justify-center default-radius px-4 py-2.5 text-sm font-medium text-white transition-opacity cursor-pointer hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40"
+            variant="primary"
+            icon={generating ? undefined : <MdArrowForward className="text-lg" />}
+            iconPosition="right"
+            className="mt-auto"
           >
-            {generating ? (
-              "Generating…"
-            ) : (
-              <>
-                Generate entropy
-                <MdArrowForward className="ml-1 inline-block text-lg" />
-              </>
-            )}
-          </button>
+            {generating ? "Generating…" : "Generate entropy"}
+          </LRButton>
         </section>
 
         {/* Output */}

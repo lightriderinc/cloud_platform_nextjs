@@ -5,6 +5,7 @@ import { getQuantumBackendId } from "@/lib/quantum/backends";
 import type { Backend } from "@/types/backend";
 import { useEffect, useState } from "react";
 import { MdClose } from "react-icons/md";
+import LRButton from "@/components/ui/LRButton";
 import BackendConnectSection from "./BackendConnectSection";
 import BackendStatusBadge from "./BackendStatusBadge";
 import QubitMap from "./QubitMap";
@@ -120,14 +121,9 @@ export default function BackendModal({
         {quantumBackendId && (
           <div className="mb-8">
             {isAuthenticated ? (
-              <button
-                type="button"
-                onClick={() => setShowSubmit(true)}
-                style={{ backgroundColor: "var(--brand-primary)" }}
-                className="default-radius cursor-pointer px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-80"
-              >
+              <LRButton variant="primary" onClick={() => setShowSubmit(true)}>
                 Submit a job
-              </button>
+              </LRButton>
             ) : (
               <p className="text-sm text-gray-500">Log in to submit a job to {name}.</p>
             )}

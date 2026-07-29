@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import LRButton from "@/components/ui/LRButton";
 
 type Subscription = {
   id: string;
@@ -98,17 +99,17 @@ export default function SubscriptionsList() {
                   : "No period end on file"}
               </p>
             </div>
-            <button
+            <LRButton
+              variant="secondary-outline"
               onClick={() => toggle.mutate(subscription)}
               disabled={isPending}
-              className="default-radius border border-gray-50 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-60"
             >
               {isPending
                 ? "Working…"
                 : subscription.cancelAtPeriodEnd
                   ? "Reactivate"
                   : "Cancel"}
-            </button>
+            </LRButton>
           </li>
         );
       })}

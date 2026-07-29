@@ -1,5 +1,7 @@
 "use client";
 
+import LRButton from "@/components/ui/LRButton";
+
 type Props = {
   onSignIn: () => Promise<void>;
 };
@@ -10,13 +12,13 @@ type Props = {
 // "Get early access" neighbor.
 export default function LoginButton({ onSignIn }: Props) {
   return (
-    <button
+    <LRButton
       type="button"
       onClick={() => onSignIn()}
-      style={{ backgroundColor: "var(--brand-primary)" }}
-      className="w-full default-radius px-4 py-2.5 text-sm font-medium text-white cursor-pointer transition-opacity hover:opacity-80 min-w-[110px]"
+      variant="primary"
+      className="w-full min-w-[110px]"
     >
       Log in
-    </button>
+    </LRButton>
   );
 }

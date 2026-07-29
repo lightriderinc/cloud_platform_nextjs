@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LRButton from "@/components/ui/LRButton";
 
 export default function NotAuthorized() {
   return (
@@ -15,12 +16,13 @@ export default function NotAuthorized() {
         Please contact your administrator if you believe this is an error.
       </p>
       <Link href="/">
-        <button
+        <LRButton
           type="button"
-          className="default-radius px-3 py-2 text-sm font-semibold text-brand-primary cursor-pointer btn-outline-brand transition-opacity min-w-[110px] w-full"
+          variant="primary-outline"
+          className="min-w-[110px] w-full"
         >
           Take me back home
-        </button>
+        </LRButton>
       </Link>
     </div>
   );
