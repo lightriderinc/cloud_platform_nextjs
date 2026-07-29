@@ -1,6 +1,7 @@
 "use client";
 
 import { handleSignIn } from "@/app/actions/auth";
+import LRButton from "@/components/ui/LRButton";
 import { getQuantumBackendId } from "@/lib/quantum/backends";
 import type { Backend } from "@/types/backend";
 import { useQuery } from "@tanstack/react-query";
@@ -48,9 +49,11 @@ async function fetchHasApiKey(): Promise<boolean> {
 export default function BackendConnectSection({
   backend,
   isAuthenticated,
+  onSubmitJob,
 }: {
   backend: Backend;
   isAuthenticated: boolean;
+  onSubmitJob?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const quantumBackendId = getQuantumBackendId(backend.id);
@@ -91,7 +94,7 @@ export default function BackendConnectSection({
           </a>
           .
         </p>
-        <div>
+        <div className="flex flex-row gap-3">
           <a
             href={COLAB_URL}
             target="_blank"
@@ -100,6 +103,11 @@ export default function BackendConnectSection({
           >
             Google Colab quickstart <MdOpenInNew className="text-base" />
           </a>
+          {onSubmitJob && (
+            <LRButton variant="primary" onClick={onSubmitJob}>
+              Submit a sample circuit
+            </LRButton>
+          )}
         </div>
       </>
     );
@@ -169,7 +177,7 @@ export default function BackendConnectSection({
               {copied ? "Copied" : "Copy code"}
             </button>
           </div>
-          <div>
+          <div className="flex flex-row gap-3">
             <a
               href={COLAB_URL}
               target="_blank"
@@ -178,6 +186,11 @@ export default function BackendConnectSection({
             >
               Google Colab quickstart <MdOpenInNew className="text-base" />
             </a>
+            {onSubmitJob && (
+              <LRButton variant="primary" onClick={onSubmitJob}>
+                Submit a sample circuit
+              </LRButton>
+            )}
           </div>
         </>
       )}
