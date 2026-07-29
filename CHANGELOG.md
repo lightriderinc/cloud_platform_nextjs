@@ -1,3 +1,13 @@
+## [1.11.5](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.4...v1.11.5) (2026-07-29)
+
+
+### Bug Fixes
+
+* api key display bg ([1c764df](https://github.com/lightriderinc/cloud_platform_nextjs/commit/1c764dfd48e0c345f1e68be4926e739b6adcb945))
+* confirm buttons style update ([61c4794](https://github.com/lightriderinc/cloud_platform_nextjs/commit/61c4794ce7a23a86b8f72490d8a295b1da1a543d))
+* pricing table + minor style updates ([723350d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/723350dfc9cdd15d0a2a3ee282b850a28cfb62c3))
+* Runtime pricing chart ([1b5ada2](https://github.com/lightriderinc/cloud_platform_nextjs/commit/1b5ada2870198a83071e75acfbe72e24f6ba64ec))
+
 ## [1.11.4](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.3...v1.11.4) (2026-07-29)
 
 
