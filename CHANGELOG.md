@@ -1,3 +1,12 @@
+## [1.11.6](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.5...v1.11.6) (2026-07-30)
+
+
+### Bug Fixes
+
+* dashboard job list error for new users ([afedebb](https://github.com/lightriderinc/cloud_platform_nextjs/commit/afedebb6444b25fc055d9f7f6eb8aac7e60e7cc6))
+* minor div styles ([098760e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/098760e8d2466c50dfc1c12953b8671cb52037f1))
+* new user job list error ([a2da57a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/a2da57a6ca87073054f4203ab4a7111d08199e93))
+
 ## [1.11.5](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.4...v1.11.5) (2026-07-29)
 
 
