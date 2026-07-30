@@ -16,7 +16,13 @@ export default function WelcomePage() {
           </h1>
           <p>
             Start using quantum, today. <br />
-            Run circuits on quantum processors and simulators from IQM and Rigetti.
+            Run circuits on quantum processors and simulators from{" "}
+            <span className="font-medium">IQM</span>{" "}and{" "}
+            <span className="font-medium">Rigetti</span>{" "}
+            <span className="text-gray-400 font-medium text-2xs">
+              (Coming soon)
+            </span>
+            .
           </p>
         </div>
         <div className="flex flex-col mb-12">
@@ -27,7 +33,11 @@ export default function WelcomePage() {
             <div>
               <LoginButton onSignIn={handleSignIn} />
             </div>
-            <a href="https://www.lightriderinc.com/contact" target="_blank" rel="noopener noreferrer">
+            <a
+              href="https://www.lightriderinc.com/contact"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <LRButton
                 type="button"
                 variant="secondary"
