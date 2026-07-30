@@ -40,7 +40,7 @@ export default function PricingOverviewPage() {
         and enterprise services as you grow.
       </p>
 
-      <div className="flex flex-row gap-3">
+      <div className="flex flex-col lg:flex-row gap-3">
         <PricingNavCard
           href="/settings/purchases/quantum-compute"
           title="Quantum Compute"
