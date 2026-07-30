@@ -74,12 +74,22 @@ export default function ProfileActions({
   const [mfaEnabled, setMfaEnabled] = useState(initialMfaEnabled);
   const [currentBirthdate, setCurrentBirthdate] = useState(birthdate);
 
+  // currentBirthdate is a plain "YYYY-MM-DD" string (from <input type="date">
+  // and Logto's OIDC birthdate claim) with no time/timezone component.
+  // new Date("YYYY-MM-DD") parses that as UTC midnight, so formatting it in
+  // the browser's local timezone could shift the displayed day backward for
+  // anyone behind UTC. Building the Date from numeric y/m/d args instead
+  // always constructs local midnight, which toLocaleDateString can't shift
+  // across a day boundary.
   const formattedBirthdate = currentBirthdate
-    ? new Date(currentBirthdate).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
+    ? (() => {
+        const [y, m, d] = currentBirthdate.split("-").map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      })()
     : null;
 
   return (
