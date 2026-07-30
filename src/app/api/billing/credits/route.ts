@@ -1,5 +1,6 @@
 import { requireLogtoUser } from "@/lib/auth/session";
 import { db } from "@/lib/billing/db";
+import { getOrCreateCustomer } from "@/lib/billing/customer";
 import { NextResponse } from "next/server";
 
 /**
@@ -21,16 +22,7 @@ export async function GET() {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   }
 
-  const customer = await db.customer.findUnique({
-    where: { logtoUserId: user.sub },
-  });
-  if (!customer) {
-    return NextResponse.json({
-      purchasedCents: 0,
-      usedCents: 0,
-      remainingCents: 0,
-    });
-  }
+  const customer = await getOrCreateCustomer(user.sub, user.email);
 
   const [purchased, used] = await Promise.all([
     db.creditLedgerEntry.aggregate({
