@@ -9,12 +9,77 @@ async function throwOnError(res: Response): Promise<void> {
   }
 }
 
+/**
+ * A single social identity as returned inside the Account API's `identities`
+ * map, keyed by connector target (e.g. `google`, `github`). `details` is the
+ * best-effort profile the connector reported at link time; its exact shape
+ * varies per provider, so every field is optional.
+ */
+export type SocialIdentity = {
+  userId?: string;
+  details?: {
+    id?: string;
+    name?: string | null;
+    email?: string | null;
+    avatar?: string | null;
+    [key: string]: unknown;
+  };
+};
+
+/**
+ * A single enterprise SSO identity as returned in the Account API's
+ * `ssoIdentities` array.
+ */
+export type SsoIdentity = {
+  issuer?: string;
+  identityId?: string;
+  ssoConnectorId?: string;
+  [key: string]: unknown;
+};
+
 export type MyAccount = {
   name?: string | null;
   username?: string | null;
   avatar?: string | null;
   profile?: { birthdate?: string; givenName?: string; familyName?: string };
+  /**
+   * Whether the user has a password credential set. `false` for accounts that
+   * only ever signed in through a social/SSO connector — used to switch the
+   * account UI between "Change password" and first-time "Set password".
+   * Requires the `identities` scope on the access token.
+   */
+  hasPassword?: boolean;
+  /** Linked social identities, keyed by connector target (e.g. `google`). */
+  identities?: Record<string, SocialIdentity>;
+  /** Linked enterprise SSO identities. */
+  ssoIdentities?: SsoIdentity[];
 };
+
+/**
+ * A social identity flattened for display: the connector `target` plus the
+ * best available human-readable handle (name, then email, then the raw
+ * provider user id). `normalizeSocialIdentities` builds these from the raw
+ * Account API `identities` map so UI code doesn't touch its nested shape.
+ */
+export type LinkedSocialIdentity = {
+  target: string;
+  handle: string | null;
+};
+
+/** Flatten the Account API `identities` map into a display-ready list. */
+export function normalizeSocialIdentities(
+  identities: MyAccount['identities'],
+): LinkedSocialIdentity[] {
+  if (!identities) return [];
+  return Object.entries(identities).map(([target, identity]) => ({
+    target,
+    handle:
+      identity?.details?.name ??
+      identity?.details?.email ??
+      identity?.userId ??
+      null,
+  }));
+}
 
 /**
  * Fetches the current user's account record from the Logto Account API.

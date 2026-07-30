@@ -1,4 +1,5 @@
 import { logtoConfig } from "@/app/logto";
+import type { SocialIdentity } from "@/lib/logto-account";
 
 // Server-only. Machine-to-machine client for the Logto Management API,
 // used to assign roles that Stripe webhooks unlock (e.g. the Pro role once
@@ -114,6 +115,51 @@ export async function revokeRoleFromUser(
   throw new Error(
     `Failed to revoke Logto role ${roleId} from user ${logtoUserId} (${res.status}): ${detail}`,
   );
+}
+
+export type UserAccountFacts = {
+  /** Linked social identities keyed by connector target (e.g. `google`). */
+  identities: Record<string, SocialIdentity>;
+  /** Whether the user has a password credential, or null if it couldn't be read. */
+  hasPassword: boolean | null;
+};
+
+/**
+ * Fetches a user's linked social identities and password status via the
+ * Management API (`GET /api/users/{userId}`).
+ *
+ * Unlike the end-user Account API (`/api/my-account`), these fields are NOT
+ * gated by the Logto Account Center `fields` configuration, so this is the
+ * reliable source for showing connected accounts and deciding between
+ * "Set password" and "Change password" on the account page. Server-only —
+ * relies on the M2M credentials.
+ */
+export async function getUserAccountFacts(
+  logtoUserId: string,
+): Promise<UserAccountFacts> {
+  const token = await getAccessToken();
+
+  const res = await fetch(`${endpointBase()}/api/users/${logtoUserId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(
+      `Failed to fetch Logto user ${logtoUserId} (${res.status}): ${detail}`,
+    );
+  }
+
+  const user = (await res.json()) as {
+    identities?: Record<string, SocialIdentity>;
+    hasPassword?: boolean;
+  };
+
+  return {
+    identities: user.identities ?? {},
+    hasPassword: user.hasPassword ?? null,
+  };
 }
 
 export type LogtoUserSummary = {
