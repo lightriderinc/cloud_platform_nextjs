@@ -1,3 +1,13 @@
+## [1.11.8](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.7...v1.11.8) (2026-07-30)
+
+
+### Bug Fixes
+
+* rigetti coming soon added to welome page ([d363eba](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d363eba5a5656fabc0cad7c8321e723c5499bc7b))
+* updated welcome page ([cf002b6](https://github.com/lightriderinc/cloud_platform_nextjs/commit/cf002b609d65ebfa614ddfc317209f40d0d2b457))
+* updated welcome page ([0aa2e63](https://github.com/lightriderinc/cloud_platform_nextjs/commit/0aa2e63ba50dd5069256b1a8666ff71c4c4eabdb))
+* welcome page ([3e044b6](https://github.com/lightriderinc/cloud_platform_nextjs/commit/3e044b6272073cba9ff4ea088070248df95ea6ea))
+
 ## [1.11.7](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.6...v1.11.7) (2026-07-30)
 
 
