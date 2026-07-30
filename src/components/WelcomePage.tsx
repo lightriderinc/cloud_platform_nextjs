@@ -1,6 +1,5 @@
 import { handleSignIn } from "@/app/actions/auth";
-import LRButton from "@/components/ui/LRButton";
-import { IoDocumentTextSharp } from "react-icons/io5";
+import { FaFileCode } from "react-icons/fa";
 import { RiCpuFill } from "react-icons/ri";
 import LoginButton from "./auth/LoginButton";
 import WelcomePageCard from "./WelcomePageCard";
@@ -9,15 +8,17 @@ export default function WelcomePage() {
   return (
     <div className="flex flex-col">
       <main className="py-3">
-        <div className="flex flex-col mb-16">
-          <h1 className="hero font-semibold text-gray-700 mb-4">
+        <div className="flex flex-col mb-8">
+          <h1 className="hero font-semibold text-gray-700 mb-12">
             Welcome to <br /> Light Rider{" "}
             <span className="color-brand-primary">Cloud</span>.
           </h1>
+          <h2 className="font-bold text-gray-500 text-2xl mb-2">
+            Start using quantum, today.
+          </h2>
           <p>
-            Start using quantum, today. <br />
             Run circuits on quantum processors and simulators from{" "}
-            <span className="font-medium">IQM</span>{" "}and{" "}
+            <span className="font-medium">IQM</span> and{" "}
             <span className="font-medium">Rigetti</span>{" "}
             <span className="text-gray-400 font-medium text-2xs">
               (Coming soon)
@@ -26,26 +27,23 @@ export default function WelcomePage() {
           </p>
         </div>
         <div className="flex flex-col mb-12">
-          <h2 className="mb-4 font-semibold text-gray-600">
-            Login to access your dashboard or contact us for custom solutions.
-          </h2>
-          <div className="flex flex-row gap-2">
+          <div className="flex flex-row gap-2 mb-3">
             <div>
-              <LoginButton onSignIn={handleSignIn} />
+              <LoginButton register onSignIn={handleSignIn} />
             </div>
-            <a
-              href="https://www.lightriderinc.com/contact"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <LRButton
-                type="button"
-                variant="secondary"
-                className="min-w-[110px] w-full"
+          </div>
+          <div>
+            <p className="text-sm">
+              Need a custom solution?{" "}
+              <a
+                href="https://www.lightriderinc.com/contact"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="brand-link"
               >
                 Contact us
-              </LRButton>
-            </a>
+              </a>
+            </p>
           </div>
         </div>
         <div>
@@ -55,12 +53,14 @@ export default function WelcomePage() {
               href="/backends"
               title="Explore available backends"
               icon={RiCpuFill}
+              description="View available QPUs and simulators."
             />
             <WelcomePageCard
               href="https://docs.lightriderinc.com/sdk/getting-started.html"
               title="SDK documentation"
-              icon={IoDocumentTextSharp}
+              icon={FaFileCode}
               external
+              description="Learn how to run your first circuit in minutes."
             />
           </div>
         </div>
