@@ -20,7 +20,7 @@ export default function PricingNavCard({
   return (
     <Link
       href={href}
-      className="flex w-128 group"
+      className="flex lg:w-128 group"
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
     >

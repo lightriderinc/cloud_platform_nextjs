@@ -43,7 +43,7 @@ export default async function Home() {
             <h2 className="mb-4 text-xl font-bold text-gray-600">
               Compute tokens
             </h2>
-            <div className="w-1/2">
+            <div className="xl:w-1/2">
               <CreditsSummary />
             </div>
           </div>

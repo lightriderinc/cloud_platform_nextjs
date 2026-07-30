@@ -1,3 +1,4 @@
+import { requireLogtoUser } from "@/lib/auth/session";
 import { resolveCustomerFromRequest } from "@/lib/auth/resolveCustomer";
 import { db } from "@/lib/billing/db";
 import { NextResponse } from "next/server";
@@ -19,6 +20,17 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const customer = await resolveCustomerFromRequest(req);
   if (!customer) {
+    // resolveCustomerFromRequest returns null both for "not signed in" and
+    // for "signed in, but hasn't submitted a job yet so has no Customer row"
+    // (that row is only lazily created on submit). A brand-new signed-in
+    // user simply has zero jobs — only a truly unauthenticated caller (no
+    // session, no API key) should get a 401 here.
+    const signedIn = await requireLogtoUser().then(
+      () => true,
+      () => false,
+    );
+    if (signedIn) return NextResponse.json({ jobs: [] });
+
     return NextResponse.json(
       { error: "Not signed in, and no valid API key provided." },
       { status: 401 },
