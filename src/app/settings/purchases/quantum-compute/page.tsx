@@ -3,9 +3,9 @@ import InfoBox from "@/components/InfoBox";
 
 // Current pricing metric: priced per token, where every 100 shots equals 1 token.
 const RUNTIME_TIERS = [
-  { range: "100 shots", rate: "1 token" },
-  { range: "1,000 shots", rate: "10 tokens" },
-  { range: "10,000 shots", rate: "100 tokens" },
+  { range: "100 shots", rate: "1 token (= $1)" },
+  { range: "1,000 shots", rate: "10 tokens (= $10)" },
+  { range: "10,000 shots", rate: "100 tokens (= $100)" },
 ];
 
 /*
@@ -58,7 +58,8 @@ export default function QuantumComputePricingPage() {
           </h2>
           <div className="mb-3">
             <InfoBox>
-              Runtime is priced per token, where every 100 shots equals 1 token.
+              Runtime is priced per token, where every 100 shots spends 1 token.<br/>
+              Tokens can be purchased at $1 per token.
             </InfoBox>
           </div>
 
