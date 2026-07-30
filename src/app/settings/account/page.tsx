@@ -1,6 +1,7 @@
 import { logtoConfig } from "@/app/logto";
 import LogoutButton from "@/components/auth/LogoutButton";
 import CurrentPlanBadge from "@/components/billing/CurrentPlanBadge";
+import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
 import {
   getAccountProfile,
   getDisplayName,
@@ -12,6 +13,7 @@ import {
   deleteMfaVerification,
   generateTotpSecret,
   getMfaVerifications,
+  normalizeSocialIdentities,
   sendEmailCode,
   updateBirthdate,
   updatePassword,
@@ -19,14 +21,18 @@ import {
   verifyEmailCode,
   verifyPassword,
 } from "@/lib/logto-account";
-import { findUserByPrimaryEmail, type LogtoUserSummary } from "@/lib/logto/management";
+import {
+  findUserByPrimaryEmail,
+  getUserAccountFacts,
+  type LogtoUserSummary,
+} from "@/lib/logto/management";
 import { getAccessToken, signOut } from "@logto/next/server-actions";
 import { refresh, revalidatePath } from "next/cache";
 import Image from "next/image";
 import ProfileActions from "./ProfileActions";
 
 export default async function AccountPage() {
-  const { userInfo } = await getSession();
+  const { userInfo, claims } = await getSession();
 
   // Resolve the display name via the shared resolver so a brand-new user's full
   // name shows on first sign-in (session claims lag until the first refresh; the
@@ -35,6 +41,36 @@ export default async function AccountPage() {
   const name = await getDisplayName();
   const account = await getAccountProfile();
   const birthdate = account?.profile?.birthdate ?? null;
+
+  // Linked socials + password status.
+  //
+  // The end-user Account API (`/api/my-account`) only returns `identities` /
+  // `hasPassword` when the Logto Account Center `fields` config exposes them,
+  // so relying on it leaves social users with an empty "Connected accounts"
+  // section. The Management API (`GET /api/users/{id}`) returns both fields
+  // unconditionally, so we use it as the primary source and fall back to the
+  // Account API values only if the M2M lookup fails.
+  //
+  // hasPassword defaults to true on total failure, preserving the existing
+  // change-password behavior for password users on a transient error.
+  const sub = claims?.sub ?? userInfo?.sub ?? null;
+  let hasPassword = account?.hasPassword ?? true;
+  let socialIdentities = normalizeSocialIdentities(account?.identities);
+
+  if (sub) {
+    try {
+      const facts = await getUserAccountFacts(sub);
+      socialIdentities = normalizeSocialIdentities(facts.identities);
+      if (facts.hasPassword !== null) {
+        hasPassword = facts.hasPassword;
+      }
+    } catch (err) {
+      console.error(
+        "[account] failed to load identities/password via Management API; using Account API fallback:",
+        err,
+      );
+    }
+  }
 
   let mfaEnabled = false;
   try {
@@ -218,6 +254,8 @@ export default async function AccountPage() {
         email={email ?? ""}
         birthdate={birthdate}
         mfaEnabled={mfaEnabled}
+        hasPassword={hasPassword}
+        connectedAccounts={<ConnectedAccounts identities={socialIdentities} />}
         onVerifyPassword={doVerifyPassword}
         onUpdatePassword={doUpdatePassword}
         onSendEmailCode={doSendEmailCode}

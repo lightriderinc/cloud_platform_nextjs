@@ -5,6 +5,7 @@ import EditEmailModal from "@/components/profile/EditEmailModal";
 import EditPasswordModal from "@/components/profile/EditPasswordModal";
 import SetupMfaModal from "@/components/profile/SetupMfaModal";
 import LRButton from "@/components/ui/LRButton";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MdEditSquare } from "react-icons/md";
 
@@ -15,6 +16,14 @@ type Props = {
   email: string;
   birthdate: string | null;
   mfaEnabled: boolean;
+  /** Whether the user already has a password set (false for social/SSO-only). */
+  hasPassword: boolean;
+  /**
+   * Slot rendered between the Profile and Security sections — used for the
+   * server-rendered "Connected accounts" list, which a client component can't
+   * render itself.
+   */
+  connectedAccounts?: React.ReactNode;
   onVerifyPassword: (password: string) => Promise<string>;
   onUpdatePassword: (
     verificationId: string,
@@ -47,6 +56,8 @@ export default function ProfileActions({
   email,
   birthdate,
   mfaEnabled: initialMfaEnabled,
+  hasPassword,
+  connectedAccounts,
   onVerifyPassword,
   onUpdatePassword,
   onSendEmailCode,
@@ -58,6 +69,7 @@ export default function ProfileActions({
   onBindTotp,
   onDisableMfa,
 }: Props) {
+  const router = useRouter();
   const [open, setOpen] = useState<Modal>(null);
   const [mfaEnabled, setMfaEnabled] = useState(initialMfaEnabled);
   const [currentBirthdate, setCurrentBirthdate] = useState(birthdate);
@@ -98,15 +110,17 @@ export default function ProfileActions({
         </div>
       </div>
 
+      {connectedAccounts}
+
       <div className="flex flex-col mb-5">
         <div className="flex w-full mb-5">
           <h2 className="text-xl font-bold text-gray-500">Security</h2>
         </div>
         <div className="flex flex-col default-radius divide-y divide-gray-100 mb-8 max-w-3xl bg-gray-50 px-4 py-1">
           <div className="flex flex-row justify-between items-center">
-            <InfoRow label="Password" value="••••••••" />
+            <InfoRow label="Password" value={hasPassword ? "••••••••" : "Not set"} />
             <InlineEditButton
-              label="Change Password"
+              label={hasPassword ? "Change Password" : "Set Password"}
               onClick={() => setOpen("password")}
             />
           </div>
@@ -129,8 +143,13 @@ export default function ProfileActions({
 
       {open === "password" && (
         <EditPasswordModal
+          mode={hasPassword ? "change" : "set"}
+          email={email}
           onVerifyPassword={onVerifyPassword}
           onUpdatePassword={onUpdatePassword}
+          onSendEmailCode={onSendEmailCode}
+          onVerifyEmailCode={onVerifyEmailCode}
+          onSuccess={() => router.refresh()}
           onClose={() => setOpen(null)}
         />
       )}

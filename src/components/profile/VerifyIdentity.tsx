@@ -20,6 +20,12 @@ type Props = {
    */
   onVerified: (verificationRecordId: string) => void | Promise<void>;
   submitLabel?: string;
+  /**
+   * Whether the password method is offered. Defaults to true. Set false for
+   * users with no password set (social/SSO-only), where email code is the only
+   * way to prove identity — the method tabs are then hidden.
+   */
+  allowPassword?: boolean;
 };
 
 type Method = 'password' | 'email';
@@ -38,8 +44,9 @@ export default function VerifyIdentity({
   onVerifyEmailCode,
   onVerified,
   submitLabel = 'Continue',
+  allowPassword = true,
 }: Props) {
-  const [method, setMethod] = useState<Method>('password');
+  const [method, setMethod] = useState<Method>(allowPassword ? 'password' : 'email');
   const [password, setPassword] = useState('');
   const [emailStage, setEmailStage] = useState<'send' | 'code'>('send');
   const [code, setCode] = useState('');
@@ -109,22 +116,24 @@ export default function VerifyIdentity({
 
   return (
     <>
-      <div className="flex gap-2 mb-4">
-        <button
-          type="button"
-          className={tabClass(method === 'password')}
-          onClick={() => switchMethod('password')}
-        >
-          Password
-        </button>
-        <button
-          type="button"
-          className={tabClass(method === 'email')}
-          onClick={() => switchMethod('email')}
-        >
-          Email code
-        </button>
-      </div>
+      {allowPassword && (
+        <div className="flex gap-2 mb-4">
+          <button
+            type="button"
+            className={tabClass(method === 'password')}
+            onClick={() => switchMethod('password')}
+          >
+            Password
+          </button>
+          <button
+            type="button"
+            className={tabClass(method === 'email')}
+            onClick={() => switchMethod('email')}
+          >
+            Email code
+          </button>
+        </div>
+      )}
 
       {method === 'password' && (
         <>

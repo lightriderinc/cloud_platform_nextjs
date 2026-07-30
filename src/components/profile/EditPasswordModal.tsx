@@ -2,18 +2,52 @@
 
 import { useState } from 'react';
 
+import VerifyIdentity from '@/components/profile/VerifyIdentity';
 import LRButton from '@/components/ui/LRButton';
 import PasswordRequirements, { meetsLivePasswordRequirements } from '@/components/ui/PasswordRequirements';
 
 type Props = {
+  /**
+   * `change` (default): the user has a password and must confirm the current
+   * one before choosing a new one. `set`: the user has no password yet
+   * (social/SSO-only) so there is nothing to confirm with — identity is proven
+   * with an emailed code instead.
+   */
+  mode?: 'change' | 'set';
   onVerifyPassword: (password: string) => Promise<string>;
   onUpdatePassword: (verificationId: string, newPassword: string) => Promise<void>;
   onClose: () => void;
+  /**
+   * Called once the password has been successfully set/changed. Used by the
+   * account page to refresh server data so a first-time "Set password" flips
+   * the UI to "Change password" without a manual reload.
+   */
+  onSuccess?: () => void;
+  /** Current email, required in `set` mode for the email-code verification. */
+  email?: string;
+  /** Required in `set` mode: send a one-time code to the user's email. */
+  onSendEmailCode?: (email: string) => Promise<string>;
+  /** Required in `set` mode: verify the emailed code. */
+  onVerifyEmailCode?: (
+    email: string,
+    code: string,
+    verificationRecordId: string,
+  ) => Promise<string>;
 };
 
 type Step = 'verify' | 'set' | 'done';
 
-export default function EditPasswordModal({ onVerifyPassword, onUpdatePassword, onClose }: Props) {
+export default function EditPasswordModal({
+  mode = 'change',
+  onVerifyPassword,
+  onUpdatePassword,
+  onClose,
+  onSuccess,
+  email = '',
+  onSendEmailCode,
+  onVerifyEmailCode,
+}: Props) {
+  const isSet = mode === 'set';
   const [step, setStep] = useState<Step>('verify');
   const [currentPwd, setCurrentPwd] = useState('');
   const [newPwd, setNewPwd] = useState('');
@@ -21,6 +55,8 @@ export default function EditPasswordModal({ onVerifyPassword, onUpdatePassword, 
   const [verificationId, setVerificationId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const title = isSet ? 'Set Password' : 'Change Password';
 
   async function handleVerify() {
     setError('');
@@ -36,6 +72,15 @@ export default function EditPasswordModal({ onVerifyPassword, onUpdatePassword, 
     }
   }
 
+  // In `set` mode identity is confirmed via VerifyIdentity (email code), which
+  // hands back a verification record id we reuse to authorize setting the
+  // password.
+  function handleIdentityVerified(id: string) {
+    setVerificationId(id);
+    setError('');
+    setStep('set');
+  }
+
   async function handleUpdate() {
     if (newPwd !== confirmPwd) { setError('Passwords do not match'); return; }
     if (!meetsLivePasswordRequirements(newPwd)) { setError('Please meet the password requirements below.'); return; }
@@ -44,8 +89,9 @@ export default function EditPasswordModal({ onVerifyPassword, onUpdatePassword, 
     try {
       await onUpdatePassword(verificationId, newPwd);
       setStep('done');
+      onSuccess?.();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to update password');
+      setError(e instanceof Error ? e.message : `Failed to ${isSet ? 'set' : 'update'} password`);
     } finally {
       setLoading(false);
     }
@@ -65,9 +111,27 @@ export default function EditPasswordModal({ onVerifyPassword, onUpdatePassword, 
           ×
         </button>
 
-        <h2 className="text-lg font-semibold text-gray-800 mb-1">Change Password</h2>
+        <h2 className="text-lg font-semibold text-gray-800 mb-1">{title}</h2>
 
-        {step === 'verify' && (
+        {step === 'verify' && isSet && (
+          <>
+            <p className="text-sm text-gray-500 mb-4">
+              You signed up with a linked account, so there is no current password to confirm.
+              Verify it is you with an email code to set one.
+            </p>
+            <VerifyIdentity
+              email={email}
+              allowPassword={false}
+              onVerifyPassword={onVerifyPassword}
+              onSendEmailCode={onSendEmailCode ?? (async () => '')}
+              onVerifyEmailCode={onVerifyEmailCode ?? (async () => '')}
+              onVerified={handleIdentityVerified}
+              submitLabel="Continue"
+            />
+          </>
+        )}
+
+        {step === 'verify' && !isSet && (
           <>
             <p className="text-sm text-gray-500 mb-4">Confirm your current password to continue.</p>
             <label className="block text-xs text-gray-500 mb-1">Current password</label>
@@ -93,8 +157,12 @@ export default function EditPasswordModal({ onVerifyPassword, onUpdatePassword, 
 
         {step === 'set' && (
           <>
-            <p className="text-sm text-gray-500 mb-4">Choose a new password.</p>
-            <label className="block text-xs text-gray-500 mb-1">New password</label>
+            <p className="text-sm text-gray-500 mb-4">
+              {isSet ? 'Choose a password.' : 'Choose a new password.'}
+            </p>
+            <label className="block text-xs text-gray-500 mb-1">
+              {isSet ? 'Password' : 'New password'}
+            </label>
             <input
               type="password"
               value={newPwd}
@@ -103,7 +171,9 @@ export default function EditPasswordModal({ onVerifyPassword, onUpdatePassword, 
               className="w-full default-radius border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-gray-400 mb-3"
             />
             <PasswordRequirements password={newPwd} className="mb-4" />
-            <label className="block text-xs text-gray-500 mb-1">Confirm new password</label>
+            <label className="block text-xs text-gray-500 mb-1">
+              {isSet ? 'Confirm password' : 'Confirm new password'}
+            </label>
             <input
               type="password"
               value={confirmPwd}
@@ -118,14 +188,24 @@ export default function EditPasswordModal({ onVerifyPassword, onUpdatePassword, 
               disabled={loading || !newPwd || !confirmPwd}
               className="w-full"
             >
-              {loading ? 'Updating…' : 'Update Password'}
+              {loading
+                ? isSet
+                  ? 'Setting…'
+                  : 'Updating…'
+                : isSet
+                  ? 'Set Password'
+                  : 'Update Password'}
             </LRButton>
           </>
         )}
 
         {step === 'done' && (
           <div className="pt-2 text-center">
-            <p className="text-sm text-gray-700 mb-4">Your password has been updated.</p>
+            <p className="text-sm text-gray-700 mb-4">
+              {isSet
+                ? 'Your password has been set. You can now sign in with your email and password.'
+                : 'Your password has been updated.'}
+            </p>
             <LRButton variant="secondary" onClick={onClose}>
               Done
             </LRButton>
