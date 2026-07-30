@@ -7,6 +7,7 @@ interface WelcomePageCardProps {
   title: string;
   icon: IconType;
   external?: boolean;
+  description?: string;
 }
 
 export default function WelcomePageCard({
@@ -14,6 +15,7 @@ export default function WelcomePageCard({
   title,
   icon: Icon,
   external,
+  description,
 }: WelcomePageCardProps) {
   return (
     <Link
@@ -27,6 +29,11 @@ export default function WelcomePageCard({
         <h3 className="flex items-center gap-1 text-md font-medium">
           {title} {external && <MdArrowOutward />}
         </h3>
+        {description && (
+          <div>
+            <p className="text-sm text-gray-500">{description}</p>
+          </div>
+        )}
       </div>
     </Link>
   );
