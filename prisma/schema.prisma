@@ -113,6 +113,7 @@ model QuantumJobSubmission {
   status     String   @default("PENDING") // cached last-known status; refreshed opportunistically whenever GET jobs/[id] observes a live value from iqm-proxy — not itself a live source of truth
   costCents  Int
   createdAt  DateTime @default(now())
+  finishedAt DateTime? // backfilled opportunistically from iqm-proxy's finishedAt whenever GET jobs/[id] is called — null until then, even for already-completed jobs nobody has reopened since this field was added
 }
 
 // Captures submissions from the Enterprise & Government "Get Custom

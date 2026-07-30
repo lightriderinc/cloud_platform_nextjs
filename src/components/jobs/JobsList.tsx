@@ -3,6 +3,7 @@
 import JobDetailModal from "@/components/jobs/JobDetailModal";
 import JobRowSkeleton from "@/components/jobs/JobRowSkeleton";
 import JobStatusBadge from "@/components/jobs/JobStatusBadge";
+import { formatDuration } from "@/lib/formatDuration";
 import { fetchQuantumJobDetail } from "@/lib/quantum/client";
 import type { JobStatus } from "@/types/job";
 import { useQuery } from "@tanstack/react-query";
@@ -16,6 +17,7 @@ export interface JobRow {
   shots: number;
   status: JobStatus;
   createdAt: string;
+  finishedAt: string | null;
 }
 
 export async function fetchJobs(): Promise<JobRow[]> {
@@ -115,6 +117,11 @@ export default function JobsList() {
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-3">
+                {job.status === "COMPLETED" && job.finishedAt && (
+                  <span className="text-xs text-gray-500 font-medium">
+                    {formatDuration(job.createdAt, job.finishedAt)}
+                  </span>
+                )}
                 <JobRowStatus jobId={job.jobId} cachedStatus={job.status} />
                 <span className="text-xs text-gray-500 font-medium">
                   {new Date(job.createdAt).toLocaleString()}
@@ -133,6 +140,7 @@ export default function JobsList() {
             backend: selectedJob.backend,
             shots: selectedJob.shots,
             created_at: selectedJob.createdAt,
+            finished_at: selectedJob.finishedAt ?? undefined,
           }}
           onClose={() => setSelectedJobId(null)}
         />

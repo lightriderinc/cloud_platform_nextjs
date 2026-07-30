@@ -40,7 +40,14 @@ export async function GET(req: Request) {
   const jobs = await db.quantumJobSubmission.findMany({
     where: { customerId: customer.id },
     orderBy: { createdAt: "desc" },
-    select: { jobId: true, backend: true, shots: true, status: true, createdAt: true },
+    select: {
+      jobId: true,
+      backend: true,
+      shots: true,
+      status: true,
+      createdAt: true,
+      finishedAt: true,
+    },
   });
 
   return NextResponse.json({ jobs });
