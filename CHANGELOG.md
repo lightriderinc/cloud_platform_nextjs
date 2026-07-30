@@ -1,3 +1,11 @@
+## [1.11.7](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.6...v1.11.7) (2026-07-30)
+
+
+### Bug Fixes
+
+* suggested fix for bonus tokens displaying correctly with new user sign in ([1726ab3](https://github.com/lightriderinc/cloud_platform_nextjs/commit/1726ab33cf5b8fe20e4eaf0c2f181f475c89fdb5))
+* suggested fix for bonus tokens displaying correctly with new user sign in ([528d729](https://github.com/lightriderinc/cloud_platform_nextjs/commit/528d72939afa13616daed4c1ef6f4a6363013d79))
+
 ## [1.11.6](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.5...v1.11.6) (2026-07-30)
 
 
