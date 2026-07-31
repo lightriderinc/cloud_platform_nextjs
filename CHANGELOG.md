@@ -1,3 +1,10 @@
+## [1.11.11](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.10...v1.11.11) (2026-07-31)
+
+
+### Bug Fixes
+
+* constrain ModalShell height so long content scrolls instead of overflowing ([d33ecc1](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d33ecc120584875a7711059f1f690cdece055a15))
+
 ## [1.11.10](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.9...v1.11.10) (2026-07-31)
 
 
