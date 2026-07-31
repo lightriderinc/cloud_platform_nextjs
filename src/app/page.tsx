@@ -1,7 +1,6 @@
 import CreditsSummary from "@/components/billing/CreditsSummary";
 import LowCreditsBanner from "@/components/billing/LowCreditsBanner";
 import DashboardDemoCircuit from "@/components/dashboard/DashboardDemoCircuit";
-import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntropy";
 import DashboardLatestJobs from "@/components/dashboard/DashboardLatestJobs";
 import WelcomePage from "@/components/WelcomePage";
 import { getSession } from "@/lib/auth/session";
@@ -81,8 +80,11 @@ export default async function Home() {
             </h2>
           </div>
           <div className="flex flex-col lg:flex-row gap-4">
-            <DashboardDemoCircuit />
-            <DashboardDemoEntropy />
+            <div className="xl:w-1/2">
+              <DashboardDemoCircuit />
+            </div>
+
+            {/* <DashboardDemoEntropy /> */}
           </div>
           {/* <div className="mt-4 flex">
           <GettingStartedChecklist />
@@ -93,28 +95,27 @@ export default async function Home() {
 
       <div className="flex flex-row gap-3 w-full justify-end pt-6 pb-2">
         <div className="flex flex-row gap-3 xl:bg-white xl:px-3 xl:py-2">
-                  <Link
-          className="inline-flex items-center gap-1 text-xs text-gray-700 hover:text-gray-500"
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://www.lightriderinc.com/platform-feedback"
-        >
-          Send feedback <MdArrowOutward />
-        </Link>
-        <a
-          className="text-xs text-gray-700 hover:text-gray-500"
-          href="/legal/privacy"
-        >
-          Privacy policy
-        </a>
-        <a
-          className="text-xs text-gray-700 hover:text-gray-500"
-          href="/legal/terms-of-use"
-        >
-          Terms of Use
-        </a>
+          <Link
+            className="inline-flex items-center gap-1 text-xs text-gray-700 hover:text-gray-500"
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://www.lightriderinc.com/platform-feedback"
+          >
+            Send feedback <MdArrowOutward />
+          </Link>
+          <a
+            className="text-xs text-gray-700 hover:text-gray-500"
+            href="/legal/privacy"
+          >
+            Privacy policy
+          </a>
+          <a
+            className="text-xs text-gray-700 hover:text-gray-500"
+            href="/legal/terms-of-use"
+          >
+            Terms of Use
+          </a>
         </div>
-
       </div>
     </div>
   );
