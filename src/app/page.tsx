@@ -5,6 +5,7 @@ import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntropy";
 import DashboardLatestJobs from "@/components/dashboard/DashboardLatestJobs";
 import WelcomePage from "@/components/WelcomePage";
 import { getSession } from "@/lib/auth/session";
+import Image from "next/image";
 import Link from "next/link";
 import { MdArrowForward, MdArrowOutward } from "react-icons/md";
 
@@ -16,11 +17,13 @@ export default async function Home() {
   return (
     <div className="flex flex-col h-full justify-between animate-fade-in-up">
       {!isAuthenticated && (
-        <img
+        <Image
           src="/LR-grid-bg.svg"
           alt=""
           aria-hidden="true"
-          className="pointer-events-none select-none hidden xl:block absolute right-0 top-14 -z-10 h-full min-h-[800px] w-auto"
+          width={3815}
+          height={2770}
+          className="pointer-events-none select-none hidden xl:block absolute right-0 top-14 -z-10 h-full min-h-[800px] w-auto opacity-75"
         />
       )}
       {isAuthenticated && (
