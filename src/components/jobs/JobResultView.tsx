@@ -1,6 +1,7 @@
 "use client";
 
 import JobStatusBadge from "@/components/jobs/JobStatusBadge";
+import { formatDuration } from "@/lib/formatDuration";
 import { fetchQuantumJobDetail, fetchQuantumJobResult } from "@/lib/quantum/client";
 import type { Job } from "@/types/job";
 import { useQuery } from "@tanstack/react-query";
@@ -29,6 +30,13 @@ export default function JobResultView({ job, footer }: Props) {
   });
 
   const currentStatus = detail?.status ?? job.status;
+
+  const createdAt = detail?.createdAt ?? job.created_at;
+  const finishedAt = detail?.finishedAt ?? job.finished_at;
+  const runtime =
+    currentStatus === "COMPLETED" && createdAt && finishedAt
+      ? formatDuration(createdAt, finishedAt)
+      : null;
 
   const { data: counts, isLoading: isCountsLoading } = useQuery({
     queryKey: ["lr-job-result", job.uuid],
@@ -66,12 +74,16 @@ export default function JobResultView({ job, footer }: Props) {
             <p className="mt-0.5 font-medium">{job.shots.toLocaleString()}</p>
           </div>
         )}
-        {(detail?.createdAt ?? job.created_at) && (
-          <div className="col-span-2">
+        {createdAt && (
+          <div>
             <p className="text-xs text-gray-500">Submitted</p>
-            <p className="mt-0.5 font-medium">
-              {new Date((detail?.createdAt ?? job.created_at)!).toLocaleString()}
-            </p>
+            <p className="mt-0.5 font-medium">{new Date(createdAt).toLocaleString()}</p>
+          </div>
+        )}
+        {runtime && (
+          <div>
+            <p className="text-xs text-gray-500">Runtime</p>
+            <p className="mt-0.5 font-medium">{runtime}</p>
           </div>
         )}
       </div>

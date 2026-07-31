@@ -6,6 +6,8 @@
 // from an API key and valid for ~1 hour, so we cache it in memory and refresh
 // shortly before it expires. This module must only be imported server-side.
 
+import { after } from "next/server";
+
 const IAM_TOKEN_URL = "https://iam.cloud.ibm.com/identity/token";
 // Refresh a minute early so an in-flight request never uses an expired token.
 const EXPIRY_SKEW_MS = 60_000;
@@ -23,16 +25,9 @@ interface IamTokenResponse {
 }
 
 let cache: CachedToken | null = null;
+let refreshing = false;
 
-// Returns a valid IAM bearer token, exchanging the API key only when the cached
-// token is missing or about to expire. On failure it throws an error whose
-// message carries the IAM status/body (never the token) for diagnostics.
-async function getIamToken(apiKey: string): Promise<string> {
-  const now = Date.now();
-  if (cache && cache.expiresAt - EXPIRY_SKEW_MS > now) {
-    return cache.token;
-  }
-
+async function exchangeToken(apiKey: string): Promise<string> {
   let res: Response;
   try {
     res = await fetch(IAM_TOKEN_URL, {
@@ -60,9 +55,52 @@ async function getIamToken(apiKey: string): Promise<string> {
   const data = (await res.json()) as IamTokenResponse;
   cache = {
     token: data.access_token,
-    expiresAt: now + data.expires_in * 1000,
+    expiresAt: Date.now() + data.expires_in * 1000,
   };
   return cache.token;
+}
+
+// Kicks off a token exchange without blocking the caller. Only ever called
+// while the current cached token is still genuinely valid (see getIamToken),
+// so there's no risk of a request racing ahead of a real expiry — this is
+// purely "renew a bit early" pre-warming, not serving an expired credential.
+function refreshInBackground(apiKey: string) {
+  if (refreshing) return;
+  refreshing = true;
+
+  after(async () => {
+    try {
+      await exchangeToken(apiKey);
+    } catch (err) {
+      console.error(
+        "[ibm-auth] background token refresh failed (will retry next request):",
+        err instanceof Error ? err.message : String(err),
+      );
+    } finally {
+      refreshing = false;
+    }
+  });
+}
+
+// Returns a valid IAM bearer token, exchanging the API key only when the
+// cached token is missing or has actually expired. Unlike the plain response
+// cache in createProxyRoute.ts, a token can't be served "stale" once it's
+// past expiry — IBM would just reject it with a 401 — so this only avoids
+// blocking in the one case where it's safe: the cached token is still valid
+// but inside its pre-expiry skew window, where the old token is returned
+// immediately and a fresh one is fetched in the background for next time.
+async function getIamToken(apiKey: string): Promise<string> {
+  const now = Date.now();
+
+  if (cache && cache.expiresAt > now) {
+    if (cache.expiresAt - EXPIRY_SKEW_MS <= now) {
+      refreshInBackground(apiKey);
+    }
+    return cache.token;
+  }
+
+  // No cached token, or it's genuinely past expiry - must block.
+  return exchangeToken(apiKey);
 }
 
 // Full auth header set for a Qiskit Runtime REST request. Throws if the
