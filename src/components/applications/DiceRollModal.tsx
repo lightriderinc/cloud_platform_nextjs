@@ -42,9 +42,9 @@ const LIVE_ENTROPY_FETCHERS: Record<string, () => Promise<BeaconEntropy>> = {
 };
 
 // Max pulse/job fetches per single roll. Beacons return many bytes per pulse so
-// one fetch is plenty, but the IQM circuit yields a single byte per job that
-// can be rejection-sampled away — a few attempts make that fall-back to local
-// entropy vanishingly rare.
+// one fetch is plenty, but the IQM circuit yields a single byte per job that can
+// be rejection-sampled away — a few attempts make a fall-back to local entropy
+// vanishingly rare.
 const MAX_REFILL_ATTEMPTS = 6;
 
 interface RollResult {
@@ -76,10 +76,10 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
   const [result, setResult] = useState<RollResult | null>(null);
   const [rolling, setRolling] = useState(false);
 
-  // Buffered beacon pulse — one pulse yields many unbiased draws before a fresh
-  // fetch is needed, so rapid re-rolls stay live without hitting the beacon on
-  // every click. Reset whenever the selected source changes.
-  const beaconBuffer = useRef<{
+  // Buffered pulse/job sample — one beacon pulse holds many bytes, so successive
+  // rolls consume the next byte of the same sample (giving different values from
+  // one pulse) and only re-fetch once its bytes are spent or the source changes.
+  const entropyBuffer = useRef<{
     sourceId: string;
     entropy: BeaconEntropy;
     offset: number;
@@ -88,8 +88,8 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
   const dieData = DICE.find((d) => d.sides === selectedSides);
   const sourceData = SOURCES.find((s) => s.id === selectedSourceId);
 
-  // Draw one die value for the chosen source. Beacon-backed sources pull from
-  // their live pulse (falling back to local entropy if unreachable); every
+  // Draw one die value for the chosen source. Live sources consume bytes from a
+  // buffered sample (re-fetching when exhausted or the source changed); every
   // other source uses the local CSPRNG.
   async function drawRoll(sides: number, sourceId: string): Promise<RollResult> {
     const sourceName = SOURCES.find((s) => s.id === sourceId)?.name ?? sourceId;
@@ -101,18 +101,18 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
 
     try {
       // Refill on first use, when the source changed, or once the current
-      // buffer's bytes are spent.
+      // sample's bytes are spent.
       for (let attempt = 0; attempt < MAX_REFILL_ATTEMPTS; attempt++) {
         // `buf` aliases the object held in the ref, so mutating buf.offset
         // below persists across rolls.
-        let buf = beaconBuffer.current;
+        let buf = entropyBuffer.current;
         if (
           !buf ||
           buf.sourceId !== sourceId ||
           buf.offset >= buf.entropy.bytes.length
         ) {
           buf = { sourceId, entropy: await fetchEntropy(), offset: 0 };
-          beaconBuffer.current = buf;
+          entropyBuffer.current = buf;
         }
         const draw = rollFromBytes(buf.entropy.bytes, buf.offset, sides);
         if (draw) {
@@ -124,12 +124,12 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
             beacon: buf.entropy.provenance,
           };
         }
-        // Buffer exhausted without an accepted byte — force a refetch.
-        beaconBuffer.current = null;
+        // Sample exhausted without an accepted byte — force a refetch.
+        entropyBuffer.current = null;
       }
       throw new Error("Exhausted entropy source without a usable byte.");
     } catch {
-      // Live beacon unavailable — keep the roll working with local entropy and
+      // Live source unavailable — keep the roll working with local entropy and
       // flag it so the UI stays honest about the source.
       return { sides, value: rollDieLocal(sides), sourceName, fellBack: true };
     }
@@ -152,7 +152,7 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
     setSelectedSides(null);
     setSelectedSourceId(null);
     setResult(null);
-    beaconBuffer.current = null;
+    entropyBuffer.current = null;
   }
 
   return (
