@@ -1,10 +1,5 @@
 import { FaMicrochip } from "react-icons/fa";
-import {
-  MdBrightness7,
-  MdCellTower,
-  MdDeviceHub,
-  MdEqualizer,
-} from "react-icons/md";
+import { MdCellTower, MdDeviceHub, MdEqualizer } from "react-icons/md";
 import EntropySourceCard from "@/components/dashboard/EntropySourceCard";
 
 const SOURCES = [
@@ -20,32 +15,25 @@ const SOURCES = [
     id: "rdseed",
     name: "RDSEED",
     description:
-      "Hardware entropy sourced directly from the CPU's on-chip entropy generator.",
+      "CSPRNG randomness seeded by the operating system's entropy pool, which draws on CPU hardware sources such as RDSEED.",
     icon: <FaMicrochip />,
     disabled: false,
   },
   {
     id: "curby",
     name: "CURBy",
-    description: "Certified Unique Randomness from quantum hardware.",
+    description:
+      "Certified randomness from CURBy's classical computer entropy generator (quantum beacon temporarily unavailable).",
     icon: <MdDeviceHub />,
-    disabled: true,
+    disabled: false,
   },
   {
     id: "iqm-resonance",
     name: "IQM Resonance",
     description:
-      "Entropy extracted from IQM quantum processor resonance measurements.",
+      "Randomness from a quantum circuit executed on an IQM mock simulator, sampled from qubit measurements.",
     icon: <MdEqualizer />,
-    disabled: true,
-  },
-  {
-    id: "quantum-light-lab",
-    name: "Quantum Light Lab",
-    description:
-      "Photonic quantum random number generation from light source measurements.",
-    icon: <MdBrightness7 />,
-    disabled: true,
+    disabled: false,
   },
 ];
 
