@@ -50,13 +50,25 @@ export async function GET(
 
   const data = await proxyRes.json();
 
-  // Opportunistically refresh the cached status so the /jobs list can show
-  // something better than a stale "PENDING" without live-polling every row
-  // on every page load. Best-effort — a failed cache write shouldn't fail a
-  // request that already has the real, live answer to return.
-  if (typeof data.status === "string" && data.status !== submission.status) {
+  // Opportunistically refresh the cached status (and, once known, the
+  // completion timestamp) so the /jobs list can show something better than
+  // a stale "PENDING" — and eventually a runtime — without live-polling
+  // every row on every page load. Best-effort — a failed cache write
+  // shouldn't fail a request that already has the real, live answer to
+  // return. finishedAt is written once and never overwritten (a completed
+  // job's finish time doesn't change).
+  const statusChanged = typeof data.status === "string" && data.status !== submission.status;
+  const finishedAtToStore =
+    typeof data.finishedAt === "string" && !submission.finishedAt ? new Date(data.finishedAt) : null;
+  if (statusChanged || finishedAtToStore) {
     db.quantumJobSubmission
-      .update({ where: { jobId: id }, data: { status: data.status } })
+      .update({
+        where: { jobId: id },
+        data: {
+          ...(statusChanged ? { status: data.status } : {}),
+          ...(finishedAtToStore ? { finishedAt: finishedAtToStore } : {}),
+        },
+      })
       .catch(() => {});
   }
 
