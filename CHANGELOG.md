@@ -1,3 +1,10 @@
+## [1.11.10](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.9...v1.11.10) (2026-07-31)
+
+
+### Bug Fixes
+
+* Wired dice roll sources ([fbf3ad8](https://github.com/lightriderinc/cloud_platform_nextjs/commit/fbf3ad848734c1a14a3662f356d26e1efbca5dac))
+
 ## [1.11.9](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.8...v1.11.9) (2026-07-31)
 
 
