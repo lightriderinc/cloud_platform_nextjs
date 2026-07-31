@@ -2,7 +2,15 @@
 
 import DiceIcon, { type DiceSides } from "@/components/dice/DiceIcon";
 import LRButton from "@/components/ui/LRButton";
-import { useState } from "react";
+import { fetchCurbyEntropy } from "@/lib/curby/client";
+import {
+  rollFromBytes,
+  type BeaconEntropy,
+  type BeaconProvenance,
+} from "@/lib/entropy/beacon";
+import { fetchIqmEntropy } from "@/lib/iqm/entropy";
+import { fetchNistEntropy } from "@/lib/nist/client";
+import { useRef, useState } from "react";
 import { MdArrowBack, MdArrowForward, MdRefresh } from "react-icons/md";
 import EntropySourceSelector, { SOURCES } from "./EntropySourceSelector";
 import ModalShell from "./ModalShell";
@@ -23,15 +31,40 @@ const STEPS = ["Die", "Source", "Result"];
 
 type Step = 1 | 2 | 3;
 
+// Entropy-source ids (see EntropySourceSelector) backed by a live external
+// service — randomness beacons, or a quantum circuit run on an IQM mock. Each
+// maps to a client returning normalized BeaconEntropy (bytes + provenance);
+// adding another live source is just another entry here.
+const LIVE_ENTROPY_FETCHERS: Record<string, () => Promise<BeaconEntropy>> = {
+  curby: fetchCurbyEntropy,
+  "nist-beacon": fetchNistEntropy,
+  "iqm-resonance": fetchIqmEntropy,
+};
+
+// Max pulse/job fetches per single roll. Beacons return many bytes per pulse so
+// one fetch is plenty, but the IQM circuit yields a single byte per job that
+// can be rejection-sampled away — a few attempts make that fall-back to local
+// entropy vanishingly rare.
+const MAX_REFILL_ATTEMPTS = 6;
+
 interface RollResult {
   sides: number;
   value: number;
   sourceName: string;
+  /** Present when the roll was sourced from a live beacon. */
+  beacon?: BeaconProvenance;
+  /** True if a live source was requested but we fell back to local entropy. */
+  fellBack?: boolean;
 }
 
-function rollDie(sides: number): number {
-  const arr = new Uint32Array(1);
-  crypto.getRandomValues(arr);
+// Local CSPRNG fallback, used for non-beacon sources and if a live beacon is
+// unreachable. Rejection-sampled so the mapping to faces stays unbiased.
+function rollDieLocal(sides: number): number {
+  const limit = 256 - (256 % sides);
+  const arr = new Uint8Array(1);
+  do {
+    crypto.getRandomValues(arr);
+  } while (arr[0] >= limit);
   return (arr[0] % sides) + 1;
 }
 
@@ -41,27 +74,77 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
   const [hoveredSides, setHoveredSides] = useState<number | null>(null);
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
   const [result, setResult] = useState<RollResult | null>(null);
+  const [rolling, setRolling] = useState(false);
+
+  // Buffered beacon pulse — one pulse yields many unbiased draws before a fresh
+  // fetch is needed, so rapid re-rolls stay live without hitting the beacon on
+  // every click. Reset whenever the selected source changes.
+  const beaconBuffer = useRef<{
+    sourceId: string;
+    entropy: BeaconEntropy;
+    offset: number;
+  } | null>(null);
 
   const dieData = DICE.find((d) => d.sides === selectedSides);
   const sourceData = SOURCES.find((s) => s.id === selectedSourceId);
 
-  function handleRoll() {
-    if (!selectedSides || !sourceData) return;
-    setResult({
-      sides: selectedSides,
-      value: rollDie(selectedSides),
-      sourceName: sourceData.name,
-    });
-    setStep(3);
+  // Draw one die value for the chosen source. Beacon-backed sources pull from
+  // their live pulse (falling back to local entropy if unreachable); every
+  // other source uses the local CSPRNG.
+  async function drawRoll(sides: number, sourceId: string): Promise<RollResult> {
+    const sourceName = SOURCES.find((s) => s.id === sourceId)?.name ?? sourceId;
+    const fetchEntropy = LIVE_ENTROPY_FETCHERS[sourceId];
+
+    if (!fetchEntropy) {
+      return { sides, value: rollDieLocal(sides), sourceName };
+    }
+
+    try {
+      // Refill on first use, when the source changed, or once the current
+      // buffer's bytes are spent.
+      for (let attempt = 0; attempt < MAX_REFILL_ATTEMPTS; attempt++) {
+        // `buf` aliases the object held in the ref, so mutating buf.offset
+        // below persists across rolls.
+        let buf = beaconBuffer.current;
+        if (
+          !buf ||
+          buf.sourceId !== sourceId ||
+          buf.offset >= buf.entropy.bytes.length
+        ) {
+          buf = { sourceId, entropy: await fetchEntropy(), offset: 0 };
+          beaconBuffer.current = buf;
+        }
+        const draw = rollFromBytes(buf.entropy.bytes, buf.offset, sides);
+        if (draw) {
+          buf.offset = draw.nextOffset;
+          return {
+            sides,
+            value: draw.value,
+            sourceName,
+            beacon: buf.entropy.provenance,
+          };
+        }
+        // Buffer exhausted without an accepted byte — force a refetch.
+        beaconBuffer.current = null;
+      }
+      throw new Error("Exhausted entropy source without a usable byte.");
+    } catch {
+      // Live beacon unavailable — keep the roll working with local entropy and
+      // flag it so the UI stays honest about the source.
+      return { sides, value: rollDieLocal(sides), sourceName, fellBack: true };
+    }
   }
 
-  function handleRollAgain() {
-    if (!selectedSides || !sourceData) return;
-    setResult({
-      sides: selectedSides,
-      value: rollDie(selectedSides),
-      sourceName: sourceData.name,
-    });
+  async function performRoll(advanceToResult: boolean) {
+    if (!selectedSides || !sourceData || rolling) return;
+    setRolling(true);
+    try {
+      const rolled = await drawRoll(selectedSides, sourceData.id);
+      setResult(rolled);
+      if (advanceToResult) setStep(3);
+    } finally {
+      setRolling(false);
+    }
   }
 
   function handleReset() {
@@ -69,6 +152,7 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
     setSelectedSides(null);
     setSelectedSourceId(null);
     setResult(null);
+    beaconBuffer.current = null;
   }
 
   return (
@@ -185,7 +269,33 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
                     1 – {result.sides}
                   </p>
                 </div>
+                {result.beacon?.pulse !== undefined && (
+                  <div>
+                    <p className="text-xs text-gray-400 mb-0.5">Beacon Pulse</p>
+                    <p className="font-medium text-gray-800">
+                      #{result.beacon.pulse}
+                    </p>
+                  </div>
+                )}
               </div>
+
+              {result.beacon && (
+                <p className="mt-3 text-2xs text-gray-400 leading-snug break-all">
+                  {result.beacon.label} ·{" "}
+                  {new Date(result.beacon.timestamp).toUTCString()} ·{" "}
+                  {result.beacon.reference}
+                </p>
+              )}
+
+              {result.fellBack && (
+                <p
+                  className="mt-3 text-xs leading-snug"
+                  style={{ color: "var(--brand-tertiary)" }}
+                >
+                  The {result.sourceName} beacon was unavailable — this roll
+                  used a local fallback source.
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col items-center justify-center py-4 gap-2">
@@ -251,10 +361,10 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
             <LRButton
               type="button"
               variant="primary"
-              disabled={!selectedSourceId}
-              onClick={handleRoll}
+              disabled={!selectedSourceId || rolling}
+              onClick={() => performRoll(true)}
             >
-              Roll Die
+              {rolling ? "Rolling…" : "Roll Die"}
             </LRButton>
           </>
         )}
@@ -266,15 +376,17 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
               <LRButton
                 type="button"
                 variant="secondary-outline"
-                onClick={handleRollAgain}
+                disabled={rolling}
+                onClick={() => performRoll(false)}
                 icon={<MdRefresh />}
                 iconPosition="left"
               >
-                Roll Again
+                {rolling ? "Rolling…" : "Roll Again"}
               </LRButton>
               <LRButton
                 type="button"
                 variant="secondary-outline"
+                disabled={rolling}
                 onClick={handleReset}
               >
                 New Roll

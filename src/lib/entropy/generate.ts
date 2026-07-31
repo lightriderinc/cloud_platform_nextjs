@@ -18,7 +18,6 @@ const POLICY_BY_SOURCE_ID: Record<string, string> = {
   rdseed: "fastest_available", // pool_fastest
   curby: "quantum_verified", // pool_quantum_verified
   "iqm-resonance": "hybrid_mix", // pool_quantum_verified
-  "quantum-light-lab": "hybrid_mix", // pool_quantum_verified
 };
 
 /** The full signed receipt EMS returns for a draw (entropy-core::receipt::Receipt). */

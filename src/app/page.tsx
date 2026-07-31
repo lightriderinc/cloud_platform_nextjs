@@ -5,6 +5,7 @@ import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntropy";
 import DashboardLatestJobs from "@/components/dashboard/DashboardLatestJobs";
 import WelcomePage from "@/components/WelcomePage";
 import { getSession } from "@/lib/auth/session";
+import Image from "next/image";
 import Link from "next/link";
 import { MdArrowForward, MdArrowOutward } from "react-icons/md";
 
@@ -15,6 +16,16 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col h-full justify-between animate-fade-in-up">
+      {!isAuthenticated && (
+        <Image
+          src="/LR-grid-bg.svg"
+          alt=""
+          aria-hidden="true"
+          width={3815}
+          height={2770}
+          className="pointer-events-none select-none hidden xl:block absolute right-0 top-14 -z-10 h-full min-h-[800px] w-auto opacity-75"
+        />
+      )}
       {isAuthenticated && (
         <div>
           <h1 className="text-2xl font-semibold text-gray-700">Dashboard</h1>
@@ -49,9 +60,7 @@ export default async function Home() {
           </div>
           <div className="mb-8">
             <div className="flex flex-row justify-between">
-              <h2 className="text-xl font-bold text-gray-600">
-                Latest jobs
-              </h2>
+              <h2 className="text-xl font-bold text-gray-600">Latest jobs</h2>
               <div className="mt-3 flex justify-end">
                 <Link
                   href="/jobs"
@@ -83,26 +92,28 @@ export default async function Home() {
       {!isAuthenticated && <WelcomePage />}
 
       <div className="flex flex-row gap-3 w-full justify-end pt-6 pb-2">
-        <Link
-          className="inline-flex items-center gap-1 text-xs text-gray-700 hover:text-gray-500"
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://www.lightriderinc.com/platform-feedback"
-        >
-          Send feedback <MdArrowOutward />
-        </Link>
-        <a
-          className="text-xs text-gray-700 hover:text-gray-500"
-          href="/legal/privacy"
-        >
-          Privacy policy
-        </a>
-        <a
-          className="text-xs text-gray-700 hover:text-gray-500"
-          href="/legal/terms-of-use"
-        >
-          Terms of Use
-        </a>
+        <div className="flex flex-row gap-3 xl:bg-white xl:px-3 xl:py-2">
+          <Link
+            className="inline-flex items-center gap-1 text-xs text-gray-700 hover:text-gray-500"
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://www.lightriderinc.com/platform-feedback"
+          >
+            Send feedback <MdArrowOutward />
+          </Link>
+          <a
+            className="text-xs text-gray-700 hover:text-gray-500"
+            href="/legal/privacy"
+          >
+            Privacy policy
+          </a>
+          <a
+            className="text-xs text-gray-700 hover:text-gray-500"
+            href="/legal/terms-of-use"
+          >
+            Terms of Use
+          </a>
+        </div>
       </div>
     </div>
   );

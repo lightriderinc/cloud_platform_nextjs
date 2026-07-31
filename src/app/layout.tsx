@@ -1,5 +1,4 @@
 import Header from "@/components/Header";
-import SetPasswordGateModal from "@/components/onboarding/SetPasswordGateModal";
 import Sidebar from "@/components/sidebar/Sidebar";
 import SidebarSecondary from "@/components/sidebar/SidebarSecondary";
 import SidebarSecondaryGate from "@/components/sidebar/SidebarSecondaryGate";
@@ -43,7 +42,6 @@ export default function RootLayout({
         <Providers>
           {/* <WelcomeModal />
           <TourProvider /> */}
-          <SetPasswordGateModal />
           <Header />
           <div className="flex flex-1 min-h-0">
             <Sidebar />
