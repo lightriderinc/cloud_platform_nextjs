@@ -29,7 +29,7 @@ export default function JobDetailModal({
       aria-label="Job details"
     >
       <div
-        className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto default-radius bg-white p-8 shadow-xl"
+        className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto default-radius bg-white p-8 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <button
