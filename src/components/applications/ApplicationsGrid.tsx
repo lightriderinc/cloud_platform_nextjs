@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { FaDiceD20 } from "react-icons/fa6";
 import { PiPasswordFill } from "react-icons/pi";
-import { MdLock, MdBolt } from "react-icons/md";
+import { MdLock } from "react-icons/md";
 import { MdEdit } from "react-icons/md";
 
 import ApplicationCard from "./ApplicationCard";
@@ -11,7 +11,6 @@ import DiceRollModal from "./DiceRollModal";
 import PasswordModal from "./PasswordModal";
 import QuantumVaultModal from "./QuantumVaultModal";
 import QuantumSignerModal from "./QuantumSignerModal";
-
 type OpenModal = "dice" | "password" | "vault"  | "signer" | null;
 
 export default function ApplicationsGrid() {
