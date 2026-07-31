@@ -1,6 +1,7 @@
 import CreditsSummary from "@/components/billing/CreditsSummary";
 import LowCreditsBanner from "@/components/billing/LowCreditsBanner";
 import DashboardDemoCircuit from "@/components/dashboard/DashboardDemoCircuit";
+import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntropy";
 import DashboardLatestJobs from "@/components/dashboard/DashboardLatestJobs";
 import WelcomePage from "@/components/WelcomePage";
 import { getSession } from "@/lib/auth/session";
@@ -80,11 +81,8 @@ export default async function Home() {
             </h2>
           </div>
           <div className="flex flex-col lg:flex-row gap-4">
-            <div className="xl:w-1/2">
-              <DashboardDemoCircuit />
-            </div>
-
-            {/* <DashboardDemoEntropy /> */}
+            <DashboardDemoCircuit />
+            <DashboardDemoEntropy />
           </div>
           {/* <div className="mt-4 flex">
           <GettingStartedChecklist />
