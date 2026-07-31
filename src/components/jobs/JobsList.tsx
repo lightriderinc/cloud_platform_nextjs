@@ -1,6 +1,7 @@
 "use client";
 
 import JobDetailModal from "@/components/jobs/JobDetailModal";
+import JobModeTag from "@/components/jobs/JobModeTag";
 import JobRowSkeleton from "@/components/jobs/JobRowSkeleton";
 import JobStatusBadge from "@/components/jobs/JobStatusBadge";
 import { formatDuration } from "@/lib/formatDuration";
@@ -25,6 +26,11 @@ export async function fetchJobs(): Promise<JobRow[]> {
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
   return data.jobs ?? [];
+}
+
+/** First 8 chars of the job UUID — full id is still in the DOM via `title`. */
+function shortId(jobId: string): string {
+  return `${jobId.slice(0, 8)}…`;
 }
 
 /**
@@ -52,6 +58,8 @@ export function JobRowStatus({
   return <JobStatusBadge status={detail?.status ?? cachedStatus} />;
 }
 
+const HEADERS = ["Job ID", "Created", "Completed", "Runtime", "Backend", "Status", "Mode"];
+
 export default function JobsList() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 
@@ -64,18 +72,6 @@ export default function JobsList() {
     queryFn: fetchJobs,
   });
 
-  if (isLoading) {
-    return (
-      <ul className="mt-5 flex flex-col gap-2 animate-pulse">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <li key={i}>
-            <JobRowSkeleton />
-          </li>
-        ))}
-      </ul>
-    );
-  }
-
   if (error) {
     return (
       <p className="mt-5 text-sm text-red-500">
@@ -84,7 +80,7 @@ export default function JobsList() {
     );
   }
 
-  if (!jobs || jobs.length === 0) {
+  if (!isLoading && (!jobs || jobs.length === 0)) {
     return (
       <div className="default-radius border border-dashed border-gray-200 bg-gray-50 p-16 text-center mt-5 text-sm text-gray-500">
         Jobs you submit will appear here. You can track their status and view
@@ -93,44 +89,66 @@ export default function JobsList() {
     );
   }
 
-  const selectedJob = jobs.find((j) => j.jobId === selectedJobId);
+  const selectedJob = jobs?.find((j) => j.jobId === selectedJobId);
 
   return (
     <>
-      <p className="mb-6 text-md text-gray-950">
-        {jobs.length} {jobs.length === 1 ? "Job" : "Jobs"} Submitted
-      </p>
-      <ul className="mt-5 flex flex-col gap-2">
-        {jobs.map((job) => (
-          <li key={job.jobId}>
-            <button
-              type="button"
-              onClick={() => setSelectedJobId(job.jobId)}
-              className="flex w-full items-end justify-between gap-4 default-radius border border-gray-100 bg-gray-100 p-3 text-left transition-colors card-hover-primary cursor-pointer"
-            >
-              <div className="min-w-0">
-                <p className="truncate font-mono text-xs text-gray-400">
-                  {job.jobId}
-                </p>
-                <p className="mt-1 font-medium text-sm text-gray-600">
-                  {job.backend} · {job.shots.toLocaleString()} shots
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-3">
-                {job.status === "COMPLETED" && job.finishedAt && (
-                  <span className="text-xs text-gray-500 font-medium">
-                    {formatDuration(job.createdAt, job.finishedAt)}
-                  </span>
-                )}
-                <JobRowStatus jobId={job.jobId} cachedStatus={job.status} />
-                <span className="text-xs text-gray-500 font-medium">
-                  {new Date(job.createdAt).toLocaleString()}
-                </span>
-              </div>
-            </button>
-          </li>
-        ))}
-      </ul>
+      {!isLoading && jobs && (
+        <p className="mb-6 text-md text-gray-950">
+          {jobs.length} {jobs.length === 1 ? "Job" : "Jobs"} Submitted
+        </p>
+      )}
+
+      <div className="mt-5 overflow-x-auto default-radius border border-gray-100">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-gray-100">
+            <tr>
+              {HEADERS.map((h) => (
+                <th key={h} className="whitespace-nowrap px-4 py-2 font-medium text-gray-700">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading
+              ? Array.from({ length: 5 }).map((_, i) => (
+                  <JobRowSkeleton key={i} />
+                ))
+              : jobs!.map((job) => (
+                  <tr
+                    key={job.jobId}
+                    onClick={() => setSelectedJobId(job.jobId)}
+                    className="cursor-pointer border-b border-gray-100 bg-white transition-colors last:border-0 hover:bg-gray-50"
+                  >
+                    <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-gray-500">
+                      <span title={job.jobId}>{shortId(job.jobId)}</span>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                      {new Date(job.createdAt).toLocaleString()}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                      {job.finishedAt ? new Date(job.finishedAt).toLocaleString() : "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                      {job.status === "COMPLETED" && job.finishedAt
+                        ? (formatDuration(job.createdAt, job.finishedAt) ?? "—")
+                        : "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                      {job.backend} · {job.shots.toLocaleString()} shots
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3">
+                      <JobRowStatus jobId={job.jobId} cachedStatus={job.status} />
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3">
+                      <JobModeTag backend={job.backend} />
+                    </td>
+                  </tr>
+                ))}
+          </tbody>
+        </table>
+      </div>
 
       {selectedJob && (
         <JobDetailModal
