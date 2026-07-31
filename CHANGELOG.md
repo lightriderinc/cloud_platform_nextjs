@@ -1,3 +1,13 @@
+## [1.11.9](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.8...v1.11.9) (2026-07-31)
+
+
+### Bug Fixes
+
+* added welcome page bg ([f1b1035](https://github.com/lightriderinc/cloud_platform_nextjs/commit/f1b103547b6f62d7421f53d1ecf5fc4bcbb5f828))
+* entropy demo removed from dashboard until v3 service integration ([08a3759](https://github.com/lightriderinc/cloud_platform_nextjs/commit/08a3759e5d278791fda37a5b791269607bf87230))
+* welcome page bg img tag issue fixed ([ff070de](https://github.com/lightriderinc/cloud_platform_nextjs/commit/ff070deff179c02d6a7581e45f00167f338fa9cc))
+* welcome pg updates + entropy demo removed before v3 + flow fixes ([89d660b](https://github.com/lightriderinc/cloud_platform_nextjs/commit/89d660bc8d74bc629d9d39bad998a187249001a6))
+
 ## [1.11.8](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.7...v1.11.8) (2026-07-30)
 
 
