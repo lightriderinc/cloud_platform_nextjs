@@ -3,15 +3,15 @@
 import { useState } from "react";
 import { FaDiceD20 } from "react-icons/fa6";
 import { PiPasswordFill } from "react-icons/pi";
-import { MdLock, MdBolt } from "react-icons/md";
+import { MdLock } from "react-icons/md";
+import { MdEdit } from "react-icons/md";
 
 import ApplicationCard from "./ApplicationCard";
 import DiceRollModal from "./DiceRollModal";
 import PasswordModal from "./PasswordModal";
 import QuantumVaultModal from "./QuantumVaultModal";
-import CurbyEntropyModal from "./CurbyEntropyModal";
-
-type OpenModal = "dice" | "password" | "vault" | "curby" | null;
+import QuantumSignerModal from "./QuantumSignerModal";
+type OpenModal = "dice" | "password" | "vault"  | "signer" | null;
 
 export default function ApplicationsGrid() {
   const [openModal, setOpenModal] = useState<OpenModal>(null);
@@ -42,13 +42,12 @@ export default function ApplicationsGrid() {
           tag="New"
           onClick={() => setOpenModal("vault")}
         />
-
         <ApplicationCard
-          title="Fetch Quantum Entropy"
-          description="Fetch real quantum randomness from CURBy and view its health."
-          icon={MdBolt}
+          title="Quantum-Safe Signer"
+          description="Sign any text with ML-DSA-65 and let anyone independently verify it wasn't altered — no login needed."
+          icon={MdEdit}
           tag="New"
-          onClick={() => setOpenModal("curby")}
+          onClick={() => setOpenModal("signer")}
         />
       </div>
 
@@ -63,9 +62,8 @@ export default function ApplicationsGrid() {
       {openModal === "vault" && (
         <QuantumVaultModal onClose={() => setOpenModal(null)} />
       )}
-
-      {openModal === "curby" && (
-        <CurbyEntropyModal onClose={() => setOpenModal(null)} />
+      {openModal === "signer" && (
+        <QuantumSignerModal onClose={() => setOpenModal(null)} />
       )}
     </>
   );
