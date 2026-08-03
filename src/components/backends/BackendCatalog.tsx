@@ -3,6 +3,7 @@
 import { useIbmBackends } from "@/hooks/useIbmBackends";
 import { useIqmBackends } from "@/hooks/useIqmBackends";
 import { useRigettiBackends } from "@/hooks/useRigettiBackends";
+import { sortBackends, type BackendSortKey } from "@/lib/backends/sort";
 import type { Backend } from "@/types/backend";
 import { useState } from "react";
 import { MdGridView, MdViewList } from "react-icons/md";
@@ -11,6 +12,7 @@ import BackendGrid from "./BackendGrid";
 import BackendList from "./BackendList";
 import BackendModal from "./BackendModal";
 import BackendRowSkeleton from "./BackendRowSkeleton";
+import BackendSortMenu from "./BackendSortMenu";
 
 type View = "cards" | "list";
 
@@ -31,6 +33,8 @@ export default function BackendCatalog({
 }) {
   const [selected, setSelected] = useState<Backend | null>(null);
   const [view, setView] = useState<View>("cards");
+  const [sortKey, setSortKey] = useState<BackendSortKey>("qubits");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const { data: iqmBackends = [], isLoading: iqmLoading } = useIqmBackends();
   const { data: rigettiBackends = [], isLoading: rigettiLoading } =
     useRigettiBackends();
@@ -39,6 +43,19 @@ export default function BackendCatalog({
   const anyLoading = iqmLoading || rigettiLoading || ibmLoading;
   const allBackends = [...iqmBackends, ...rigettiBackends, ...ibmBackends];
   const onlineCount = allBackends.filter((b) => b.status === "online").length;
+  const sortedBackends = sortBackends(allBackends, sortKey, sortDirection);
+
+  // Column-header clicks (list view) and sort menu rows (card view) share
+  // this: picking a new field starts ascending, re-picking the active one
+  // flips direction.
+  function handleSort(key: BackendSortKey) {
+    if (key === sortKey) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(key);
+      setSortDirection("asc");
+    }
+  }
 
   // Skeleton grid until every provider's cards are ready, so the catalog
   // appears in one piece instead of provider by provider.
@@ -68,32 +85,48 @@ export default function BackendCatalog({
         <p className="text-md text-gray-950">
           {allBackends.length} Backends, {onlineCount} Online
         </p>
-        <div className="flex items-center gap-1 default-radius border border-gray-100 p-1">
-          <button
-            type="button"
-            aria-label="Card view"
-            aria-pressed={view === "cards"}
-            onClick={() => setView("cards")}
-            className={[viewButtonBase, view === "cards" ? viewButtonOn : viewButtonOff].join(" ")}
-          >
-            <MdGridView />
-          </button>
-          <button
-            type="button"
-            aria-label="List view"
-            aria-pressed={view === "list"}
-            onClick={() => setView("list")}
-            className={[viewButtonBase, view === "list" ? viewButtonOn : viewButtonOff].join(" ")}
-          >
-            <MdViewList />
-          </button>
+        <div className="flex items-center gap-3">
+          {view === "cards" && (
+            <BackendSortMenu
+              sortKey={sortKey}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+            />
+          )}
+
+          <div className="flex items-center gap-1 default-radius border border-gray-100 p-1">
+            <button
+              type="button"
+              aria-label="Card view"
+              aria-pressed={view === "cards"}
+              onClick={() => setView("cards")}
+              className={[viewButtonBase, view === "cards" ? viewButtonOn : viewButtonOff].join(" ")}
+            >
+              <MdGridView />
+            </button>
+            <button
+              type="button"
+              aria-label="List view"
+              aria-pressed={view === "list"}
+              onClick={() => setView("list")}
+              className={[viewButtonBase, view === "list" ? viewButtonOn : viewButtonOff].join(" ")}
+            >
+              <MdViewList />
+            </button>
+          </div>
         </div>
       </div>
 
       {view === "list" ? (
-        <BackendList backends={allBackends} onSelect={setSelected} />
+        <BackendList
+          backends={sortedBackends}
+          onSelect={setSelected}
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          onSort={handleSort}
+        />
       ) : (
-        <BackendGrid backends={allBackends} onSelect={setSelected} />
+        <BackendGrid backends={sortedBackends} onSelect={setSelected} />
       )}
 
       {/* Render the freshest copy of the selection so the modal upgrades in
