@@ -1,3 +1,18 @@
+# [1.12.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.12...v1.12.0) (2026-08-03)
+
+
+### Bug Fixes
+
+* added backend sort ([e1534e0](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e1534e0bd66b57989724a0f4cdce8a9d54148eda))
+* added list view to backends ([c1e6e96](https://github.com/lightriderinc/cloud_platform_nextjs/commit/c1e6e96aeaf095fe2af0c0c2fcd2eb80c40887f0))
+* backend filter added ([7021feb](https://github.com/lightriderinc/cloud_platform_nextjs/commit/7021febfe17ee4091b7c159022aec535923f00d9))
+* backend sort cached ([0afa371](https://github.com/lightriderinc/cloud_platform_nextjs/commit/0afa371316b53fb39a32b1772aeea2db88acb900))
+
+
+### Features
+
+* backend page updated ([e6e0d39](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e6e0d3934e7a6f7e80cf76d61c96847ec5e15ccb))
+
 ## [1.11.12](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.11...v1.11.12) (2026-08-03)
 
 
