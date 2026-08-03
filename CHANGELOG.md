@@ -1,3 +1,12 @@
+## [1.11.12](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.11...v1.11.12) (2026-08-03)
+
+
+### Bug Fixes
+
+* jobs skeleton load - dashboard & table ([40c1f0d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/40c1f0d81456720bc7bbdd1d8ac0d0df1ed03b7e))
+* minor bug fixed - skeleton loading issues resolved ([a0b0c1d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/a0b0c1d9844a52c0ee982b22dde59c042d73c177))
+* skeleton loading for api keys card ([56ddbfb](https://github.com/lightriderinc/cloud_platform_nextjs/commit/56ddbfb4cd7af930f1db4f0693d51c8a6cc42026))
+
 ## [1.11.11](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.10...v1.11.11) (2026-07-31)
 
 
