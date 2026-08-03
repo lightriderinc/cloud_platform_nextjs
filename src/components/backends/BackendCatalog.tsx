@@ -3,9 +3,9 @@
 import { useIbmBackends } from "@/hooks/useIbmBackends";
 import { useIqmBackends } from "@/hooks/useIqmBackends";
 import { useRigettiBackends } from "@/hooks/useRigettiBackends";
-import { sortBackends, type BackendSortKey } from "@/lib/backends/sort";
+import { sortBackends, type BackendSortKey, type SortDirection } from "@/lib/backends/sort";
 import type { Backend } from "@/types/backend";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MdGridView, MdViewList } from "react-icons/md";
 import BackendCardSkeleton from "./BackendCardSkeleton";
 import BackendGrid from "./BackendGrid";
@@ -21,6 +21,22 @@ const viewButtonBase =
 const viewButtonOn = "bg-gray-700 text-white";
 const viewButtonOff = "text-gray-500 hover:bg-gray-100";
 
+// sessionStorage-backed (not localStorage) so the choice survives navigating
+// between pages and back within the tab, but doesn't stick around forever.
+const VIEW_KEY = "lr:backends:view";
+const SORT_KEY_KEY = "lr:backends:sort-key";
+const SORT_DIRECTION_KEY = "lr:backends:sort-direction";
+
+function isView(value: string | null): value is View {
+  return value === "cards" || value === "list";
+}
+function isSortKey(value: string | null): value is BackendSortKey {
+  return value === "provider" || value === "qubits" || value === "type";
+}
+function isSortDirection(value: string | null): value is SortDirection {
+  return value === "asc" || value === "desc";
+}
+
 // Owns selection state and merges live provider machines (IQM, Rigetti, IBM),
 // each fetched independently via React Query. The grid shows skeletons until
 // every provider's card data has arrived, then all cards appear together;
@@ -34,7 +50,29 @@ export default function BackendCatalog({
   const [selected, setSelected] = useState<Backend | null>(null);
   const [view, setView] = useState<View>("cards");
   const [sortKey, setSortKey] = useState<BackendSortKey>("qubits");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+  // Restore the previous choice after mount (not in the initializer) so the
+  // server-rendered markup and first client render still match. Persisting
+  // back only happens at the point of user interaction (changeView,
+  // handleSort below) — a reactive write-on-change effect would fire during
+  // this same restore and stomp the just-restored value with the stale
+  // pre-restore state, since its closure predates the setState above.
+  useEffect(() => {
+    const storedView = sessionStorage.getItem(VIEW_KEY);
+    const storedSortKey = sessionStorage.getItem(SORT_KEY_KEY);
+    const storedSortDirection = sessionStorage.getItem(SORT_DIRECTION_KEY);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (isView(storedView)) setView(storedView);
+    if (isSortKey(storedSortKey)) setSortKey(storedSortKey);
+    if (isSortDirection(storedSortDirection)) setSortDirection(storedSortDirection);
+  }, []);
+
+  function changeView(next: View) {
+    setView(next);
+    sessionStorage.setItem(VIEW_KEY, next);
+  }
+
   const { data: iqmBackends = [], isLoading: iqmLoading } = useIqmBackends();
   const { data: rigettiBackends = [], isLoading: rigettiLoading } =
     useRigettiBackends();
@@ -49,12 +87,12 @@ export default function BackendCatalog({
   // this: picking a new field starts ascending, re-picking the active one
   // flips direction.
   function handleSort(key: BackendSortKey) {
-    if (key === sortKey) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortKey(key);
-      setSortDirection("asc");
-    }
+    const nextDirection: SortDirection =
+      key === sortKey ? (sortDirection === "asc" ? "desc" : "asc") : "asc";
+    setSortKey(key);
+    setSortDirection(nextDirection);
+    sessionStorage.setItem(SORT_KEY_KEY, key);
+    sessionStorage.setItem(SORT_DIRECTION_KEY, nextDirection);
   }
 
   // Skeleton grid until every provider's cards are ready, so the catalog
@@ -99,7 +137,7 @@ export default function BackendCatalog({
               type="button"
               aria-label="Card view"
               aria-pressed={view === "cards"}
-              onClick={() => setView("cards")}
+              onClick={() => changeView("cards")}
               className={[viewButtonBase, view === "cards" ? viewButtonOn : viewButtonOff].join(" ")}
             >
               <MdGridView />
@@ -108,7 +146,7 @@ export default function BackendCatalog({
               type="button"
               aria-label="List view"
               aria-pressed={view === "list"}
-              onClick={() => setView("list")}
+              onClick={() => changeView("list")}
               className={[viewButtonBase, view === "list" ? viewButtonOn : viewButtonOff].join(" ")}
             >
               <MdViewList />
