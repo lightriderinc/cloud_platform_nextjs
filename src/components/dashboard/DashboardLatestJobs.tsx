@@ -1,7 +1,7 @@
 "use client";
 
+import DashboardJobRowSkeleton from "@/components/jobs/DashboardJobRowSkeleton";
 import JobDetailModal from "@/components/jobs/JobDetailModal";
-import JobRowSkeleton from "@/components/jobs/JobRowSkeleton";
 import { fetchJobs, JobRowStatus } from "@/components/jobs/JobsList";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -25,7 +25,7 @@ export default function DashboardLatestJobs() {
       <ul className="mt-5 flex flex-col gap-2 animate-pulse">
         {Array.from({ length: LATEST_JOBS_LIMIT }).map((_, i) => (
           <li key={i}>
-            <JobRowSkeleton />
+            <DashboardJobRowSkeleton />
           </li>
         ))}
       </ul>

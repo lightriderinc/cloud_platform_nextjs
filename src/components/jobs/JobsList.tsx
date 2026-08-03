@@ -110,7 +110,7 @@ export default function JobsList() {
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className={isLoading ? "animate-pulse" : undefined}>
             {isLoading
               ? Array.from({ length: 5 }).map((_, i) => (
                   <JobRowSkeleton key={i} />
