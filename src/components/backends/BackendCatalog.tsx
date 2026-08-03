@@ -3,16 +3,28 @@
 import { useIbmBackends } from "@/hooks/useIbmBackends";
 import { useIqmBackends } from "@/hooks/useIqmBackends";
 import { useRigettiBackends } from "@/hooks/useRigettiBackends";
-import { sortBackends, type BackendSortKey, type SortDirection } from "@/lib/backends/sort";
+import {
+  createEmptyFilters,
+  filterBackends,
+  type BackendFilterState,
+  type FilterCategory,
+} from "@/lib/backends/filters";
+import {
+  sortBackends,
+  type BackendSortKey,
+  type SortDirection,
+} from "@/lib/backends/sort";
 import type { Backend } from "@/types/backend";
 import { useEffect, useState } from "react";
 import { MdGridView, MdViewList } from "react-icons/md";
 import BackendCardSkeleton from "./BackendCardSkeleton";
+import BackendFilterBar from "./BackendFilterBar";
 import BackendGrid from "./BackendGrid";
 import BackendList from "./BackendList";
 import BackendModal from "./BackendModal";
 import BackendRowSkeleton from "./BackendRowSkeleton";
 import BackendSortMenu from "./BackendSortMenu";
+import type { FilterOption } from "./FilterSection";
 
 type View = "cards" | "list";
 
@@ -51,6 +63,8 @@ export default function BackendCatalog({
   const [view, setView] = useState<View>("cards");
   const [sortKey, setSortKey] = useState<BackendSortKey>("qubits");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [filters, setFilters] =
+    useState<BackendFilterState>(createEmptyFilters);
 
   // Restore the previous choice after mount (not in the initializer) so the
   // server-rendered markup and first client render still match. Persisting
@@ -65,7 +79,8 @@ export default function BackendCatalog({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (isView(storedView)) setView(storedView);
     if (isSortKey(storedSortKey)) setSortKey(storedSortKey);
-    if (isSortDirection(storedSortDirection)) setSortDirection(storedSortDirection);
+    if (isSortDirection(storedSortDirection))
+      setSortDirection(storedSortDirection);
   }, []);
 
   function changeView(next: View) {
@@ -80,8 +95,16 @@ export default function BackendCatalog({
 
   const anyLoading = iqmLoading || rigettiLoading || ibmLoading;
   const allBackends = [...iqmBackends, ...rigettiBackends, ...ibmBackends];
-  const onlineCount = allBackends.filter((b) => b.status === "online").length;
-  const sortedBackends = sortBackends(allBackends, sortKey, sortDirection);
+  const providerOptions: FilterOption[] = Array.from(
+    new Set(allBackends.map((b) => b.provider)),
+  )
+    .sort((a, b) => a.localeCompare(b))
+    .map((provider) => ({ value: provider, label: provider }));
+  const filteredBackends = filterBackends(allBackends, filters);
+  const onlineCount = filteredBackends.filter(
+    (b) => b.status === "online",
+  ).length;
+  const sortedBackends = sortBackends(filteredBackends, sortKey, sortDirection);
 
   // Column-header clicks (list view) and sort menu rows (card view) share
   // this: picking a new field starts ascending, re-picking the active one
@@ -93,6 +116,26 @@ export default function BackendCatalog({
     setSortDirection(nextDirection);
     sessionStorage.setItem(SORT_KEY_KEY, key);
     sessionStorage.setItem(SORT_DIRECTION_KEY, nextDirection);
+  }
+
+  function handleFilterToggle(category: FilterCategory, value: string) {
+    setFilters((prev) => {
+      const values = new Set(prev[category]);
+      if (values.has(value)) {
+        values.delete(value);
+      } else {
+        values.add(value);
+      }
+      return { ...prev, [category]: values };
+    });
+  }
+
+  function handleClearFilterCategory(category: FilterCategory) {
+    setFilters((prev) => ({ ...prev, [category]: new Set() }));
+  }
+
+  function handleClearAllFilters() {
+    setFilters(createEmptyFilters());
   }
 
   // Skeleton grid until every provider's cards are ready, so the catalog
@@ -121,24 +164,38 @@ export default function BackendCatalog({
     <>
       <div className="mb-6 flex items-center justify-between">
         <p className="text-md text-gray-950">
-          {allBackends.length} Backends, {onlineCount} Online
+          {filteredBackends.length} Backends, {onlineCount} Online
         </p>
-        <div className="flex items-center gap-3">
-          {view === "cards" && (
-            <BackendSortMenu
-              sortKey={sortKey}
-              sortDirection={sortDirection}
-              onSort={handleSort}
-            />
-          )}
 
-          <div className="flex items-center gap-1 default-radius border border-gray-100 p-1">
+        <div className="flex xl:flex-row flex-col xl:items-center gap-3">
+          <div className="flex items-center gap-3">
+            {view === "cards" && (
+              <BackendSortMenu
+                sortKey={sortKey}
+                sortDirection={sortDirection}
+                onSort={handleSort}
+              />
+            )}
+            <div>
+              <BackendFilterBar
+                providerOptions={providerOptions}
+                filters={filters}
+                onToggle={handleFilterToggle}
+                onClearCategory={handleClearFilterCategory}
+                onClearAll={handleClearAllFilters}
+              />
+            </div>
+          </div>
+          <div className="hidden xl:flex items-center gap-1 default-radius border border-gray-100 p-1">
             <button
               type="button"
               aria-label="Card view"
               aria-pressed={view === "cards"}
               onClick={() => changeView("cards")}
-              className={[viewButtonBase, view === "cards" ? viewButtonOn : viewButtonOff].join(" ")}
+              className={[
+                viewButtonBase,
+                view === "cards" ? viewButtonOn : viewButtonOff,
+              ].join(" ")}
             >
               <MdGridView />
             </button>
@@ -147,7 +204,10 @@ export default function BackendCatalog({
               aria-label="List view"
               aria-pressed={view === "list"}
               onClick={() => changeView("list")}
-              className={[viewButtonBase, view === "list" ? viewButtonOn : viewButtonOff].join(" ")}
+              className={[
+                viewButtonBase,
+                view === "list" ? viewButtonOn : viewButtonOff,
+              ].join(" ")}
             >
               <MdViewList />
             </button>
@@ -155,7 +215,11 @@ export default function BackendCatalog({
         </div>
       </div>
 
-      {view === "list" ? (
+      {filteredBackends.length === 0 ? (
+        <div className="default-radius border border-dashed border-gray-200 bg-gray-50 p-16 text-center text-sm text-gray-500">
+          No backends match the selected filters.
+        </div>
+      ) : view === "list" ? (
         <BackendList
           backends={sortedBackends}
           onSelect={setSelected}
