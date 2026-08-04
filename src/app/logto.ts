@@ -1,5 +1,5 @@
 export const logtoConfig = {
-  endpoint: 'https://bhi5jd.logto.app/',
+  endpoint: 'https://auth.lightriderinc.com',
   appId: 'a3qx8dcty8mhb8bqgvll5',
   appSecret: process.env.LOGTO_APP_SECRET,
   baseUrl: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',// Change to your own base URL

@@ -1,4 +1,4 @@
-const BASE = 'https://bhi5jd.logto.app';
+const BASE = 'https://auth.lightriderinc.com';
 
 type JsonError = { message?: string };
 
