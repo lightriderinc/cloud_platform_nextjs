@@ -2,7 +2,9 @@
 
 import DiceIcon, { type DiceSides } from "@/components/dice/DiceIcon";
 import LRButton from "@/components/ui/LRButton";
+import { fetchAnuEntropy } from "@/lib/anu/client";
 import { fetchCurbyEntropy } from "@/lib/curby/client";
+import { fetchDrandEntropy } from "@/lib/drand/client";
 import {
   rollFromBytes,
   type BeaconEntropy,
@@ -39,6 +41,8 @@ const LIVE_ENTROPY_FETCHERS: Record<string, () => Promise<BeaconEntropy>> = {
   curby: fetchCurbyEntropy,
   "nist-beacon": fetchNistEntropy,
   "iqm-resonance": fetchIqmEntropy,
+  drand: fetchDrandEntropy,
+  "anu-qrng": fetchAnuEntropy,
 };
 
 // Max pulse/job fetches per single roll. Beacons return many bytes per pulse so
