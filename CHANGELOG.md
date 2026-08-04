@@ -1,3 +1,12 @@
+## [1.12.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.12.0...v1.12.1) (2026-08-04)
+
+
+### Bug Fixes
+
+* logto endpoint updated to main domain ([5973553](https://github.com/lightriderinc/cloud_platform_nextjs/commit/5973553c1a1d631da245943914c644d7effa3071))
+* updated logto endpoint url + sources for apps ([9e934d1](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9e934d1b075b2d1e927912e00ca6bcff36bc0927))
+* updated url ([b186f07](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b186f07c82832ffd8a5d0d61f5d9cba6225bb462))
+
 # [1.12.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.12...v1.12.0) (2026-08-03)
 
 
