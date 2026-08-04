@@ -1,5 +1,11 @@
 import { FaMicrochip } from "react-icons/fa";
-import { MdCellTower, MdDeviceHub, MdEqualizer } from "react-icons/md";
+import {
+  MdBlurOn,
+  MdCellTower,
+  MdDeviceHub,
+  MdEqualizer,
+  MdHub,
+} from "react-icons/md";
 import EntropySourceCard from "@/components/dashboard/EntropySourceCard";
 
 const SOURCES = [
@@ -33,6 +39,22 @@ const SOURCES = [
     description:
       "Randomness from a quantum circuit executed on an IQM mock simulator, sampled from qubit measurements.",
     icon: <MdEqualizer />,
+    disabled: false,
+  },
+  {
+    id: "drand",
+    name: "Drand",
+    description:
+      "Distributed, publicly verifiable randomness from the League of Entropy. Refreshed every few seconds.",
+    icon: <MdHub />,
+    disabled: false,
+  },
+  {
+    id: "anu-qrng",
+    name: "ANU Quantum RNG",
+    description:
+      "True quantum randomness measured from quantum vacuum fluctuations at the Australian National University.",
+    icon: <MdBlurOn />,
     disabled: false,
   },
 ];

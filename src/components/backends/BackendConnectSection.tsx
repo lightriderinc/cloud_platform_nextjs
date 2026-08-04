@@ -16,7 +16,7 @@ function pythonSnippet(backendId: string): string {
   return `import requests
 
 api_key = input("Enter your Light Rider API key: ")
-base_url = "https://lightriderapp.vercel.app"
+base_url = "https://platform.lightriderinc.com"
 
 circuit = {
     "num_qubits": 2,
