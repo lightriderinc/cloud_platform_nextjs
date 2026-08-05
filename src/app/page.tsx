@@ -55,7 +55,7 @@ export default async function Home() {
               Compute tokens
             </h2>
             <div className="xl:w-1/2">
-              <CreditsSummary />
+              <CreditsSummary historyLink />
             </div>
           </div>
           <div className="mb-8">

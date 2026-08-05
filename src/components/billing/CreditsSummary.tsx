@@ -45,7 +45,11 @@ export function ProgressBar({ fraction }: { fraction: number }) {
  * page). The underlying CreditLedgerEntry/creditsBalanceCents fields, and
  * the Quantum Compute page's own "compute credits" copy, are unchanged.
  */
-export default function CreditsSummary() {
+export default function CreditsSummary({
+  historyLink = false,
+}: {
+  historyLink?: boolean;
+}) {
   const credits = useQuery({
     queryKey: ["billing", "credits"],
     queryFn: () => fetchJson<Credits>("/api/billing/credits"),
@@ -102,12 +106,14 @@ export default function CreditsSummary() {
         <a href="/settings/purchases/quantum-compute">
           <LRButton variant="primary">Purchase more compute tokens</LRButton>
         </a>
-        <Link
-          href="/settings/usage"
-          className="text-sm font-medium text-gray-700 inline-flex items-center gap-2 hover:text-[var(--brand-primary)]"
-        >
-          View purchase history <MdArrowForward />
-        </Link>
+        {historyLink && (
+          <Link
+            href="/settings/usage"
+            className="text-sm font-medium text-gray-700 inline-flex items-center gap-2 hover:text-[var(--brand-primary)]"
+          >
+            View purchase history <MdArrowForward />
+          </Link>
+        )}
       </div>
     </div>
   );
