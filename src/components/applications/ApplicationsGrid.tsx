@@ -17,16 +17,12 @@ import DiceRollModal from "./DiceRollModal";
 import PasswordModal from "./PasswordModal";
 import QuantumVaultModal from "./QuantumVaultModal";
 import QuantumSignerModal from "./QuantumSignerModal";
-import PqcReadinessModal from "./PqcReadinessModal";
-
-
 
 type OpenModal =
   | "dice"
   | "password"
   | "vault"
   | "signer"
-  | "pqcReadiness"
   | "prioritization"
   | "geodata"
   | "benchmark"
@@ -70,13 +66,6 @@ export default function ApplicationsGrid() {
           tag="New"
           onClick={() => setOpenModal("signer")}
         />
-        <ApplicationCard
-          title="PQC Migration Readiness"
-          description="Check your systems against real NIST and NSA post-quantum deadlines."
-          icon={MdChecklist}
-          tag="New"
-          onClick={() => setOpenModal("pqcReadiness")}
-        />
 
       </div>
 
@@ -91,9 +80,6 @@ export default function ApplicationsGrid() {
       )}
       {openModal === "signer" && (
         <QuantumSignerModal onClose={() => setOpenModal(null)} />
-      )}
-      {openModal === "pqcReadiness" && (
-        <PqcReadinessModal onClose={() => setOpenModal(null)} />
       )}
     </>
   );
