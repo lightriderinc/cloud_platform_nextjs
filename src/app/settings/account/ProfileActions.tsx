@@ -188,6 +188,7 @@ export default function ProfileActions({
         <SetupMfaModal
           email={email}
           issuer="Light Rider"
+          hasPassword={hasPassword}
           onVerifyPassword={onVerifyPassword}
           onSendEmailCode={onSendEmailCode}
           onVerifyEmailCode={onVerifyEmailCode}
@@ -200,6 +201,7 @@ export default function ProfileActions({
       {open === "mfa-disable" && (
         <DisableMfaModal
           email={email}
+          hasPassword={hasPassword}
           onVerifyPassword={onVerifyPassword}
           onSendEmailCode={onSendEmailCode}
           onVerifyEmailCode={onVerifyEmailCode}

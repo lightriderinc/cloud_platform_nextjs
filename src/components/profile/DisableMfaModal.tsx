@@ -7,6 +7,8 @@ import LRButton from '@/components/ui/LRButton';
 
 type Props = {
   email: string;
+  /** Whether the user has a password; false for connected-account users. */
+  hasPassword?: boolean;
   onVerifyPassword: (password: string) => Promise<string>;
   onSendEmailCode: (email: string) => Promise<string>;
   onVerifyEmailCode: (
@@ -26,6 +28,7 @@ type Step = 'verify' | 'done';
  */
 export default function DisableMfaModal({
   email,
+  hasPassword = true,
   onVerifyPassword,
   onSendEmailCode,
   onVerifyEmailCode,
@@ -67,6 +70,7 @@ export default function DisableMfaModal({
             </p>
             <VerifyIdentity
               email={email}
+              hasPassword={hasPassword}
               onVerifyPassword={onVerifyPassword}
               onSendEmailCode={onSendEmailCode}
               onVerifyEmailCode={onVerifyEmailCode}
