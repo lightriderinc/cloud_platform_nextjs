@@ -13,7 +13,12 @@ async function getManagementApiToken() {
     throw new Error("LOGTO_M2M_APP_ID and LOGTO_M2M_APP_SECRET must be set in .env.local");
   }
 
-  const res = await fetch(`${logtoConfig.endpoint}oidc/token`, {
+  // The Management API can't be reached through the custom domain configured
+  // for sign-in flows — Logto requires the tenant's default *.logto.app
+  // domain for both the token request and Management API calls.
+  const managementEndpoint = logtoConfig.managementEndpoint.replace(/\/$/, "");
+
+  const res = await fetch(`${managementEndpoint}/oidc/token`, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -23,7 +28,7 @@ async function getManagementApiToken() {
     },
     body: new URLSearchParams({
       grant_type: "client_credentials",
-      resource: `${logtoConfig.endpoint}api`,
+      resource: `${managementEndpoint}/api`,
       scope: "all",
     }),
   });
@@ -44,7 +49,8 @@ async function managementApiFetch(
   idempotentStatuses: number[] = []
 ) {
   const token = await getManagementApiToken();
-  const res = await fetch(`${logtoConfig.endpoint}api${path}`, {
+  const managementEndpoint = logtoConfig.managementEndpoint.replace(/\/$/, "");
+  const res = await fetch(`${managementEndpoint}/api${path}`, {
     ...init,
     headers: {
       ...init?.headers,
