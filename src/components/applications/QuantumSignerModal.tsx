@@ -98,7 +98,7 @@ export default function QuantumSignerModal({ onClose }: { onClose: () => void })
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
               Sign any text with ML-DSA-65, the quantum-resistant signature standard. You&apos;ll get
-              back a single signature to share alongside the text — anyone can use it to confirm
+              back a single signature to share alongside the text, anyone can use it to confirm
               the text wasn&apos;t altered.
             </p>
             <textarea
@@ -153,8 +153,8 @@ export default function QuantumSignerModal({ onClose }: { onClose: () => void })
         {mode === "verify" && (
           <div className="space-y-3">
             <p className="text-sm text-gray-600 mb-2">
-              Paste the original text and the signature — this checks authenticity entirely in
-              your browser, no account or server trust needed.
+              Paste the original text and the signature, this checks authenticity entirely in
+              your browser.
             </p>
             <textarea
               value={verifyText}
@@ -194,12 +194,12 @@ export default function QuantumSignerModal({ onClose }: { onClose: () => void })
                 {verifyOutcome ? (
                   <>
                     <MdVerified className="text-green-700 text-xl" />
-                    <p className="text-sm font-semibold text-green-800">Signature valid — text is authentic and unaltered</p>
+                    <p className="text-sm font-semibold text-green-800">Signature valid, text is authentic and unaltered</p>
                   </>
                 ) : (
                   <>
                     <MdCancel className="text-red-700 text-xl" />
-                    <p className="text-sm font-semibold text-red-800">Signature invalid — text was altered or doesn&apos;t match</p>
+                    <p className="text-sm font-semibold text-red-800">Signature invalid, text was altered or doesn&apos;t match</p>
                   </>
                 )}
               </div>
