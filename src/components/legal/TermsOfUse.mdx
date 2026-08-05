@@ -1,64 +1,88 @@
 # Terms of Use
 <br/>
-**Last updated:** 2026-07-06
+**Last updated:** 2026-08-05
 <br/>
-These Demo Terms of Use ("**Demo Terms**") govern your access to and use of the public preview of **Light Rider Cloud** made available without registration (the "**Demo**"), provided by Light Rider Inc. ("**we**," "**us**," "**our**"). By accessing the Demo, you agree to these Demo Terms. These Demo Terms apply only to the Demo; once the full platform launches and you create an account, your use will instead be governed by our [Terms of Service](terms-of-service.md).
+These Terms of Use ("**Terms**") govern your access to and use of **Light Rider Cloud** (the "**Service**"), a software-as-a-service quantum computing platform operated by Light Rider Inc. ("**we**," "**us**," "**our**") at platform.lightriderinc.com. By creating an account, accessing, or using the Service, you agree to these Terms. If you are using the Service on behalf of an organization, you represent that you have authority to bind that organization, and "you" refers to both you and the organization.
 <br/>
-## 1. Nature of the Demo
+## 1. Eligibility and Accounts
 
-- The Demo is a limited, pre-release preview of select features of the Service, provided free of charge.
-- The Demo may be incomplete, contain bugs, and change, be interrupted, or be discontinued at any time without notice.
-- Features shown in the Demo may differ from the final released product, and we make no commitment that any feature will be included in the live platform.
+- You must be at least 18 years old, or the age of legal majority in your jurisdiction, to create an account.
+- Some features (for example, the Quantum-Safe Signer) are available without an account; most features, including quantum job submission, require you to sign in through our identity provider, Logto.
+- You are responsible for maintaining the confidentiality of your login credentials and for all activity that occurs under your account. Notify us promptly at [info@lightriderinc.com](mailto:info@lightriderinc.com) if you suspect unauthorized use.
+- You must provide accurate registration information and keep it up to date.
 <br/>
-## 2. No Account, No Data Persistence
+## 2. The Service
 
-> The Demo does not require registration. Any content or data you enter into the Demo is **not guaranteed to be saved, backed up, or migrated** to an account you create later. We may reset, clear, or delete Demo data at any time without notice.
+Light Rider Cloud provides:
 
-- Do not enter real personal data, confidential information, or production data into the Demo.
-- We recommend using only sample or test data.
+- **Quantum job submission** — submitting quantum circuits for execution on simulators (free) and third-party quantum processing unit ("QPU") backends (e.g. IQM, Rigetti, IBM Quantum), and viewing job status and results
+- **Entropy generation** — certified randomness sourced from hardware quantum devices and public randomness beacons (e.g. ANU, Drand, NIST, CURBy)
+- **Applications** — including a quantum-entropy-powered dice roller, a quantum-randomness password generator, Quantum Vault (quantum-safe secret sharing), and the Quantum-Safe Signer (ML-DSA-65 digital signatures)
+- **Programmatic API access** — for submitting jobs and retrieving results outside the web interface
+
+Some features are labeled as new, beta, or experimental within the Service. These may be incomplete, may change materially, and may be modified or discontinued at any time. The Service as a whole may also change, be interrupted, or be discontinued at any time, though we will make reasonable efforts to notify you of material changes affecting paid functionality.
 <br/>
-## 3. Acceptable Use
+## 3. Fees, Credits, and Subscriptions
+
+- Simulator jobs are free. QPU job submissions consume prepaid credits ("tokens") purchased through the Service, and/or are included with a paid subscription plan.
+- We may offer subscription plans and usage-based API plans with different included quotas, rate limits, and pricing. Current pricing and plan details are presented in the Service at the time of purchase.
+- Payments are processed by our third-party payment processor. You authorize us to charge your payment method for purchases you make.
+- Except where required by law or expressly stated at the time of purchase, fees and unused prepaid tokens are non-refundable.
+- We may change our fees or plans prospectively; continued use of paid features after a pricing change takes effect constitutes acceptance of the new pricing.
+<br/>
+## 4. API Access
+
+- If you generate an API key, you are responsible for keeping it confidential and for all activity performed using it. We display a newly generated key once; if you lose it, you must rotate it.
+- API usage is subject to the rate limits and call quotas of your plan. Do not attempt to circumvent these limits.
+- Do not share API keys across unrelated accounts or use another person's API key without authorization.
+<br/>
+## 5. Acceptable Use
 
 You agree not to:
 
-- Use the Demo for any unlawful purpose
-- Attempt to reverse-engineer, probe, or stress-test the Demo's infrastructure without our written consent
-- Use automated tools (bots, scrapers) to access the Demo
-- Upload content that is unlawful, infringing, or harmful
-- Misrepresent your identity or affiliation while using the Demo
+- Use the Service for any unlawful purpose, or in violation of any third-party quantum backend or randomness-beacon provider's terms
+- Attempt to reverse-engineer, probe, or stress-test the Service's infrastructure, or circumvent rate limits or usage quotas, without our written consent
+- Use automated tools (bots, scrapers) to access the Service other than through the documented API
+- Submit content or circuits designed to disrupt, overload, or gain unauthorized access to our systems or those of our backend providers
+- Upload or transmit content that is unlawful, infringing, or harmful
+- Misrepresent your identity or affiliation while using the Service
 <br/>
-## 4. Feedback
+## 6. Third-Party Quantum Backend and Entropy Providers
 
-If you provide feedback, suggestions, or bug reports about the Demo, you grant us a perpetual, irrevocable, royalty-free license to use that feedback for any purpose, including improving the Service, without any obligation or compensation to you.
+Jobs you submit may be executed on infrastructure operated by third parties (e.g. IQM, Rigetti, IBM Quantum), and randomness may be sourced from third-party beacons (e.g. ANU, Drand, NIST, CURBy). We do not control and are not responsible for the availability, performance, or output of these third-party systems. Outages or changes at a backend or beacon provider may delay, degrade, or prevent job execution.
 <br/>
-## 5. No Warranty
+## 7. Your Content and Data
 
-THE DEMO IS PROVIDED "AS IS" AND "AS AVAILABLE," WITHOUT ANY WARRANTY OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. WE DO NOT WARRANT UNINTERRUPTED, ERROR-FREE, OR SECURE OPERATION, OR THAT ANY DATA YOU ENTER WILL BE PRESERVED.
+You retain ownership of the circuits, inputs, and other content you submit to the Service ("**Your Content**"). You grant us a license to process Your Content solely to provide the Service (e.g. executing your jobs and returning results). We do not guarantee against loss of Your Content or account data and recommend keeping your own copies of anything important. Our collection and use of personal information is described in our [Privacy Policy](/legal/privacy).
 <br/>
-## 6. Limitation of Liability
+## 8. Feedback
 
-TO THE MAXIMUM EXTENT PERMITTED BY LAW, LIGHT RIDER INC. SHALL NOT BE LIABLE FOR ANY DAMAGES ARISING FROM YOUR USE OF THE DEMO, INCLUDING LOSS OF DATA, PROFITS, OR BUSINESS OPPORTUNITY, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. BECAUSE THE DEMO IS PROVIDED FREE OF CHARGE, OUR AGGREGATE LIABILITY FOR ANY CLAIM RELATING TO THE DEMO SHALL NOT EXCEED [USD $50].
+If you provide feedback, suggestions, or bug reports about the Service, you grant us a perpetual, irrevocable, royalty-free license to use that feedback for any purpose, including improving the Service, without any obligation or compensation to you.
 <br/>
-## 7. Termination of Access
+## 9. Intellectual Property
 
-We may suspend or terminate your access to the Demo at any time, for any reason, without notice, including at the end of the Demo period when the full platform launches.
+The Service, including its software, design, and content, is owned by Light Rider Inc. or its licensors and is protected by intellectual property laws. Subject to your compliance with these Terms, we grant you a limited, non-exclusive, non-transferable license to access and use the Service for its intended purpose. Nothing in these Terms otherwise transfers any ownership rights to you.
 <br/>
-## 8. Intellectual Property
+## 10. No Warranty
 
-The Demo, including its software, design, and content, is owned by Light Rider Inc. or its licensors and is protected by intellectual property laws. Nothing in these Demo Terms transfers any ownership rights to you.
+THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE," WITHOUT ANY WARRANTY OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. WE DO NOT WARRANT UNINTERRUPTED, ERROR-FREE, OR SECURE OPERATION, OR THAT QUANTUM JOB RESULTS, ENTROPY OUTPUT, OR ANY DATA YOU SUBMIT WILL BE ACCURATE, AVAILABLE, OR PRESERVED.
 <br/>
-## 9. Privacy
+## 11. Limitation of Liability
 
-Our collection and use of information through the Demo is described in the "Public Demo" section of our [Privacy Policy](privacy-policy.md).
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, LIGHT RIDER INC. SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF DATA, PROFITS, OR BUSINESS OPPORTUNITY, ARISING FROM YOUR USE OF THE SERVICE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. OUR AGGREGATE LIABILITY FOR ANY CLAIM RELATING TO THE SERVICE SHALL NOT EXCEED THE GREATER OF (A) THE AMOUNT YOU PAID US IN THE TWELVE (12) MONTHS PRECEDING THE CLAIM, OR (B) USD $100.
 <br/>
-## 10. Governing Law
+## 12. Termination
 
-These Demo Terms are governed by the laws of Maryland/United States, without regard to conflict-of-law principles.
+We may suspend or terminate your access to the Service at any time for violation of these Terms, and may otherwise suspend or terminate the Service, or your access to it, on reasonable notice. You may stop using the Service and close your account at any time by contacting us. Sections of these Terms that by their nature should survive termination (including Sections 8–11 and 13–14) will survive.
 <br/>
-## 11. Changes
+## 13. Governing Law
 
-We may update these Demo Terms at any time by posting a revised version. Continued use of the Demo after changes take effect constitutes acceptance.
+These Terms are governed by the laws of Maryland, United States, without regard to conflict-of-law principles.
 <br/>
-## 12. Contact Us
+## 14. Changes to These Terms
 
-Questions about the Demo? Contact us at [info@lightriderinc.com](mailto:info@lightriderinc.com).
+We may update these Terms at any time by posting a revised version with an updated "Last updated" date. Continued use of the Service after changes take effect constitutes acceptance.
+<br/>
+## 15. Contact Us
+
+Questions about these Terms? Contact us at [info@lightriderinc.com](mailto:info@lightriderinc.com).

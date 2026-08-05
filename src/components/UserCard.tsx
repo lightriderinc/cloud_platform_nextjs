@@ -6,7 +6,8 @@
 // the drawer already surfaces settings navigation of its own.
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { getAvatarDataUri } from "@/lib/avatar";
 import LogoutButton from "./auth/LogoutButton";
 import SidebarGroupSettings from "./sidebar/SidebarGroupSettings";
 
@@ -18,12 +19,7 @@ type Props = {
 };
 
 export default function UserCard({ name, role, dropdown = false, onSignOut }: Props) {
-  const initials = name
-    .split(" ")
-    .map((w: string) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const avatarUrl = useMemo(() => getAvatarDataUri(name), [name]);
 
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -49,8 +45,9 @@ export default function UserCard({ name, role, dropdown = false, onSignOut }: Pr
   }, [open]);
 
   const avatar = (
-    <div className="relative w-8 h-8 default-radius overflow-hidden border border-gray-200 bg-gray-100 flex items-center justify-center flex-shrink-0">
-      <span className="text-md font-semibold text-gray-400">{initials}</span>
+    <div className="relative w-8 h-8 default-radius overflow-hidden border border-gray-200 bg-gray-100 flex-shrink-0">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
     </div>
   );
 

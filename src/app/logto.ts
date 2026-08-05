@@ -1,5 +1,10 @@
 export const logtoConfig = {
-  endpoint: 'https://bhi5jd.logto.app/',
+  endpoint: 'https://auth.lightriderinc.com',
+  // Logto's Management API cannot be reached through a custom domain — the
+  // token endpoint and all Management API calls must go through the
+  // tenant's default *.logto.app domain, even though sign-in flows use the
+  // custom domain above. See src/lib/logto/management.ts.
+  managementEndpoint: 'https://bhi5jd.logto.app',
   appId: 'a3qx8dcty8mhb8bqgvll5',
   appSecret: process.env.LOGTO_APP_SECRET,
   baseUrl: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',// Change to your own base URL

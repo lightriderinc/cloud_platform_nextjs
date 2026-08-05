@@ -11,7 +11,10 @@ const TOKEN_EXPIRY_BUFFER_MS = 60_000;
 let cachedToken: { accessToken: string; expiresAt: number } | null = null;
 
 function endpointBase(): string {
-  return logtoConfig.endpoint.replace(/\/$/, "");
+  // The Management API can't be reached through the custom domain configured
+  // for sign-in flows — Logto requires the tenant's default *.logto.app
+  // domain for both the token request and Management API calls.
+  return logtoConfig.managementEndpoint.replace(/\/$/, "");
 }
 
 async function getAccessToken(): Promise<string> {
