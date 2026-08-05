@@ -44,7 +44,7 @@ export default function UsageSummary() {
 
   return (
     <div className="flex flex-col gap-4">
-      {showCredits && <CreditsSummary />}
+      {showCredits && <CreditsSummary historyLink />}
 
       {showUsage &&
         usage.data &&
