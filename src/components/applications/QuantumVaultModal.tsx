@@ -182,16 +182,16 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
     setCompareBusy(true);
     try {
       const [{ bytes: qBytes, actualSourceId, jobId }, classicalBytes] = await Promise.all([
-        fetchEntropy("nist-beacon", 64),
+        fetchEntropy("lr-quantum-job", 64),
         Promise.resolve(randomBytes(64)),
       ]);
       const dummyKey = generateKemKeypair(qBytes).publicKey;
       const dummyKeyClassical = generateKemKeypair(classicalBytes).publicKey;
 
       const quantumSourceName =
-        actualSourceId === "nist-beacon"
-          ? "NIST Randomness Beacon (real, government-run)"
-          : "NIST unreachable → local CSPRNG fallback";
+        actualSourceId === "lr-quantum-job"
+          ? "Real quantum job"
+          : "Quantum backend unavailable — used local randomness instead";
 
       setCompareResult({
         quantum: buildEntropyCertificate(actualSourceId, quantumSourceName, qBytes, "ML-KEM-768", dummyKey, jobId),
@@ -216,7 +216,7 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
   ];
 
   return (
-    <ModalShell title="Quantum Vault — Post-Quantum Encryption" onClose={onClose}>
+    <ModalShell title="Quantum Vault: Post-Quantum Encryption" onClose={onClose}>
       {showIntro && (
         <div className="default-radius border border-gray-100 bg-gray-50 p-4 mb-4 relative">
           <button
@@ -422,7 +422,7 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
                 disabled={!identity}
                 className="h-4 w-4"
               />
-              Sign with my identity (ML-DSA-65){!identity && " — generate an identity in My Keys first"}
+              Sign with my identity (ML-DSA-65){!identity && ", generate an identity in My Keys first"}
             </label>
 
             <button
@@ -444,7 +444,7 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
             {capsuleResult && (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-bold text-gray-700">Capsule — send this to the recipient</p>
+                  <p className="text-sm font-bold text-gray-700">Capsule: send this to the recipient</p>
                   <div className="flex gap-2">
                     <button
                       type="button"
@@ -475,8 +475,7 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
                   </pre>
                 </div>
                 <p className="text-xs text-gray-400 mt-2">
-                  The capsule alone reveals nothing — only whoever holds the matching secret key
-                  can open it. It&apos;s safe to send over email, Slack, or store publicly.
+                 It's safe to send over email, Slack, or store publicly.
                 </p>
               </div>
             )}
@@ -536,7 +535,7 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
         {mode === "compare" && (
           <div className="space-y-4 animate-fade-in-up">
             <p className="text-sm text-gray-600">
-              NIST Beacon vs. browser CSPRNG, side by side.
+              Real quantum backend vs. browser CSPRNG, side by side.
             </p>
             <button
               type="button"
@@ -549,30 +548,45 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
             </button>
 
             {compareResult && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {[
-                  { label: "Quantum backend", cert: compareResult.quantum, tint: "border-[var(--brand-primary)]/25 bg-red-50" },
-                  { label: "Browser CSPRNG", cert: compareResult.classical, tint: "border-gray-200 bg-gray-50" },
-                ].map(({ label, cert, tint }) => (
-                  <div key={label} className={`default-radius border p-4 ${tint}`}>
-                    <p className="text-sm font-bold text-gray-800 mb-2">{label}</p>
-                    <p className="text-xs text-gray-500 mb-0.5">Reported source</p>
-                    <p className="text-sm font-medium text-gray-800 mb-2">{cert.sourceName}</p>
-                    <p className="text-xs text-gray-500 mb-0.5">Digest</p>
-                    <p className="font-mono text-xs text-gray-700 break-all mb-2">
-                      {cert.entropyDigest.slice(0, 24)}…
-                    </p>
-                    {cert.quantumJobId ? (
-                      <p className="text-xs text-green-700">
-                        ✓ Verifiable — job <span className="font-mono">{cert.quantumJobId.slice(0, 8)}…</span> in your Jobs tab
+              <div className="space-y-3">
+                {compareResult.quantum.sourceId !== "lr-quantum-job" && (
+                  <p className="text-xs text-gray-500">
+                    The quantum backend didn&apos;t answer this time, so both boxes below are showing local
+                    randomness.
+                  </p>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[
+                    {
+                      label: "Quantum backend",
+                      cert: compareResult.quantum,
+                      tint:
+                        compareResult.quantum.sourceId === "lr-quantum-job"
+                          ? "border-[var(--brand-primary)]/25 bg-red-50"
+                          : "border-gray-200 bg-gray-50",
+                    },
+                    { label: "Browser CSPRNG", cert: compareResult.classical, tint: "border-gray-200 bg-gray-50" },
+                  ].map(({ label, cert, tint }) => (
+                    <div key={label} className={`default-radius border p-4 ${tint}`}>
+                      <p className="text-sm font-bold text-gray-800 mb-2">{label}</p>
+                      <p className="text-xs text-gray-500 mb-0.5">Reported source</p>
+                      <p className="text-sm font-medium text-gray-800 mb-2">{cert.sourceName}</p>
+                      <p className="text-xs text-gray-500 mb-0.5">Digest</p>
+                      <p className="font-mono text-xs text-gray-700 break-all mb-2">
+                        {cert.entropyDigest.slice(0, 24)}…
                       </p>
-                    ) : (
-                      <p className="text-xs text-gray-400">
-                        Algorithmic (computationally unpredictable, not physically)
-                      </p>
-                    )}
-                  </div>
-                ))}
+                      {cert.quantumJobId ? (
+                        <p className="text-xs text-green-700">
+                          ✓ Verifiable — job <span className="font-mono">{cert.quantumJobId.slice(0, 8)}…</span> in your Jobs tab
+                        </p>
+                      ) : (
+                        <p className="text-xs text-gray-400">
+                          Algorithmic (computationally unpredictable, not physically)
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
