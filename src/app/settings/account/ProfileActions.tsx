@@ -81,10 +81,14 @@ export default function ProfileActions({
   // anyone behind UTC. Building the Date from numeric y/m/d args instead
   // always constructs local midnight, which toLocaleDateString can't shift
   // across a day boundary.
+  // The locale is pinned to "en-US" (rather than passing undefined) so the
+  // format doesn't depend on the runtime's default locale, which differs
+  // between the Node SSR process and the browser and otherwise causes a
+  // hydration mismatch.
   const formattedBirthdate = currentBirthdate
     ? (() => {
         const [y, m, d] = currentBirthdate.split("-").map(Number);
-        return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+        return new Date(y, m - 1, d).toLocaleDateString("en-US", {
           year: "numeric",
           month: "long",
           day: "numeric",

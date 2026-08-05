@@ -2,6 +2,7 @@ import { logtoConfig } from "@/app/logto";
 import LogoutButton from "@/components/auth/LogoutButton";
 import CurrentPlanBadge from "@/components/billing/CurrentPlanBadge";
 import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
+import { getAvatarDataUri } from "@/lib/avatar";
 import {
   getAccountProfile,
   getDisplayName,
@@ -83,16 +84,7 @@ export default async function AccountPage() {
     // Account API not enabled or token unavailable
   }
   const email = userInfo?.email ?? null;
-  const avatarUrl = userInfo?.picture ?? null;
-
-  const initials = name
-    ? name
-        .split(" ")
-        .map((w: string) => w[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase()
-    : (email?.slice(0, 2).toUpperCase() ?? "?");
+  const avatarUrl = userInfo?.picture ?? getAvatarDataUri(name || email || "user");
 
   async function doVerifyPassword(password: string): Promise<string> {
     "use server";
@@ -224,20 +216,14 @@ export default async function AccountPage() {
       </p>
 
       <div className="flex items-center gap-4 mb-12">
-        <div className="relative w-16 h-16 default-radius overflow-hidden border border-gray-200 bg-gray-100 flex items-center justify-center flex-shrink-0">
-          {avatarUrl ? (
-            <Image
-              src={avatarUrl}
-              alt="Avatar"
-              fill
-              className="object-cover"
-              unoptimized
-            />
-          ) : (
-            <span className="text-xl font-semibold text-gray-500">
-              {initials}
-            </span>
-          )}
+        <div className="relative w-16 h-16 default-radius overflow-hidden border border-gray-200 bg-gray-100 flex-shrink-0">
+          <Image
+            src={avatarUrl}
+            alt="Avatar"
+            fill
+            className="object-cover"
+            unoptimized
+          />
         </div>
         <div className="min-w-0">
           {name && (

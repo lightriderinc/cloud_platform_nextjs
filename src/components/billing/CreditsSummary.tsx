@@ -3,7 +3,8 @@
 import HintIcon from "@/components/HintIcon";
 import LRButton from "@/components/ui/LRButton";
 import { useQuery } from "@tanstack/react-query";
-import { MdLockOutline } from "react-icons/md";
+import Link from "next/link";
+import { MdArrowForward, MdLockOutline } from "react-icons/md";
 
 export type Credits = {
   purchasedCents: number;
@@ -44,7 +45,11 @@ export function ProgressBar({ fraction }: { fraction: number }) {
  * page). The underlying CreditLedgerEntry/creditsBalanceCents fields, and
  * the Quantum Compute page's own "compute credits" copy, are unchanged.
  */
-export default function CreditsSummary() {
+export default function CreditsSummary({
+  historyLink = false,
+}: {
+  historyLink?: boolean;
+}) {
   const credits = useQuery({
     queryKey: ["billing", "credits"],
     queryFn: () => fetchJson<Credits>("/api/billing/credits"),
@@ -87,18 +92,28 @@ export default function CreditsSummary() {
 
   return (
     <div className="default-radius border border-gray-50 bg-gray-50 p-4">
-      <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-gray-800">
-        {formatUsd(credits.data.remainingCents)} Light Rider tokens remaining of{" "}
-        {formatUsd(credits.data.purchasedCents)} purchased
-        <HintIcon text="Simulator (mock) jobs are free and never deduct tokens. QPU jobs (Garnet, Emerald, Sirius) deduct tokens per shot at submission time." />
+      <p className="mb-2 flex items-end gap-1.5 text-gray-800">
+        <span className="text-4xl font-medium mr-1">
+          {formatUsd(credits.data.remainingCents)}
+        </span>{" "}
+        <span className="pb-1">
+          Light Rider tokens remaining{" "}
+          <HintIcon text="Simulator (mock) jobs are free and never deduct tokens. QPU jobs (Garnet, Emerald, Sirius) deduct tokens per shot at submission time." />
+        </span>
       </p>
-      <ProgressBar
-        fraction={credits.data.remainingCents / credits.data.purchasedCents}
-      />
-      <div className="flex mt-6">
+
+      <div className="flex w-full justify-between items-end mt-8">
         <a href="/settings/purchases/quantum-compute">
           <LRButton variant="primary">Purchase compute tokens</LRButton>
         </a>
+        {historyLink && (
+          <Link
+            href="/settings/usage"
+            className="text-sm font-medium text-gray-700 inline-flex items-center gap-2 hover:text-[var(--brand-primary)]"
+          >
+            View purchase history <MdArrowForward />
+          </Link>
+        )}
       </div>
     </div>
   );
