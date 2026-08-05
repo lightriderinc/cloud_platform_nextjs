@@ -3,15 +3,33 @@
 import { useState } from "react";
 import { FaDiceD20 } from "react-icons/fa6";
 import { PiPasswordFill } from "react-icons/pi";
-import { MdLock } from "react-icons/md";
-import { MdEdit } from "react-icons/md";
-
+import {
+  MdLock,
+  MdEdit,
+  MdLeaderboard,
+  MdPublic,
+  MdInsertChart,
+  MdAssignmentTurnedIn,
+} from "react-icons/md";
 import ApplicationCard from "./ApplicationCard";
 import DiceRollModal from "./DiceRollModal";
 import PasswordModal from "./PasswordModal";
 import QuantumVaultModal from "./QuantumVaultModal";
 import QuantumSignerModal from "./QuantumSignerModal";
-type OpenModal = "dice" | "password" | "vault"  | "signer" | null;
+
+
+
+
+type OpenModal =
+  | "dice"
+  | "password"
+  | "vault"
+  | "signer"
+  | "prioritization"
+  | "geodata"
+  | "benchmark"
+  | "readinessCanvas"
+  | null;
 
 export default function ApplicationsGrid() {
   const [openModal, setOpenModal] = useState<OpenModal>(null);
@@ -37,37 +55,33 @@ export default function ApplicationsGrid() {
 
         <ApplicationCard
           title="Quantum Vault"
-          description="Share secrets that stay safe even against future quantum computers."
+          description="Encrypts a secret using ML-KEM-768 and AES-256-GCM."
           icon={MdLock}
           tag="New"
           onClick={() => setOpenModal("vault")}
         />
+
         <ApplicationCard
           title="Quantum-Safe Signer"
-          description="Sign any text with ML-DSA-65 and let anyone independently verify it wasn't altered — no login needed."
+          description="Signs any text with ML-DSA-65."
           icon={MdEdit}
           tag="New"
           onClick={() => setOpenModal("signer")}
         />
-
       </div>
 
       {openModal === "dice" && (
         <DiceRollModal onClose={() => setOpenModal(null)} />
       )}
-
       {openModal === "password" && (
         <PasswordModal onClose={() => setOpenModal(null)} />
       )}
-
       {openModal === "vault" && (
         <QuantumVaultModal onClose={() => setOpenModal(null)} />
       )}
       {openModal === "signer" && (
         <QuantumSignerModal onClose={() => setOpenModal(null)} />
       )}
-
-
     </>
   );
 }
