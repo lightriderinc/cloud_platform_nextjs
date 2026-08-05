@@ -1,3 +1,18 @@
+# [1.13.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.12.5...v1.13.0) (2026-08-05)
+
+
+### Bug Fixes
+
+* birthdate display format ([b2e0df3](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b2e0df363c7d7c8e0d82ffe340748dc9e63a2747))
+* logto management api endpoint ([d7843a9](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d7843a98aab6741d07312465a3dc7246d9acfdd8))
+* purchase button update ([7c2a990](https://github.com/lightriderinc/cloud_platform_nextjs/commit/7c2a9906e43da1a9eaae4a51cf574c61f0abfb87))
+
+
+### Features
+
+* added avatar fallback ([6a0b0de](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6a0b0ded8ebd32d3f8af52262913cd3d94fa766e))
+* added fallback avatar + minor fixes ([b2a1bed](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b2a1bed350f4c7af5c07d53d360570a3e2bb72d0))
+
 ## [1.12.5](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.12.4...v1.12.5) (2026-08-05)
 
 
