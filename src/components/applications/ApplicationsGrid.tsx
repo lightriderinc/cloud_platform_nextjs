@@ -6,6 +6,7 @@ import { PiPasswordFill } from "react-icons/pi";
 import {
   MdLock,
   MdEdit,
+  MdChecklist,
   MdLeaderboard,
   MdPublic,
   MdInsertChart,
@@ -16,9 +17,6 @@ import DiceRollModal from "./DiceRollModal";
 import PasswordModal from "./PasswordModal";
 import QuantumVaultModal from "./QuantumVaultModal";
 import QuantumSignerModal from "./QuantumSignerModal";
-
-
-
 
 type OpenModal =
   | "dice"
@@ -68,6 +66,7 @@ export default function ApplicationsGrid() {
           tag="New"
           onClick={() => setOpenModal("signer")}
         />
+
       </div>
 
       {openModal === "dice" && (
