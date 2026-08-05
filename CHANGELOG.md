@@ -1,3 +1,11 @@
+## [1.12.2](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.12.1...v1.12.2) (2026-08-05)
+
+
+### Bug Fixes
+
+* updated credits card ([95895bc](https://github.com/lightriderinc/cloud_platform_nextjs/commit/95895bc153617c528ff036070b3c0e153c47a846))
+* updated credits card ([5bde4a7](https://github.com/lightriderinc/cloud_platform_nextjs/commit/5bde4a7d1e6d4a0a06585cf7180e843e6cf9eb66))
+
 ## [1.12.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.12.0...v1.12.1) (2026-08-04)
 
 
