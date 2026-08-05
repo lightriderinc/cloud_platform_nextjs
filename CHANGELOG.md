@@ -1,3 +1,11 @@
+## [1.12.5](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.12.4...v1.12.5) (2026-08-05)
+
+
+### Bug Fixes
+
+* state in job result modal ([06d57c6](https://github.com/lightriderinc/cloud_platform_nextjs/commit/06d57c681e7bf5f0531a006d0944b35e46911f34))
+* state in job result modal ([6953d6a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6953d6a4cbe344e732a5a1338a1abb60fea0805e))
+
 ## [1.12.4](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.12.3...v1.12.4) (2026-08-05)
 
 
