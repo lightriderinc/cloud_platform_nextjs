@@ -1,3 +1,10 @@
+## [1.13.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.13.0...v1.13.1) (2026-08-05)
+
+
+### Bug Fixes
+
+* For users with connected accounts (google, github) the default page for turning 2fa on/off is set to the email code. With a small info box on the password option that you'll need to set your password first. ([3bdb4ac](https://github.com/lightriderinc/cloud_platform_nextjs/commit/3bdb4ac4e850838fff8759da6ee41da1a63af353))
+
 # [1.13.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.12.5...v1.13.0) (2026-08-05)
 
 
