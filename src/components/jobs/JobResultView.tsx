@@ -136,7 +136,7 @@ export default function JobResultView({ job, footer }: Props) {
                     const pct = total > 0 ? (count / total) * 100 : 0;
                     return (
                       <div key={state} className="flex items-center gap-3">
-                        <span className="w-10 shrink-0 font-mono text-sm text-gray-700">
+                        <span className="min-w-10 shrink-0 whitespace-nowrap font-mono text-sm text-gray-700">
                           |{state}⟩
                         </span>
                         <div className="flex-1 overflow-hidden rounded bg-gray-100">
