@@ -444,7 +444,7 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
             {capsuleResult && (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-bold text-gray-700">Capsule — send this to the recipient</p>
+                  <p className="text-sm font-bold text-gray-700">Capsule: send this to the recipient</p>
                   <div className="flex gap-2">
                     <button
                       type="button"
@@ -475,8 +475,7 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
                   </pre>
                 </div>
                 <p className="text-xs text-gray-400 mt-2">
-                  The capsule alone reveals nothing — only whoever holds the matching secret key
-                  can open it. It&apos;s safe to send over email, Slack, or store publicly.
+                 It's safe to send over email, Slack, or store publicly.
                 </p>
               </div>
             )}
