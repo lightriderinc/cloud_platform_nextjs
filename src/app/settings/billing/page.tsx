@@ -1,4 +1,3 @@
-import PagePlaceholder from "@/components/PagePlaceholder";
 import SubscriptionsList from "@/components/billing/SubscriptionsList";
 import UsageSummary from "@/components/billing/UsageSummary";
 import { ValidationCheckoutButton } from "@/components/billing/ValidationCheckoutButton";
@@ -6,10 +5,6 @@ import { ValidationCheckoutButton } from "@/components/billing/ValidationCheckou
 export default function BillingPage() {
   return (
     <div>
-      <PagePlaceholder
-        title="Billing & Usage"
-        description="Credits, consumption, and invoices."
-      />
       <div className="mt-6">
         <UsageSummary />
       </div>
