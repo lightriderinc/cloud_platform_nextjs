@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import InfoBox from '@/components/InfoBox';
 import LRButton from '@/components/ui/LRButton';
 
 type Props = {
@@ -21,11 +22,17 @@ type Props = {
   onVerified: (verificationRecordId: string) => void | Promise<void>;
   submitLabel?: string;
   /**
-   * Whether the password method is offered. Defaults to true. Set false for
-   * users with no password set (social/SSO-only), where email code is the only
-   * way to prove identity — the method tabs are then hidden.
+   * Whether the password method is offered at all. Defaults to true. Set false
+   * to hide the password tab entirely (email code is the only option).
    */
   allowPassword?: boolean;
+  /**
+   * Whether the user actually has a password set. Defaults to true. When false
+   * (a connected-account/social user), the flow defaults to the email-code
+   * method and the password tab shows an info box explaining a password must be
+   * set first, rather than an unusable password input.
+   */
+  hasPassword?: boolean;
 };
 
 type Method = 'password' | 'email';
@@ -45,8 +52,14 @@ export default function VerifyIdentity({
   onVerified,
   submitLabel = 'Continue',
   allowPassword = true,
+  hasPassword = true,
 }: Props) {
-  const [method, setMethod] = useState<Method>(allowPassword ? 'password' : 'email');
+  // Default to email code when there's no password to verify with (connected
+  // accounts), so the common path is one tap; the password tab stays available
+  // but explains it needs a password first.
+  const [method, setMethod] = useState<Method>(
+    allowPassword && hasPassword ? 'password' : 'email',
+  );
   const [password, setPassword] = useState('');
   const [emailStage, setEmailStage] = useState<'send' | 'code'>('send');
   const [code, setCode] = useState('');
@@ -135,7 +148,14 @@ export default function VerifyIdentity({
         </div>
       )}
 
-      {method === 'password' && (
+      {method === 'password' && !hasPassword && (
+        <InfoBox>
+          You&apos;ll need to set a password first before you can verify with it. Use an email
+          code instead, or set a password from the Security section.
+        </InfoBox>
+      )}
+
+      {method === 'password' && hasPassword && (
         <>
           <label className="block text-xs text-gray-500 mb-1">Current password</label>
           <input

@@ -11,6 +11,8 @@ type Props = {
   email: string;
   /** Label shown in the authenticator app (e.g. the product name). */
   issuer: string;
+  /** Whether the user has a password; false for connected-account users. */
+  hasPassword?: boolean;
   onVerifyPassword: (password: string) => Promise<string>;
   onSendEmailCode: (email: string) => Promise<string>;
   onVerifyEmailCode: (
@@ -35,6 +37,7 @@ const STEPS: Step[] = ['verify', 'scan', 'confirm'];
 export default function SetupMfaModal({
   email,
   issuer,
+  hasPassword = true,
   onVerifyPassword,
   onSendEmailCode,
   onVerifyEmailCode,
@@ -114,6 +117,7 @@ export default function SetupMfaModal({
             <p className="text-sm text-gray-500 mb-4">Confirm it is you to start setup.</p>
             <VerifyIdentity
               email={email}
+              hasPassword={hasPassword}
               onVerifyPassword={onVerifyPassword}
               onSendEmailCode={onSendEmailCode}
               onVerifyEmailCode={onVerifyEmailCode}
