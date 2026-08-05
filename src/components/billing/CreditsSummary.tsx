@@ -104,7 +104,7 @@ export default function CreditsSummary({
 
       <div className="flex w-full justify-between items-end mt-8">
         <a href="/settings/purchases/quantum-compute">
-          <LRButton variant="primary">Purchase more compute tokens</LRButton>
+          <LRButton variant="primary">Purchase compute tokens</LRButton>
         </a>
         {historyLink && (
           <Link
