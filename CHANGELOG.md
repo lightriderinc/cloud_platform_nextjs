@@ -1,3 +1,10 @@
+## [1.12.4](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.12.3...v1.12.4) (2026-08-05)
+
+
+### Bug Fixes
+
+* updated legal pages ([55c22d2](https://github.com/lightriderinc/cloud_platform_nextjs/commit/55c22d2bae10c0967471fe4453b7dabbb9f19afa))
+
 ## [1.12.3](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.12.2...v1.12.3) (2026-08-05)
 
 
