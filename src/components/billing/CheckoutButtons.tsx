@@ -61,10 +61,12 @@ export function CreditsCheckoutButton({
   amountUsd,
   label,
   className,
+  disabled,
 }: {
   amountUsd: number;
   label: string;
   className?: string;
+  disabled?: boolean;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,7 +94,7 @@ export function CreditsCheckoutButton({
     <div className="flex flex-col gap-1">
       <LRButton
         onClick={handleClick}
-        disabled={loading}
+        disabled={loading || disabled}
         variant="primary"
         className={className ?? "w-full"}
       >

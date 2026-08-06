@@ -1,5 +1,5 @@
 import { handleSignIn } from "@/app/actions/auth";
-import { MdAccountCircle, MdLocalOffer, MdPayments } from "react-icons/md";
+import { MdAccountCircle, MdHistory, MdLocalOffer, MdPayments } from "react-icons/md";
 import { RiLockPasswordFill } from "react-icons/ri";
 import SidebarNavGroup from "./SidebarNavGroup";
 import SidebarNavItem from "./SidebarNavItem";
@@ -67,6 +67,12 @@ export default function SidebarGroupSettings({
               name="Purchases"
               href="/settings/purchases"
               icon={MdLocalOffer}
+              onNavigate={onNavigate}
+            />
+            <SidebarNavItem
+              name="Purchase History"
+              href="/settings/purchase-history"
+              icon={MdHistory}
               onNavigate={onNavigate}
             />
           </SidebarNavGroup>

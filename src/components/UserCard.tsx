@@ -5,9 +5,9 @@
 // group and a log out button; in the mobile menu it stays a plain link since
 // the drawer already surfaces settings navigation of its own.
 
+import { getAvatarDataUri } from "@/lib/avatar";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { getAvatarDataUri } from "@/lib/avatar";
 import LogoutButton from "./auth/LogoutButton";
 import SidebarGroupSettings from "./sidebar/SidebarGroupSettings";
 
@@ -63,7 +63,7 @@ export default function UserCard({ name, role, dropdown = false, onSignOut }: Pr
       <div>
         <Link
           href="/settings/account"
-          className="flex items-center gap-3 default-radius pl-2 pr-5 py-1.5 transition-colors hover:bg-gray-100"
+          className="flex items-center gap-3 default-radius pl-2 pr-5 py-1.5 transition-colors hover:bg-gray-100 cursor-pointer"
         >
           {avatar}
           {label}
@@ -79,7 +79,7 @@ export default function UserCard({ name, role, dropdown = false, onSignOut }: Pr
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="flex items-center gap-3 default-radius pl-2 pr-5 py-1.5 transition-colors hover:bg-gray-100"
+        className="flex items-center gap-3 default-radius pl-2 pr-5 py-1.5 transition-colors hover:bg-gray-100 cursor-pointer"
       >
         {avatar}
         {label}
