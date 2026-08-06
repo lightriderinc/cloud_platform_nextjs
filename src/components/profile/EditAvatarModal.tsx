@@ -108,7 +108,7 @@ export default function EditAvatarModal({
       const formData = new FormData();
       formData.append(
         AVATAR_FORM_FIELD,
-        new File([blob], "avatar.png", { type: AVATAR_OUTPUT_TYPE }),
+        new File([blob], "avatar.webp", { type: AVATAR_OUTPUT_TYPE }),
       );
       const nextUrl = await onUploadAvatar(formData);
       setSavedUrl(nextUrl);
@@ -195,6 +195,7 @@ export default function EditAvatarModal({
                   <AvatarEditor
                     ref={editorRef}
                     image={file}
+                    outputType={AVATAR_OUTPUT_TYPE}
                     onLoadFailure={() =>
                       setError("That image could not be opened. Try another file.")
                     }
