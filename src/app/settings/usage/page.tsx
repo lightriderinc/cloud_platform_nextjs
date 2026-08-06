@@ -1,6 +1,5 @@
 import CreditsSummary from "@/components/billing/CreditsSummary";
 import PaymentMethodCard from "@/components/billing/PaymentMethodCard";
-import PurchaseHistoryTable from "@/components/billing/PurchaseHistoryTable";
 import SubscriptionsList from "@/components/billing/SubscriptionsList";
 import { ProRoleToggle } from "@/components/dev/ProRoleToggle";
 
@@ -18,13 +17,6 @@ export default function PaymentPage() {
         <SubscriptionsList />
         <CreditsSummary />
         <PaymentMethodCard />
-      </div>
-
-      <div className="mt-8">
-        <h2 className="mb-2 text-xl font-bold text-gray-600">
-          Purchase history
-        </h2>
-        <PurchaseHistoryTable />
       </div>
 
       <ProRoleToggle />
