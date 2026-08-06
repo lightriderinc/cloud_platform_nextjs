@@ -72,5 +72,9 @@ export async function GET(
       .catch(() => {});
   }
 
-  return NextResponse.json(data);
+  // persistedCreatedAt is our own DB row's createdAt, alongside (not instead
+  // of) iqm-proxy's own data.createdAt — callers that need to agree with
+  // /jobs' list view (which reads the same persisted value) should prefer
+  // this over data.createdAt; see BackendSubmitModal.tsx.
+  return NextResponse.json({ ...data, persistedCreatedAt: submission.createdAt });
 }

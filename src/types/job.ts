@@ -18,6 +18,8 @@ export interface JobDetail {
   status: JobStatus;
   createdAt?: string;
   finishedAt?: string;
+  /** Our own persisted QuantumJobSubmission.createdAt — see jobs/[id]/route.ts. */
+  persistedCreatedAt?: string;
   isInTerminalState?: boolean;
   quantumComputer?: {
     alias: string;

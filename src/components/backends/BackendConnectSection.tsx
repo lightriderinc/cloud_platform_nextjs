@@ -13,26 +13,28 @@ const COLAB_URL =
   "https://colab.research.google.com/github/lightriderinc/cloud_platform_nextjs/blob/main/docs/notebooks/quantum-quickstart.ipynb";
 
 function pythonSnippet(backendId: string): string {
-  return `import requests
+  return `%pip install -q lightrider==1.3.1 requests
+import requests
+from lightrider import Circuit
 
 api_key = input("Enter your Light Rider API key: ")
 base_url = "https://platform.lightriderinc.com"
 
-circuit = {
-    "num_qubits": 2,
-    "instructions": [
-        {"name": "h", "qubits": [0]},
-        {"name": "cx", "qubits": [0, 1]},
-        {"name": "measure", "qubits": [0], "clbits": [0]},
-        {"name": "measure", "qubits": [1], "clbits": [1]},
-    ],
-}
+session = requests.Session()
+session.headers["Authorization"] = f"Bearer {api_key}"
 
-response = requests.post(
+circuit = Circuit(2, name="bell")
+circuit.h(0)
+circuit.cx(0, 1)
+circuit.measure_all()
+
+response = session.post(
     f"{base_url}/api/lr/quantum/submit",
-    headers={"Authorization": f"Bearer {api_key}"},
-    json={"backend": "${backendId}", "circuit": circuit, "shots": 1000},
+    json={"backend": "${backendId}", "circuit": circuit.to_payload(), "shots": 1000},
 )
+if response.status_code == 402:
+    detail = response.json()
+    raise RuntimeError(f"{detail['error']}: {detail['message']}")
 response.raise_for_status()
 job = response.json()
 print("Job submitted:", job["job_uuid"])
