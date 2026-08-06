@@ -3,7 +3,7 @@ import LogoutButton from "@/components/auth/LogoutButton";
 import CurrentPlanBadge from "@/components/billing/CurrentPlanBadge";
 import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
-import { getAvatarDataUri } from "@/lib/avatar";
+import { resolveAvatarSources } from "@/lib/avatar";
 import {
   getAccountProfile,
   getDisplayName,
@@ -85,12 +85,14 @@ export default async function AccountPage() {
     // Account API not enabled or token unavailable
   }
   const email = userInfo?.email ?? null;
-  // Kept as two separate values rather than one pre-resolved URL: `picture` is
-  // whatever the user set (an upload, or a social provider's CDN link) and can
-  // 403 or go stale, so the avatar needs the generated pixelbot as a live
-  // fallback to swap to on load failure — not just when `picture` is absent.
-  const customAvatarUrl = userInfo?.picture ?? null;
-  const generatedAvatarUrl = getAvatarDataUri(name || email || "user");
+  // Shared resolver — the header's UserCard uses the same one, so the two
+  // can't disagree about which picture (or which generated fallback) is current.
+  const { src: customAvatarUrl, fallbackSrc: generatedAvatarUrl } =
+    resolveAvatarSources({
+      picture: userInfo?.picture,
+      name,
+      email,
+    });
 
   async function doVerifyPassword(password: string): Promise<string> {
     "use server";
@@ -182,7 +184,11 @@ export default async function AccountPage() {
     "use server";
     const token = await getAccessToken(logtoConfig);
     await updateAvatar(token, avatarUrl);
-    revalidatePath("/settings/account");
+    // "layout" scope, not the usual "/settings/account": the avatar also
+    // renders in the header UserCard, which lives in the root layout.
+    // Revalidating just this page leaves the header showing the old picture
+    // until a full reload.
+    revalidatePath("/", "layout");
     refresh();
   }
 

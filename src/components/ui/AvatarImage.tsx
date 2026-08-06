@@ -70,7 +70,10 @@ export default function AvatarImage({
         <span
           className="font-semibold text-gray-300 select-none"
           style={{ fontSize: Math.max(11, Math.round(size * 0.36)) }}
-          aria-label={alt}
+          // Empty alt means the caller marked this decorative (e.g. a name is
+          // shown next to it) — don't announce the initials in that case.
+          aria-label={alt || undefined}
+          aria-hidden={alt ? undefined : true}
         >
           {initials}
         </span>

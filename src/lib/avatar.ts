@@ -73,3 +73,41 @@ export function getAvatarDataUri(seed: string): string {
   });
   return avatar.toDataUri();
 }
+
+/** Last-resort text fallback. "Dan Delgado Ayala" -> "DD". */
+export function getAvatarInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  return parts
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+/**
+ * The two sources every avatar in the app renders from.
+ *
+ * `src` is the user's own picture (an upload, or a social provider's link) and
+ * may be null or a URL that no longer resolves. `fallbackSrc` is the generated
+ * pixelbot, which always works.
+ *
+ * Every avatar call site goes through this so the header and the account page
+ * can't drift — they previously disagreed, which is why a newly uploaded
+ * picture showed on one and not the other. Keep it that way: don't collapse
+ * these into a single pre-resolved URL at the call site, because AvatarImage
+ * needs both to recover from a *load* failure, not just a missing value.
+ */
+export function resolveAvatarSources({
+  picture,
+  name,
+  email,
+}: {
+  picture?: string | null;
+  name?: string | null;
+  email?: string | null;
+}): { src: string | null; fallbackSrc: string } {
+  return {
+    src: picture ?? null,
+    fallbackSrc: getAvatarDataUri(name || email || "user"),
+  };
+}
