@@ -12,7 +12,11 @@ import {
   QUANTUM_BACKENDS,
   type QuantumBackendId,
 } from "@/lib/quantum/backends";
-import { CIRCUIT_PAYLOADS, submitQuantumJob } from "@/lib/quantum/client";
+import {
+  CIRCUIT_PAYLOADS,
+  fetchQuantumJobDetail,
+  submitQuantumJob,
+} from "@/lib/quantum/client";
 import type { Job } from "@/types/job";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -84,19 +88,53 @@ export default function BackendSubmitModal({
     error,
     reset: resetMutation,
   } = useMutation({
-    mutationFn: () =>
-      submitQuantumJob(backend, CIRCUIT_PAYLOADS[circuit], shots),
-    onSuccess: (job) => {
+    mutationFn: async () => {
+      const submitTime = new Date().toISOString();
+      const job = await submitQuantumJob(backend, CIRCUIT_PAYLOADS[circuit], shots);
+      return { job, submitTime };
+    },
+    onSuccess: ({ job, submitTime }) => {
       queryClient.invalidateQueries({ queryKey: ["lr-jobs-list"] });
       setSubmittedJob({
         ...job,
         status: job.status ?? "PENDING",
+        created_at: submitTime,
         gate: circuit,
         backend,
         shots,
       });
     },
   });
+
+  // JobResultView polls this same query key internally once it mounts below
+  // (refetchInterval, every 3s until terminal) — this subscribes to that
+  // same shared cache entry rather than polling separately. submitQuantumJob()'s
+  // response never carries finished_at (it can't — the job hasn't finished
+  // yet at submit time), so without folding this in, job.finished_at stays
+  // permanently unset for a freshly-submitted job and Runtime never has an
+  // end timestamp to compute from. Derived at render time (not written back
+  // into submittedJob via an effect) so this can't trigger a setState-during-
+  // effect render cascade.
+  const { data: submittedJobDetail } = useQuery({
+    queryKey: ["lr-job-detail", submittedJob?.uuid],
+    queryFn: () => fetchQuantumJobDetail(submittedJob!.uuid),
+    enabled: !!submittedJob,
+    retry: 0,
+  });
+
+  // created_at swaps to the persisted DB value (the same one /jobs' list and
+  // detail views use) as soon as it's available — no need to wait for
+  // terminal state, since our DB row exists well before the job finishes.
+  // finished_at still only backfills once genuinely terminal.
+  const displayedJob = submittedJob
+    ? {
+        ...submittedJob,
+        created_at: submittedJobDetail?.persistedCreatedAt ?? submittedJob.created_at,
+        finished_at:
+          submittedJob.finished_at ??
+          (submittedJobDetail?.isInTerminalState ? submittedJobDetail.finishedAt : undefined),
+      }
+    : submittedJob;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -152,9 +190,9 @@ export default function BackendSubmitModal({
           >
             {/* Left: form or results */}
             <div className="min-w-0">
-              {submittedJob ? (
+              {displayedJob ? (
                 <JobResultView
-                  job={submittedJob}
+                  job={displayedJob}
                   footer={
                     <LRButton
                       variant="secondary-outline"
