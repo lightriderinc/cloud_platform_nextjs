@@ -1,3 +1,15 @@
+## [1.13.3](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.13.2...v1.13.3) (2026-08-06)
+
+
+### Bug Fixes
+
+* constrain ModalShell height so long content scrolls instead of overflowing ([70094e0](https://github.com/lightriderinc/cloud_platform_nextjs/commit/70094e0e5ef4a309dd9ac8897cb5ff5e39cf3d3e))
+* quantum vault application updated ([2983bc9](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2983bc9fa17f2a364bbef4c0cbe52bf2a8d0e081))
+* restored get entropy modal to original work flow. 3 step process ([379eecc](https://github.com/lightriderinc/cloud_platform_nextjs/commit/379eecc0f8b925065637efce5d96f7879880896a))
+* updated entropy and application modals ([5a125c4](https://github.com/lightriderinc/cloud_platform_nextjs/commit/5a125c45275174be057c0d8e79b8f0123355fa0b))
+* updated quantum signer modal ([9ca0817](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9ca0817b8b6b19dcd9fe47cb82ae52882cf03f89))
+* user card pointer ([1c8729c](https://github.com/lightriderinc/cloud_platform_nextjs/commit/1c8729c5064c7f4ed255fbe7f05f48c4acd9b480))
+
 ## [1.13.2](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.13.1...v1.13.2) (2026-08-05)
 
 
