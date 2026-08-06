@@ -12,6 +12,7 @@ import { MdPhotoCamera } from "react-icons/md";
 
 import EditAvatarModal from "@/components/profile/EditAvatarModal";
 import AvatarImage from "@/components/ui/AvatarImage";
+import { getAvatarInitials } from "@/lib/avatar";
 
 type Props = {
   /**
@@ -34,16 +35,6 @@ type Props = {
   className?: string;
 };
 
-/** "Dan Delgado Ayala" -> "DD". Falls back to a single character. */
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  return parts
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
 export default function ProfileAvatar({
   src,
   fallbackSrc,
@@ -62,7 +53,7 @@ export default function ProfileAvatar({
   const [localSrc, setLocalSrc] = useState<string | null>(null);
 
   const shownSrc = localSrc ?? src ?? null;
-  const initials = getInitials(name);
+  const initials = getAvatarInitials(name);
 
   return (
     <>

@@ -5,22 +5,36 @@
 // group and a log out button; in the mobile menu it stays a plain link since
 // the drawer already surfaces settings navigation of its own.
 
-import { getAvatarDataUri } from "@/lib/avatar";
+import { getAvatarInitials } from "@/lib/avatar";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import LogoutButton from "./auth/LogoutButton";
 import SidebarGroupSettings from "./sidebar/SidebarGroupSettings";
+import AvatarImage from "./ui/AvatarImage";
 
 type Props = {
   name: string;
   role?: string;
+  /**
+   * The user's own picture. Null when unset — this component does NOT generate
+   * a fallback itself; the caller resolves both sources via
+   * `resolveAvatarSources` so the header and the account page always agree.
+   */
+  avatarUrl?: string | null;
+  /** Generated placeholder used when `avatarUrl` is missing or won't load. */
+  fallbackAvatarUrl?: string | null;
   dropdown?: boolean;
   onSignOut?: () => Promise<void>;
 };
 
-export default function UserCard({ name, role, dropdown = false, onSignOut }: Props) {
-  const avatarUrl = useMemo(() => getAvatarDataUri(name), [name]);
-
+export default function UserCard({
+  name,
+  role,
+  avatarUrl,
+  fallbackAvatarUrl,
+  dropdown = false,
+  onSignOut,
+}: Props) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -45,10 +59,15 @@ export default function UserCard({ name, role, dropdown = false, onSignOut }: Pr
   }, [open]);
 
   const avatar = (
-    <div className="relative w-8 h-8 default-radius overflow-hidden border border-gray-200 bg-gray-100 flex-shrink-0">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-    </div>
+    <AvatarImage
+      src={avatarUrl}
+      fallbackSrc={fallbackAvatarUrl}
+      initials={getAvatarInitials(name)}
+      // Decorative: the user's name is rendered right beside it.
+      alt=""
+      size={32}
+      className="flex-shrink-0"
+    />
   );
 
   const label = (
