@@ -24,7 +24,7 @@ const DICE: { sides: DiceSides; label: string; desc: string }[] = [
   { sides: 4, label: "d4", desc: "Tetrahedron" },
   { sides: 6, label: "d6", desc: "Standard cube" },
   { sides: 8, label: "d8", desc: "Octahedron" },
-  { sides: 10, label: "d10", desc: "Trapezoid" },
+  { sides: 10, label: "d10", desc: "Pentagonal trapezohedron" },
   { sides: 12, label: "d12", desc: "Dodecahedron" },
   { sides: 20, label: "d20", desc: "Icosahedron" },
 ];
