@@ -9,8 +9,12 @@ import Link from "next/link";
 import { useState } from "react";
 import { MdCheck, MdContentCopy, MdOpenInNew } from "react-icons/md";
 
-const COLAB_URL =
+const COLAB_BASE_URL =
   "https://colab.research.google.com/github/lightriderinc/cloud_platform_nextjs/blob/main/docs/notebooks/quantum-quickstart.ipynb";
+
+function colabUrl(backendId: string | null): string {
+  return `${COLAB_BASE_URL}?backend=${encodeURIComponent(backendId ?? "iqm-garnet-mock")}`;
+}
 
 function pythonSnippet(backendId: string): string {
   return `%pip install -q lightrider==1.3.1 requests
@@ -98,7 +102,7 @@ export default function BackendConnectSection({
         </p>
         <div className="flex flex-row gap-3">
           <a
-            href={COLAB_URL}
+            href={colabUrl(quantumBackendId)}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex w-fit items-center gap-1.5 default-radius border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
@@ -181,7 +185,7 @@ export default function BackendConnectSection({
           </div>
           <div className="flex flex-row gap-3">
             <a
-              href={COLAB_URL}
+              href={colabUrl(quantumBackendId)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex w-fit items-center gap-1.5 default-radius border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
