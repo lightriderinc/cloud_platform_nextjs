@@ -1,3 +1,11 @@
+## [1.13.5](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.13.4...v1.13.5) (2026-08-06)
+
+
+### Bug Fixes
+
+* purchase history page added ([cb83ebc](https://github.com/lightriderinc/cloud_platform_nextjs/commit/cb83ebcd3dfb5d65a451c932340c74946a49df75))
+* purchase history page added ([153f216](https://github.com/lightriderinc/cloud_platform_nextjs/commit/153f2169638c9a69c50a059ee8538606cf7cf9f9))
+
 ## [1.13.4](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.13.3...v1.13.4) (2026-08-06)
 
 
