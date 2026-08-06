@@ -13,7 +13,7 @@ const STATUS_STYLES: Record<
     dot: "bg-orange-500",
     text: "text-orange-700",
   },
-  unknown: { label: "Unknown", dot: "bg-gray-300", text: "text-gray-400" },
+  unknown: { label: "Offline", dot: "bg-gray-400", text: "text-gray-500" },
 };
 
 export default function BackendStatusBadge({

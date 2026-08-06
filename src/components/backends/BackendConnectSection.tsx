@@ -9,11 +9,22 @@ import Link from "next/link";
 import { useState } from "react";
 import { MdCheck, MdContentCopy, MdOpenInNew } from "react-icons/md";
 
-const COLAB_BASE_URL =
-  "https://colab.research.google.com/github/lightriderinc/cloud_platform_nextjs/blob/main/docs/notebooks/quantum-quickstart.ipynb";
+const COLAB_NOTEBOOKS_BASE_URL =
+  "https://colab.research.google.com/github/lightriderinc/cloud_platform_nextjs/blob/main/docs/notebooks";
+
+// Real backends get their own notebook (backend hardcoded in the submit
+// cell); mock backends — and anything unrecognized — fall through to the
+// shared base notebook, which still defaults to iqm-garnet-mock.
+const COLAB_NOTEBOOK_BY_BACKEND: Record<string, string> = {
+  "iqm-garnet": "quantum-quickstart-iqm-garnet.ipynb",
+  "iqm-emerald": "quantum-quickstart-iqm-emerald.ipynb",
+  "iqm-sirius": "quantum-quickstart-iqm-sirius.ipynb",
+};
 
 function colabUrl(backendId: string | null): string {
-  return `${COLAB_BASE_URL}?backend=${encodeURIComponent(backendId ?? "iqm-garnet-mock")}`;
+  const notebook =
+    (backendId && COLAB_NOTEBOOK_BY_BACKEND[backendId]) || "quantum-quickstart.ipynb";
+  return `${COLAB_NOTEBOOKS_BASE_URL}/${notebook}`;
 }
 
 function pythonSnippet(backendId: string): string {
