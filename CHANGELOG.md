@@ -1,3 +1,11 @@
+## [1.13.4](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.13.3...v1.13.4) (2026-08-06)
+
+
+### Bug Fixes
+
+* updated purchase compute tokens page ([d82224f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d82224fc4714621f4acb6e8807f0a4d36a0dcc9d))
+* updated purchase compute tokens page ([7c10253](https://github.com/lightriderinc/cloud_platform_nextjs/commit/7c10253d8854a321773d0e6f9a491ed2af9f9f8a))
+
 ## [1.13.3](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.13.2...v1.13.3) (2026-08-06)
 
 
