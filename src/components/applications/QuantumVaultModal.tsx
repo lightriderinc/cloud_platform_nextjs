@@ -1,38 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import LRButton from "@/components/ui/LRButton";
 import {
-  MdCheck,
-  MdContentCopy,
-  MdDownload,
-  MdLock,
-  MdLockOpen,
-  MdVerified,
-  MdCompareArrows,
-  MdKey,
-  MdWarning,
-  MdClose,
-  MdGavel,
-  MdHourglassEmpty,
-  MdShield,
-} from "react-icons/md";
-import EntropySourceSelector, { SOURCES } from "./EntropySourceSelector";
-import ModalShell from "./ModalShell";
-import {
+  buildEntropyCertificate,
+  bytesToHex,
+  decryptPayload,
+  encryptPayload,
   fetchEntropy,
   generateKemKeypair,
   generateSigningKeypair,
-  encryptPayload,
-  decryptPayload,
-  buildEntropyCertificate,
-  bytesToHex,
   hexToBytes,
   randomBytes,
-  type VaultCapsule,
   type EntropyCertificate,
   type KemKeypair,
   type SigningKeypair,
+  type VaultCapsule,
 } from "@/lib/pqc/quantumVault";
+import { useState } from "react";
+import {
+  MdCheck,
+  MdClose,
+  MdCompareArrows,
+  MdContentCopy,
+  MdDownload,
+  MdGavel,
+  MdHourglassEmpty,
+  MdKey,
+  MdLock,
+  MdLockOpen,
+  MdShield,
+  MdVerified,
+  MdWarning,
+} from "react-icons/md";
+import EntropySourceSelector, { SOURCES } from "./EntropySourceSelector";
+import ModalShell from "./ModalShell";
 
 type Mode = "keys" | "encrypt" | "decrypt" | "compare";
 
@@ -52,9 +53,13 @@ function downloadText(filename: string, content: string) {
   URL.revokeObjectURL(url);
 }
 
-export default function QuantumVaultModal({ onClose }: { onClose: () => void }) {
+export default function QuantumVaultModal({
+  onClose,
+}: {
+  onClose: () => void;
+}) {
   const [mode, setMode] = useState<Mode>("keys");
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(false);
 
   // --- Identity (Keys tab) ---
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
@@ -93,18 +98,25 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
     setKeysBusy(true);
     setKeysError(null);
     try {
-      const { bytes: entropy, actualSourceId, jobId, verificationUrl } = await fetchEntropy(sourceData.id, 96);
-      
+      const {
+        bytes: entropy,
+        actualSourceId,
+        jobId,
+        verificationUrl,
+      } = await fetchEntropy(sourceData.id, 96);
+
       const kem = generateKemKeypair(entropy.slice(0, 64));
       const dsa = generateSigningKeypair(entropy.slice(64, 96));
       const certificate = buildEntropyCertificate(
         actualSourceId,
-        actualSourceId === "csprng-fallback" ? "Local CSPRNG (fallback)" : sourceData.name,
+        actualSourceId === "csprng-fallback"
+          ? "Local CSPRNG (fallback)"
+          : sourceData.name,
         entropy,
         "ML-KEM-768",
         kem.publicKey,
         jobId,
-        verificationUrl
+        verificationUrl,
       );
       setIdentity({ kem, dsa, certificate });
       setDownloadedSecret(false);
@@ -121,13 +133,14 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
       "quantum-vault-identity.secret.json",
       JSON.stringify(
         {
-          warning: "Keep this file private. Anyone with it can decrypt messages sent to you.",
+          warning:
+            "Keep this file private. Anyone with it can decrypt messages sent to you.",
           kemSecretKey: bytesToHex(identity.kem.secretKey),
           dsaSecretKey: bytesToHex(identity.dsa.secretKey),
         },
         null,
-        2
-      )
+        2,
+      ),
     );
     setDownloadedSecret(true);
   }
@@ -149,14 +162,14 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
         pub,
         new TextEncoder().encode(plaintext),
         signIt && identity ? identity.dsa.secretKey : undefined,
-        signIt && identity ? identity.dsa.publicKey : undefined
+        signIt && identity ? identity.dsa.publicKey : undefined,
       );
       setCapsuleResult(capsule);
     } catch (e) {
       setEncryptError(
         e instanceof Error
           ? `${e.message} — check the recipient public key is valid hex from a Quantum Vault identity.`
-          : "Encryption failed"
+          : "Encryption failed",
       );
     } finally {
       setEncryptBusy(false);
@@ -173,7 +186,9 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
       setDecryptResult(new TextDecoder().decode(plaintextBytes));
     } catch (e) {
       setDecryptError(
-        e instanceof Error ? e.message : "Could not decrypt — check the key and capsule are correct"
+        e instanceof Error
+          ? e.message
+          : "Could not decrypt — check the key and capsule are correct",
       );
     }
   }
@@ -181,10 +196,11 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
   async function handleCompare() {
     setCompareBusy(true);
     try {
-      const [{ bytes: qBytes, actualSourceId, jobId }, classicalBytes] = await Promise.all([
-        fetchEntropy("lr-quantum-job", 64),
-        Promise.resolve(randomBytes(64)),
-      ]);
+      const [{ bytes: qBytes, actualSourceId, jobId }, classicalBytes] =
+        await Promise.all([
+          fetchEntropy("lr-quantum-job", 64),
+          Promise.resolve(randomBytes(64)),
+        ]);
       const dummyKey = generateKemKeypair(qBytes).publicKey;
       const dummyKeyClassical = generateKemKeypair(classicalBytes).publicKey;
 
@@ -194,13 +210,20 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
           : "Quantum backend unavailable — used local randomness instead";
 
       setCompareResult({
-        quantum: buildEntropyCertificate(actualSourceId, quantumSourceName, qBytes, "ML-KEM-768", dummyKey, jobId),
+        quantum: buildEntropyCertificate(
+          actualSourceId,
+          quantumSourceName,
+          qBytes,
+          "ML-KEM-768",
+          dummyKey,
+          jobId,
+        ),
         classical: buildEntropyCertificate(
           "browser-csprng",
           "Browser CSPRNG (crypto.getRandomValues)",
           classicalBytes,
           "ML-KEM-768",
-          dummyKeyClassical
+          dummyKeyClassical,
         ),
       });
     } finally {
@@ -212,11 +235,14 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
     { id: "keys", label: "My Keys", icon: <MdKey /> },
     { id: "encrypt", label: "Encrypt", icon: <MdLock /> },
     { id: "decrypt", label: "Decrypt", icon: <MdLockOpen /> },
-    { id: "compare", label: "Compare Sources", icon: <MdCompareArrows /> },
+    // { id: "compare", label: "Compare Sources", icon: <MdCompareArrows /> },
   ];
 
   return (
-    <ModalShell title="Quantum Vault: Post-Quantum Encryption" onClose={onClose}>
+    <ModalShell
+      title="Quantum Vault: Post-Quantum Encryption"
+      onClose={onClose}
+    >
       {showIntro && (
         <div className="default-radius border border-gray-100 bg-gray-50 p-4 mb-4 relative">
           <button
@@ -228,35 +254,48 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
             <MdClose className="text-base" />
           </button>
           <p className="text-sm text-gray-700 pr-6 mb-3">
-            Quantum-resistant encryption (ML-KEM). Generate a key, share it, receive secrets only you can open..
+            Quantum-resistant encryption (ML-KEM). Generate a key, share it,
+            receive secrets only you can open..
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div className="flex items-start gap-2 default-radius bg-white border border-gray-100 px-3 py-2">
               <MdGavel className="text-[var(--brand-primary)] text-lg mt-0.5 shrink-0" />
               <div>
-                <p className="text-xs font-semibold text-gray-800">Compliance ready</p>
-                <p className="text-xs text-gray-500">Meets PQC migration timelines</p>
+                <p className="text-xs font-semibold text-gray-800">
+                  Compliance ready
+                </p>
+                <p className="text-xs text-gray-500">
+                  Meets PQC migration timelines
+                </p>
               </div>
             </div>
             <div className="flex items-start gap-2 default-radius bg-white border border-gray-100 px-3 py-2">
               <MdShield className="text-[var(--brand-primary)] text-lg mt-0.5 shrink-0" />
               <div>
-                <p className="text-xs font-semibold text-gray-800">Provable, not claimed</p>
-                <p className="text-xs text-gray-500">Every key ships with a certificate</p>
+                <p className="text-xs font-semibold text-gray-800">
+                  Provable, not claimed
+                </p>
+                <p className="text-xs text-gray-500">
+                  Every key ships with a certificate
+                </p>
               </div>
             </div>
             <div className="flex items-start gap-2 default-radius bg-white border border-gray-100 px-3 py-2">
               <MdHourglassEmpty className="text-[var(--brand-primary)] text-lg mt-0.5 shrink-0" />
               <div>
-                <p className="text-xs font-semibold text-gray-800">Future-proof</p>
-                <p className="text-xs text-gray-500">Safe even if quantum computers advance</p>
+                <p className="text-xs font-semibold text-gray-800">
+                  Future-proof
+                </p>
+                <p className="text-xs text-gray-500">
+                  Safe even if quantum computers advance
+                </p>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      <div className="flex gap-1 border-b border-gray-100 mb-4">
+      <div className="flex gap-1 py-5">
         {TABS.map((t) => (
           <button
             key={t.id}
@@ -274,25 +313,30 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
         ))}
       </div>
 
-      <div className="py-2 min-h-[340px] max-h-[60vh] overflow-y-auto">
+      <div className="py-2 min-h-[340px]">
         {/* ---------------- KEYS ---------------- */}
         {mode === "keys" && (
           <div className="space-y-4 animate-fade-in-up">
             {!identity && (
               <>
                 <p className="text-sm text-gray-600">
-                   Choose an entropy source, then generate your identity. Your secret key never leaves this device.
+                  Choose an entropy source, then generate your identity. Your
+                  secret key never leaves this device.
                 </p>
-                <EntropySourceSelector selectedId={selectedSourceId} onSelect={setSelectedSourceId} />
-                <button
-                  type="button"
-                  disabled={!selectedSourceId || keysBusy}
-                  onClick={handleGenerateIdentity}
-                  style={{ backgroundColor: "var(--brand-primary)" }}
-                  className="default-radius px-4 py-2 text-sm font-medium text-white transition-opacity cursor-pointer hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {keysBusy ? "Generating…" : "Generate Identity"}
-                </button>
+                <EntropySourceSelector
+                  selectedId={selectedSourceId}
+                  onSelect={setSelectedSourceId}
+                />
+                <div className="flex justify-end">
+                  <LRButton
+                    type="button"
+                    variant="primary"
+                    disabled={!selectedSourceId || keysBusy}
+                    onClick={handleGenerateIdentity}
+                  >
+                    {keysBusy ? "Generating…" : "Generate Identity"}
+                  </LRButton>
+                </div>
                 {keysError && (
                   <p className="text-sm text-red-600 default-radius bg-red-50 border border-red-100 px-3 py-2">
                     {keysError}
@@ -303,14 +347,23 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
 
             {identity && (
               <>
-                <div className="default-radius border border-green-100 bg-green-50 p-4 flex items-start gap-3">
+                <div className="default-radius border border-green-100 bg-green-50 p-3 flex items-start gap-3">
                   <MdVerified className="text-green-700 text-xl mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold text-green-800">Identity generated</p>
+                    <p className="text-sm font-semibold text-green-800">
+                      Identity generated
+                    </p>
                     <p className="text-xs text-green-700 mt-0.5">
                       Source: {identity.certificate.sourceName}
                       {identity.certificate.quantumJobId && (
-                        <> — job <span className="font-mono">{identity.certificate.quantumJobId.slice(0, 8)}…</span> (check the Jobs tab)</>
+                        <>
+                          {" "}
+                          — job{" "}
+                          <span className="font-mono">
+                            {identity.certificate.quantumJobId.slice(0, 8)}…
+                          </span>{" "}
+                          (check the Jobs tab)
+                        </>
                       )}
                     </p>
                     {identity.certificate.verificationUrl && (
@@ -327,51 +380,71 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
                 </div>
 
                 <div>
-                  <p className="text-sm font-bold text-gray-700 mb-2">Your public key (share this)</p>
+                  <p className="text-sm font-bold text-gray-700 mb-2">
+                    Your public key (share this)
+                  </p>
                   <div className="default-radius border border-gray-100 bg-gray-50 p-3 flex items-center justify-between gap-2">
                     <p className="font-mono text-xs text-gray-600 break-all">
                       {bytesToHex(identity.kem.publicKey).slice(0, 48)}…
                     </p>
-                    <button
+                    <LRButton
                       type="button"
+                      variant="secondary-outline"
                       onClick={handleCopyPublicKey}
-                      className="shrink-0 flex items-center gap-1 px-2 py-1 default-radius border border-gray-200 text-xs text-gray-600 hover:bg-white cursor-pointer"
+                      icon={
+                        copiedPub ? (
+                          <MdCheck className="text-green-700" />
+                        ) : (
+                          <MdContentCopy />
+                        )
+                      }
+                      className="shrink-0 text-xs"
                     >
-                      {copiedPub ? <MdCheck className="text-green-700" /> : <MdContentCopy />}
                       {copiedPub ? "Copied" : "Copy full key"}
-                    </button>
+                    </LRButton>
                   </div>
                 </div>
 
-                <div className="default-radius border border-amber-100 bg-amber-50 p-4 flex items-start gap-3">
+                <div className="default-radius border border-amber-100 bg-amber-50 p-3 flex items-start gap-3">
                   <MdWarning className="text-amber-700 text-xl mt-0.5 shrink-0" />
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-amber-800">
                       Your secret key is never displayed
                     </p>
                     <p className="text-xs text-amber-700 mt-0.5 mb-2">
-                      Only in this tab&apos;s memory — reload and it&apos;s gone. Download it now.
+                      Only in this tab&apos;s memory. Download now.
                     </p>
-                    <button
-                      type="button"
-                      onClick={handleDownloadSecret}
-                      className="flex items-center gap-1.5 default-radius bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 cursor-pointer"
-                    >
-                      <MdDownload /> {downloadedSecret ? "Downloaded ✓ — download again" : "Download secret keyfile"}
-                    </button>
+                    <div className="flex justify-end">
+                      <LRButton
+                        type="button"
+                        variant="primary"
+                        onClick={handleDownloadSecret}
+                        icon={<MdDownload />}
+                        style={{
+                          backgroundColor: "var(--color-amber-600, #d97706)",
+                          borderColor: "var(--color-amber-600, #d97706)",
+                        }}
+                      >
+                        {downloadedSecret
+                          ? "Downloaded ✓ — download again"
+                          : "Download secret keyfile"}
+                      </LRButton>
+                    </div>
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIdentity(null);
-                    setSelectedSourceId(null);
-                  }}
-                  className="text-xs text-gray-500 underline cursor-pointer"
-                >
-                  Generate a different identity
-                </button>
+                <div className="flex justify-end">
+                  <LRButton
+                    type="button"
+                    variant="secondary-outline"
+                    onClick={() => {
+                      setIdentity(null);
+                      setSelectedSourceId(null);
+                    }}
+                  >
+                    Generate a different identity
+                  </LRButton>
+                </div>
               </>
             )}
           </div>
@@ -392,19 +465,24 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
                   className="default-radius flex-1 border border-gray-100 px-3 py-2 text-xs font-mono text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300"
                 />
                 {identity && (
-                  <button
+                  <LRButton
                     type="button"
-                    onClick={() => setRecipientPubHex(bytesToHex(identity.kem.publicKey))}
-                    className="shrink-0 default-radius border border-gray-100 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 cursor-pointer"
+                    variant="secondary-outline"
+                    onClick={() =>
+                      setRecipientPubHex(bytesToHex(identity.kem.publicKey))
+                    }
+                    className="shrink-0 text-xs"
                   >
                     Use my own (self-test)
-                  </button>
+                  </LRButton>
                 )}
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Secret to protect</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Secret to protect
+              </label>
               <textarea
                 value={plaintext}
                 onChange={(e) => setPlaintext(e.target.value)}
@@ -422,18 +500,23 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
                 disabled={!identity}
                 className="h-4 w-4"
               />
-              Sign with my identity (ML-DSA-65){!identity && ", generate an identity in My Keys first"}
+              Sign with my identity (ML-DSA-65)
+              {!identity && ", generate an identity in My Keys first"}
             </label>
 
-            <button
-              type="button"
-              disabled={!plaintext.trim() || !recipientPubHex.trim() || encryptBusy}
-              onClick={handleEncrypt}
-              style={{ backgroundColor: "var(--brand-primary)" }}
-              className="flex items-center gap-1.5 default-radius px-4 py-2 text-sm font-medium text-white transition-opacity cursor-pointer hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <MdLock /> {encryptBusy ? "Encrypting…" : "Encrypt"}
-            </button>
+            <div className="flex justify-end">
+              <LRButton
+                type="button"
+                variant="primary"
+                disabled={
+                  !plaintext.trim() || !recipientPubHex.trim() || encryptBusy
+                }
+                onClick={handleEncrypt}
+                icon={<MdLock />}
+              >
+                {encryptBusy ? "Encrypting…" : "Encrypt"}
+              </LRButton>
+            </div>
 
             {encryptError && (
               <p className="text-sm text-red-600 default-radius bg-red-50 border border-red-100 px-3 py-2">
@@ -444,29 +527,45 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
             {capsuleResult && (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-bold text-gray-700">Capsule: send this to the recipient</p>
+                  <p className="text-sm font-bold text-gray-700">
+                    Capsule: send this to the recipient
+                  </p>
                   <div className="flex gap-2">
-                    <button
+                    <LRButton
                       type="button"
+                      variant="secondary-outline"
                       onClick={() => {
-                        navigator.clipboard.writeText(JSON.stringify(capsuleResult, null, 2));
+                        navigator.clipboard.writeText(
+                          JSON.stringify(capsuleResult, null, 2),
+                        );
                         setCopiedCapsule(true);
                         setTimeout(() => setCopiedCapsule(false), 2000);
                       }}
-                      className="flex items-center gap-1.5 px-2.5 py-1 default-radius border border-gray-100 text-xs text-gray-600 hover:bg-gray-50 cursor-pointer"
-                    >
-                      {copiedCapsule ? <MdCheck className="text-green-700" /> : <MdContentCopy />}
-                      {copiedCapsule ? "Copied" : "Copy"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        downloadText("vault-capsule.qvault.json", JSON.stringify(capsuleResult, null, 2))
+                      icon={
+                        copiedCapsule ? (
+                          <MdCheck className="text-green-700" />
+                        ) : (
+                          <MdContentCopy />
+                        )
                       }
-                      className="flex items-center gap-1.5 px-2.5 py-1 default-radius border border-gray-100 text-xs text-gray-600 hover:bg-gray-50 cursor-pointer"
+                      className="text-xs"
                     >
-                      <MdDownload /> Download
-                    </button>
+                      {copiedCapsule ? "Copied" : "Copy"}
+                    </LRButton>
+                    <LRButton
+                      type="button"
+                      variant="secondary-outline"
+                      onClick={() =>
+                        downloadText(
+                          "vault-capsule.qvault.json",
+                          JSON.stringify(capsuleResult, null, 2),
+                        )
+                      }
+                      icon={<MdDownload />}
+                      className="text-xs"
+                    >
+                      Download
+                    </LRButton>
                   </div>
                 </div>
                 <div className="default-radius border border-gray-800 bg-gray-800 p-4 overflow-x-auto max-h-40 overflow-y-auto">
@@ -475,7 +574,7 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
                   </pre>
                 </div>
                 <p className="text-xs text-gray-400 mt-2">
-                 It's safe to send over email, Slack, or store publicly.
+                  Safe to share with recipient or store publicly.
                 </p>
               </div>
             )}
@@ -498,7 +597,9 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Capsule to open</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Capsule to open
+              </label>
               <textarea
                 value={capsuleInput}
                 onChange={(e) => setCapsuleInput(e.target.value)}
@@ -507,15 +608,17 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
                 className="default-radius w-full border border-gray-100 px-3 py-2 text-xs font-mono text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300 resize-none"
               />
             </div>
-            <button
-              type="button"
-              disabled={!mySecretHex.trim() || !capsuleInput.trim()}
-              onClick={handleDecrypt}
-              style={{ backgroundColor: "var(--brand-primary)" }}
-              className="flex items-center gap-1.5 default-radius px-4 py-2 text-sm font-medium text-white transition-opacity cursor-pointer hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <MdLockOpen /> Decrypt
-            </button>
+            <div className="flex justify-end">
+              <LRButton
+                type="button"
+                variant="primary"
+                disabled={!mySecretHex.trim() || !capsuleInput.trim()}
+                onClick={handleDecrypt}
+                icon={<MdLockOpen />}
+              >
+                Decrypt
+              </LRButton>
+            </div>
 
             {decryptError && (
               <p className="text-sm text-red-600 default-radius bg-red-50 border border-red-100 px-3 py-2">
@@ -524,8 +627,12 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
             )}
             {decryptResult !== null && (
               <div className="default-radius border border-green-100 bg-green-50 p-4">
-                <p className="text-xs text-green-700 mb-1">Decrypted successfully:</p>
-                <p className="font-mono text-sm text-green-900 break-all">{decryptResult}</p>
+                <p className="text-xs text-green-700 mb-1">
+                  Decrypted successfully:
+                </p>
+                <p className="font-mono text-sm text-green-900 break-all">
+                  {decryptResult}
+                </p>
               </div>
             )}
           </div>
@@ -537,22 +644,24 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
             <p className="text-sm text-gray-600">
               Real quantum backend vs. browser CSPRNG, side by side.
             </p>
-            <button
-              type="button"
-              onClick={handleCompare}
-              disabled={compareBusy}
-              style={{ backgroundColor: "var(--brand-primary)" }}
-              className="flex items-center gap-1.5 default-radius px-4 py-2 text-sm font-medium text-white transition-opacity cursor-pointer hover:opacity-80 disabled:opacity-40"
-            >
-              <MdCompareArrows /> {compareBusy ? "Fetching both…" : "Run Comparison"}
-            </button>
+            <div className="flex justify-end">
+              <LRButton
+                type="button"
+                variant="primary"
+                onClick={handleCompare}
+                disabled={compareBusy}
+                icon={<MdCompareArrows />}
+              >
+                {compareBusy ? "Fetching both…" : "Run Comparison"}
+              </LRButton>
+            </div>
 
             {compareResult && (
               <div className="space-y-3">
                 {compareResult.quantum.sourceId !== "lr-quantum-job" && (
                   <p className="text-xs text-gray-500">
-                    The quantum backend didn&apos;t answer this time, so both boxes below are showing local
-                    randomness.
+                    The quantum backend didn&apos;t answer this time, so both
+                    boxes below are showing local randomness.
                   </p>
                 )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -565,23 +674,41 @@ export default function QuantumVaultModal({ onClose }: { onClose: () => void }) 
                           ? "border-[var(--brand-primary)]/25 bg-red-50"
                           : "border-gray-200 bg-gray-50",
                     },
-                    { label: "Browser CSPRNG", cert: compareResult.classical, tint: "border-gray-200 bg-gray-50" },
+                    {
+                      label: "Browser CSPRNG",
+                      cert: compareResult.classical,
+                      tint: "border-gray-200 bg-gray-50",
+                    },
                   ].map(({ label, cert, tint }) => (
-                    <div key={label} className={`default-radius border p-4 ${tint}`}>
-                      <p className="text-sm font-bold text-gray-800 mb-2">{label}</p>
-                      <p className="text-xs text-gray-500 mb-0.5">Reported source</p>
-                      <p className="text-sm font-medium text-gray-800 mb-2">{cert.sourceName}</p>
+                    <div
+                      key={label}
+                      className={`default-radius border p-4 ${tint}`}
+                    >
+                      <p className="text-sm font-bold text-gray-800 mb-2">
+                        {label}
+                      </p>
+                      <p className="text-xs text-gray-500 mb-0.5">
+                        Reported source
+                      </p>
+                      <p className="text-sm font-medium text-gray-800 mb-2">
+                        {cert.sourceName}
+                      </p>
                       <p className="text-xs text-gray-500 mb-0.5">Digest</p>
                       <p className="font-mono text-xs text-gray-700 break-all mb-2">
                         {cert.entropyDigest.slice(0, 24)}…
                       </p>
                       {cert.quantumJobId ? (
                         <p className="text-xs text-green-700">
-                          ✓ Verifiable — job <span className="font-mono">{cert.quantumJobId.slice(0, 8)}…</span> in your Jobs tab
+                          ✓ Verifiable — job{" "}
+                          <span className="font-mono">
+                            {cert.quantumJobId.slice(0, 8)}…
+                          </span>{" "}
+                          in your Jobs tab
                         </p>
                       ) : (
                         <p className="text-xs text-gray-400">
-                          Algorithmic (computationally unpredictable, not physically)
+                          Algorithmic (computationally unpredictable, not
+                          physically)
                         </p>
                       )}
                     </div>
