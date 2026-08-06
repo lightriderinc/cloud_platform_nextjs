@@ -2,6 +2,7 @@ import { logtoConfig } from "@/app/logto";
 import LogoutButton from "@/components/auth/LogoutButton";
 import CurrentPlanBadge from "@/components/billing/CurrentPlanBadge";
 import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
+import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { getAvatarDataUri } from "@/lib/avatar";
 import {
   getAccountProfile,
@@ -16,6 +17,7 @@ import {
   getMfaVerifications,
   normalizeSocialIdentities,
   sendEmailCode,
+  updateAvatar,
   updateBirthdate,
   updatePassword,
   updatePrimaryEmail,
@@ -29,7 +31,6 @@ import {
 } from "@/lib/logto/management";
 import { getAccessToken, signOut } from "@logto/next/server-actions";
 import { refresh, revalidatePath } from "next/cache";
-import Image from "next/image";
 import ProfileActions from "./ProfileActions";
 
 export default async function AccountPage() {
@@ -84,7 +85,12 @@ export default async function AccountPage() {
     // Account API not enabled or token unavailable
   }
   const email = userInfo?.email ?? null;
-  const avatarUrl = userInfo?.picture ?? getAvatarDataUri(name || email || "user");
+  // Kept as two separate values rather than one pre-resolved URL: `picture` is
+  // whatever the user set (an upload, or a social provider's CDN link) and can
+  // 403 or go stale, so the avatar needs the generated pixelbot as a live
+  // fallback to swap to on load failure — not just when `picture` is absent.
+  const customAvatarUrl = userInfo?.picture ?? null;
+  const generatedAvatarUrl = getAvatarDataUri(name || email || "user");
 
   async function doVerifyPassword(password: string): Promise<string> {
     "use server";
@@ -166,6 +172,67 @@ export default async function AccountPage() {
     await updatePrimaryEmail(token, currentVerifId, newVerifId, emailAddr);
   }
 
+  /**
+   * Saves a directly-pasted image URL onto the Logto user record. This is the
+   * "Image URL" tab of the avatar modal, and it's also the second half of the
+   * upload flow — once a cropped file lands in storage, its public URL gets
+   * written here the same way.
+   */
+  async function doUpdateAvatarUrl(avatarUrl: string): Promise<void> {
+    "use server";
+    const token = await getAccessToken(logtoConfig);
+    await updateAvatar(token, avatarUrl);
+    revalidatePath("/settings/account");
+    refresh();
+  }
+
+  // TODO(backend): the upload half of the avatar flow.
+  //
+  // The UI is done: ProfileAvatar/EditAvatarModal crop to a square
+  // AVATAR_OUTPUT_SIZE PNG and hand it over as FormData under
+  // AVATAR_FORM_FIELD (both from "@/lib/avatar"). Defining the action below
+  // and passing it as ProfileAvatar's `onUploadAvatar` is the whole job —
+  // until then the modal runs end to end against a local preview and labels
+  // it as unsaved.
+  //
+  // Before this works, note:
+  //   - There is no Supabase client or dependency in this repo yet, and no
+  //     SUPABASE_* entries in .env.example. Storage may belong in the sibling
+  //     light-rider-platform service instead of here — worth deciding first.
+  //   - Server actions cap request bodies at 1MB by default. A 512px PNG photo
+  //     can exceed that; either raise serverActions.bodySizeLimit in
+  //     next.config.ts, or switch AvatarEditor's `outputType` to "image/webp".
+  //   - Whatever this throws is shown verbatim to the user by the modal, so
+  //     throw a friendly message and log the underlying error separately.
+  //
+  //   async function doUploadAvatar(formData: FormData): Promise<string> {
+  //     "use server";
+  //     const { sub } = await requireLogtoUser();
+  //     const file = formData.get(AVATAR_FORM_FIELD);
+  //     if (!(file instanceof File)) throw new Error("No image was received.");
+  //
+  //     // 1. Store it, keyed by the Logto user id so each user overwrites
+  //     //    their own object rather than accumulating orphaned files.
+  //     const path = `${sub}/avatar.png`;
+  //     const { error } = await supabase.storage
+  //       .from("avatars")
+  //       .upload(path, file, { upsert: true, contentType: file.type });
+  //     if (error) {
+  //       console.error("[account] avatar upload failed:", error);
+  //       throw new Error("Could not upload that image. Try again.");
+  //     }
+  //
+  //     // 2. Resolve the public URL (or a signed URL for a private bucket).
+  //     const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+  //     // Cache-bust: the path is stable, so without this the browser keeps
+  //     // serving the previous avatar after a replacement.
+  //     const url = `${data.publicUrl}?v=${Date.now()}`;
+  //
+  //     // 3. Write it onto the Logto user, then hand it back to the modal.
+  //     await doUpdateAvatarUrl(url);
+  //     return url;
+  //   }
+
   async function doUpdateBirthdate(birthdate: string): Promise<void> {
     "use server";
     const token = await getAccessToken(logtoConfig);
@@ -216,15 +283,13 @@ export default async function AccountPage() {
       </p>
 
       <div className="flex items-center gap-4 mb-12">
-        <div className="relative w-16 h-16 default-radius overflow-hidden border border-gray-200 bg-gray-100 flex-shrink-0">
-          <Image
-            src={avatarUrl}
-            alt="Avatar"
-            fill
-            className="object-cover"
-            unoptimized
-          />
-        </div>
+        <ProfileAvatar
+          src={customAvatarUrl}
+          fallbackSrc={generatedAvatarUrl}
+          name={name || email || "Your account"}
+          size={64}
+          onUpdateAvatarUrl={doUpdateAvatarUrl}
+        />
         <div className="min-w-0">
           {name && (
             <p className="text-3xl font-semibold text-gray-800 truncate">

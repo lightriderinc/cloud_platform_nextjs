@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { MdClose } from "react-icons/md";
 
 export default function ModalShell({
@@ -14,6 +14,12 @@ export default function ModalShell({
   children: React.ReactNode;
   maxWidth?: string;
 }) {
+  // A click only counts as a backdrop click if the press *started* on the
+  // backdrop too. Without this, releasing the mouse outside the panel after a
+  // drag that began inside it (e.g. repositioning an image in a cropper, or
+  // selecting text) fires a click on the backdrop and closes the modal.
+  const pressedOnBackdrop = useRef(false);
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -25,7 +31,12 @@ export default function ModalShell({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onClick={onClose}
+      onMouseDown={(e) => {
+        pressedOnBackdrop.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && pressedOnBackdrop.current) onClose();
+      }}
       role="dialog"
       aria-modal="true"
       aria-label={title}
