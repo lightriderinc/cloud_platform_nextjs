@@ -2,7 +2,8 @@ import { logtoConfig } from "@/app/logto";
 import LogoutButton from "@/components/auth/LogoutButton";
 import CurrentPlanBadge from "@/components/billing/CurrentPlanBadge";
 import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
-import { getAvatarDataUri } from "@/lib/avatar";
+import ProfileAvatar from "@/components/profile/ProfileAvatar";
+import { AVATAR_FORM_FIELD, getAvatarDataUri } from "@/lib/avatar";
 import {
   getAccountProfile,
   getDisplayName,
@@ -16,12 +17,14 @@ import {
   getMfaVerifications,
   normalizeSocialIdentities,
   sendEmailCode,
+  updateAvatar,
   updateBirthdate,
   updatePassword,
   updatePrimaryEmail,
   verifyEmailCode,
   verifyPassword,
 } from "@/lib/logto-account";
+import { uploadAvatar } from "@/lib/supabase/avatars";
 import {
   findUserByPrimaryEmail,
   getUserAccountFacts,
@@ -29,7 +32,6 @@ import {
 } from "@/lib/logto/management";
 import { getAccessToken, signOut } from "@logto/next/server-actions";
 import { refresh, revalidatePath } from "next/cache";
-import Image from "next/image";
 import ProfileActions from "./ProfileActions";
 
 export default async function AccountPage() {
@@ -84,7 +86,12 @@ export default async function AccountPage() {
     // Account API not enabled or token unavailable
   }
   const email = userInfo?.email ?? null;
-  const avatarUrl = userInfo?.picture ?? getAvatarDataUri(name || email || "user");
+  // Kept as two separate values rather than one pre-resolved URL: `picture` is
+  // whatever the user set (an upload, or a social provider's CDN link) and can
+  // 403 or go stale, so the avatar needs the generated pixelbot as a live
+  // fallback to swap to on load failure — not just when `picture` is absent.
+  const customAvatarUrl = userInfo?.picture ?? null;
+  const generatedAvatarUrl = getAvatarDataUri(name || email || "user");
 
   async function doVerifyPassword(password: string): Promise<string> {
     "use server";
@@ -166,6 +173,46 @@ export default async function AccountPage() {
     await updatePrimaryEmail(token, currentVerifId, newVerifId, emailAddr);
   }
 
+  /**
+   * Saves a directly-pasted image URL onto the Logto user record. This is the
+   * "Image URL" tab of the avatar modal, and it's also the second half of the
+   * upload flow — once a cropped file lands in storage, its public URL gets
+   * written here the same way.
+   */
+  async function doUpdateAvatarUrl(avatarUrl: string): Promise<void> {
+    "use server";
+    const token = await getAccessToken(logtoConfig);
+    await updateAvatar(token, avatarUrl);
+    revalidatePath("/settings/account");
+    refresh();
+  }
+
+  /**
+   * Uploads the cropped avatar to Supabase Storage, then writes the
+   * resulting public URL onto the Logto user the same way the "Image URL"
+   * tab does. requireLogtoUser()'s own error ("UNAUTHENTICATED") isn't
+   * user-facing, so it's caught and rethrown with a friendlier message here
+   * rather than changed at the shared helper.
+   */
+  async function doUploadAvatar(formData: FormData): Promise<string> {
+    "use server";
+    let sub: string;
+    try {
+      ({ sub } = await requireLogtoUser());
+    } catch {
+      throw new Error("You must be signed in to upload an avatar.");
+    }
+
+    const file = formData.get(AVATAR_FORM_FIELD);
+    if (!(file instanceof File)) {
+      throw new Error("No image was received. Try again.");
+    }
+
+    const url = await uploadAvatar(sub, file);
+    await doUpdateAvatarUrl(url); // writes to Logto + revalidates
+    return url;
+  }
+
   async function doUpdateBirthdate(birthdate: string): Promise<void> {
     "use server";
     const token = await getAccessToken(logtoConfig);
@@ -216,15 +263,14 @@ export default async function AccountPage() {
       </p>
 
       <div className="flex items-center gap-4 mb-12">
-        <div className="relative w-16 h-16 default-radius overflow-hidden border border-gray-200 bg-gray-100 flex-shrink-0">
-          <Image
-            src={avatarUrl}
-            alt="Avatar"
-            fill
-            className="object-cover"
-            unoptimized
-          />
-        </div>
+        <ProfileAvatar
+          src={customAvatarUrl}
+          fallbackSrc={generatedAvatarUrl}
+          name={name || email || "Your account"}
+          size={64}
+          onUpdateAvatarUrl={doUpdateAvatarUrl}
+          onUploadAvatar={doUploadAvatar}
+        />
         <div className="min-w-0">
           {name && (
             <p className="text-3xl font-semibold text-gray-800 truncate">

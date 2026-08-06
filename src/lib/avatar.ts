@@ -47,6 +47,28 @@ const GLOW_COLORS = [
   "f5e6bc",
 ];
 
+// ---------------------------------------------------------------------------
+// Upload contract
+//
+// Shared between the avatar editor UI and whatever server action stores the
+// result. These live here, not in EditAvatarModal, because that file carries a
+// `"use client"` directive: every export of a client module is replaced by a
+// client reference when imported from a Server Component, so reading this
+// constant inside a server action would throw rather than give you the string.
+// ---------------------------------------------------------------------------
+
+/** FormData key the cropped file is sent under. */
+export const AVATAR_FORM_FIELD = "avatar";
+/**
+ * MIME type of the cropped image the editor produces. WebP rather than PNG —
+ * roughly a tenth the bytes at the same crop, which matters because Next
+ * server actions cap request bodies at 1MB by default and a 512px PNG
+ * photograph can exceed that.
+ */
+export const AVATAR_OUTPUT_TYPE = "image/webp";
+/** Edge length, in px, of the square the editor exports. */
+export const AVATAR_OUTPUT_SIZE = 512;
+
 /** Generates a deterministic pixelbot avatar data URI seeded by the user's full name. */
 export function getAvatarDataUri(seed: string): string {
   const avatar = new Avatar(style, {
