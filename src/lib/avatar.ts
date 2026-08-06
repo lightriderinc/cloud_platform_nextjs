@@ -59,8 +59,13 @@ const GLOW_COLORS = [
 
 /** FormData key the cropped file is sent under. */
 export const AVATAR_FORM_FIELD = "avatar";
-/** MIME type of the cropped image the editor produces. */
-export const AVATAR_OUTPUT_TYPE = "image/png";
+/**
+ * MIME type of the cropped image the editor produces. WebP rather than PNG —
+ * roughly a tenth the bytes at the same crop, which matters because Next
+ * server actions cap request bodies at 1MB by default and a 512px PNG
+ * photograph can exceed that.
+ */
+export const AVATAR_OUTPUT_TYPE = "image/webp";
 /** Edge length, in px, of the square the editor exports. */
 export const AVATAR_OUTPUT_SIZE = 512;
 

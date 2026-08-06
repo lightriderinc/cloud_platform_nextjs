@@ -3,7 +3,7 @@ import LogoutButton from "@/components/auth/LogoutButton";
 import CurrentPlanBadge from "@/components/billing/CurrentPlanBadge";
 import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
-import { resolveAvatarSources } from "@/lib/avatar";
+import { AVATAR_FORM_FIELD, getAvatarDataUri } from "@/lib/avatar";
 import {
   getAccountProfile,
   getDisplayName,
@@ -24,6 +24,7 @@ import {
   verifyEmailCode,
   verifyPassword,
 } from "@/lib/logto-account";
+import { uploadAvatar } from "@/lib/supabase/avatars";
 import {
   findUserByPrimaryEmail,
   getUserAccountFacts,
@@ -192,52 +193,31 @@ export default async function AccountPage() {
     refresh();
   }
 
-  // TODO(backend): the upload half of the avatar flow.
-  //
-  // The UI is done: ProfileAvatar/EditAvatarModal crop to a square
-  // AVATAR_OUTPUT_SIZE PNG and hand it over as FormData under
-  // AVATAR_FORM_FIELD (both from "@/lib/avatar"). Defining the action below
-  // and passing it as ProfileAvatar's `onUploadAvatar` is the whole job —
-  // until then the modal runs end to end against a local preview and labels
-  // it as unsaved.
-  //
-  // Before this works, note:
-  //   - There is no Supabase client or dependency in this repo yet, and no
-  //     SUPABASE_* entries in .env.example. Storage may belong in the sibling
-  //     light-rider-platform service instead of here — worth deciding first.
-  //   - Server actions cap request bodies at 1MB by default. A 512px PNG photo
-  //     can exceed that; either raise serverActions.bodySizeLimit in
-  //     next.config.ts, or switch AvatarEditor's `outputType` to "image/webp".
-  //   - Whatever this throws is shown verbatim to the user by the modal, so
-  //     throw a friendly message and log the underlying error separately.
-  //
-  //   async function doUploadAvatar(formData: FormData): Promise<string> {
-  //     "use server";
-  //     const { sub } = await requireLogtoUser();
-  //     const file = formData.get(AVATAR_FORM_FIELD);
-  //     if (!(file instanceof File)) throw new Error("No image was received.");
-  //
-  //     // 1. Store it, keyed by the Logto user id so each user overwrites
-  //     //    their own object rather than accumulating orphaned files.
-  //     const path = `${sub}/avatar.png`;
-  //     const { error } = await supabase.storage
-  //       .from("avatars")
-  //       .upload(path, file, { upsert: true, contentType: file.type });
-  //     if (error) {
-  //       console.error("[account] avatar upload failed:", error);
-  //       throw new Error("Could not upload that image. Try again.");
-  //     }
-  //
-  //     // 2. Resolve the public URL (or a signed URL for a private bucket).
-  //     const { data } = supabase.storage.from("avatars").getPublicUrl(path);
-  //     // Cache-bust: the path is stable, so without this the browser keeps
-  //     // serving the previous avatar after a replacement.
-  //     const url = `${data.publicUrl}?v=${Date.now()}`;
-  //
-  //     // 3. Write it onto the Logto user, then hand it back to the modal.
-  //     await doUpdateAvatarUrl(url);
-  //     return url;
-  //   }
+  /**
+   * Uploads the cropped avatar to Supabase Storage, then writes the
+   * resulting public URL onto the Logto user the same way the "Image URL"
+   * tab does. requireLogtoUser()'s own error ("UNAUTHENTICATED") isn't
+   * user-facing, so it's caught and rethrown with a friendlier message here
+   * rather than changed at the shared helper.
+   */
+  async function doUploadAvatar(formData: FormData): Promise<string> {
+    "use server";
+    let sub: string;
+    try {
+      ({ sub } = await requireLogtoUser());
+    } catch {
+      throw new Error("You must be signed in to upload an avatar.");
+    }
+
+    const file = formData.get(AVATAR_FORM_FIELD);
+    if (!(file instanceof File)) {
+      throw new Error("No image was received. Try again.");
+    }
+
+    const url = await uploadAvatar(sub, file);
+    await doUpdateAvatarUrl(url); // writes to Logto + revalidates
+    return url;
+  }
 
   async function doUpdateBirthdate(birthdate: string): Promise<void> {
     "use server";
@@ -295,6 +275,7 @@ export default async function AccountPage() {
           name={name || email || "Your account"}
           size={64}
           onUpdateAvatarUrl={doUpdateAvatarUrl}
+          onUploadAvatar={doUploadAvatar}
         />
         <div className="min-w-0">
           {name && (
