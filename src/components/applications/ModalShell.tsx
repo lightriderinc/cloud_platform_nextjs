@@ -31,7 +31,7 @@ export default function ModalShell({
       aria-label={title}
     >
       <div
-        className={`relative default-radius w-full ${maxWidth} max-h-[88vh] overflow-y-auto bg-white shadow-xl animate-scale-in p-8`}
+        className={`relative default-radius w-full ${maxWidth} max-h-[90vh] overflow-y-auto bg-white shadow-xl animate-scale-in p-8`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">

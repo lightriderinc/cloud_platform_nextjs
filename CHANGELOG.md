@@ -1,3 +1,286 @@
+## [1.13.2](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.13.1...v1.13.2) (2026-08-05)
+
+
+### Bug Fixes
+
+* constrain ModalShell height so long content scrolls instead of overflowing ([aacffdc](https://github.com/lightriderinc/cloud_platform_nextjs/commit/aacffdc747c73b616a4408303c6bef21d1102085))
+
+## [1.13.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.13.0...v1.13.1) (2026-08-05)
+
+
+### Bug Fixes
+
+* For users with connected accounts (google, github) the default page for turning 2fa on/off is set to the email code. With a small info box on the password option that you'll need to set your password first. ([3bdb4ac](https://github.com/lightriderinc/cloud_platform_nextjs/commit/3bdb4ac4e850838fff8759da6ee41da1a63af353))
+
+# [1.13.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.12.5...v1.13.0) (2026-08-05)
+
+
+### Bug Fixes
+
+* birthdate display format ([b2e0df3](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b2e0df363c7d7c8e0d82ffe340748dc9e63a2747))
+* logto management api endpoint ([d7843a9](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d7843a98aab6741d07312465a3dc7246d9acfdd8))
+* purchase button update ([7c2a990](https://github.com/lightriderinc/cloud_platform_nextjs/commit/7c2a9906e43da1a9eaae4a51cf574c61f0abfb87))
+
+
+### Features
+
+* added avatar fallback ([6a0b0de](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6a0b0ded8ebd32d3f8af52262913cd3d94fa766e))
+* added fallback avatar + minor fixes ([b2a1bed](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b2a1bed350f4c7af5c07d53d360570a3e2bb72d0))
+
+## [1.12.5](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.12.4...v1.12.5) (2026-08-05)
+
+
+### Bug Fixes
+
+* state in job result modal ([06d57c6](https://github.com/lightriderinc/cloud_platform_nextjs/commit/06d57c681e7bf5f0531a006d0944b35e46911f34))
+* state in job result modal ([6953d6a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6953d6a4cbe344e732a5a1338a1abb60fea0805e))
+
+## [1.12.4](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.12.3...v1.12.4) (2026-08-05)
+
+
+### Bug Fixes
+
+* updated legal pages ([55c22d2](https://github.com/lightriderinc/cloud_platform_nextjs/commit/55c22d2bae10c0967471fe4453b7dabbb9f19afa))
+
+## [1.12.3](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.12.2...v1.12.3) (2026-08-05)
+
+
+### Bug Fixes
+
+* updated credits summary card ([467484d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/467484dee8e0ad310db0ad455b5c0ab197c58e46))
+* updated credits summary card ([10161a9](https://github.com/lightriderinc/cloud_platform_nextjs/commit/10161a955539fc81eab937cd04a25378d93f350b))
+
+## [1.12.2](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.12.1...v1.12.2) (2026-08-05)
+
+
+### Bug Fixes
+
+* updated credits card ([95895bc](https://github.com/lightriderinc/cloud_platform_nextjs/commit/95895bc153617c528ff036070b3c0e153c47a846))
+* updated credits card ([5bde4a7](https://github.com/lightriderinc/cloud_platform_nextjs/commit/5bde4a7d1e6d4a0a06585cf7180e843e6cf9eb66))
+
+## [1.12.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.12.0...v1.12.1) (2026-08-04)
+
+
+### Bug Fixes
+
+* logto endpoint updated to main domain ([5973553](https://github.com/lightriderinc/cloud_platform_nextjs/commit/5973553c1a1d631da245943914c644d7effa3071))
+* updated logto endpoint url + sources for apps ([9e934d1](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9e934d1b075b2d1e927912e00ca6bcff36bc0927))
+* updated url ([b186f07](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b186f07c82832ffd8a5d0d61f5d9cba6225bb462))
+
+# [1.12.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.12...v1.12.0) (2026-08-03)
+
+
+### Bug Fixes
+
+* added backend sort ([e1534e0](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e1534e0bd66b57989724a0f4cdce8a9d54148eda))
+* added list view to backends ([c1e6e96](https://github.com/lightriderinc/cloud_platform_nextjs/commit/c1e6e96aeaf095fe2af0c0c2fcd2eb80c40887f0))
+* backend filter added ([7021feb](https://github.com/lightriderinc/cloud_platform_nextjs/commit/7021febfe17ee4091b7c159022aec535923f00d9))
+* backend sort cached ([0afa371](https://github.com/lightriderinc/cloud_platform_nextjs/commit/0afa371316b53fb39a32b1772aeea2db88acb900))
+
+
+### Features
+
+* backend page updated ([e6e0d39](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e6e0d3934e7a6f7e80cf76d61c96847ec5e15ccb))
+
+## [1.11.12](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.11...v1.11.12) (2026-08-03)
+
+
+### Bug Fixes
+
+* jobs skeleton load - dashboard & table ([40c1f0d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/40c1f0d81456720bc7bbdd1d8ac0d0df1ed03b7e))
+* minor bug fixed - skeleton loading issues resolved ([a0b0c1d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/a0b0c1d9844a52c0ee982b22dde59c042d73c177))
+* skeleton loading for api keys card ([56ddbfb](https://github.com/lightriderinc/cloud_platform_nextjs/commit/56ddbfb4cd7af930f1db4f0693d51c8a6cc42026))
+
+## [1.11.11](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.10...v1.11.11) (2026-07-31)
+
+
+### Bug Fixes
+
+* constrain ModalShell height so long content scrolls instead of overflowing ([d33ecc1](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d33ecc120584875a7711059f1f690cdece055a15))
+
+## [1.11.10](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.9...v1.11.10) (2026-07-31)
+
+
+### Bug Fixes
+
+* Wired dice roll sources ([fbf3ad8](https://github.com/lightriderinc/cloud_platform_nextjs/commit/fbf3ad848734c1a14a3662f356d26e1efbca5dac))
+
+## [1.11.9](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.8...v1.11.9) (2026-07-31)
+
+
+### Bug Fixes
+
+* added welcome page bg ([f1b1035](https://github.com/lightriderinc/cloud_platform_nextjs/commit/f1b103547b6f62d7421f53d1ecf5fc4bcbb5f828))
+* entropy demo removed from dashboard until v3 service integration ([08a3759](https://github.com/lightriderinc/cloud_platform_nextjs/commit/08a3759e5d278791fda37a5b791269607bf87230))
+* welcome page bg img tag issue fixed ([ff070de](https://github.com/lightriderinc/cloud_platform_nextjs/commit/ff070deff179c02d6a7581e45f00167f338fa9cc))
+* welcome pg updates + entropy demo removed before v3 + flow fixes ([89d660b](https://github.com/lightriderinc/cloud_platform_nextjs/commit/89d660bc8d74bc629d9d39bad998a187249001a6))
+
+## [1.11.8](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.7...v1.11.8) (2026-07-30)
+
+
+### Bug Fixes
+
+* rigetti coming soon added to welome page ([d363eba](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d363eba5a5656fabc0cad7c8321e723c5499bc7b))
+* updated welcome page ([cf002b6](https://github.com/lightriderinc/cloud_platform_nextjs/commit/cf002b609d65ebfa614ddfc317209f40d0d2b457))
+* updated welcome page ([0aa2e63](https://github.com/lightriderinc/cloud_platform_nextjs/commit/0aa2e63ba50dd5069256b1a8666ff71c4c4eabdb))
+* welcome page ([3e044b6](https://github.com/lightriderinc/cloud_platform_nextjs/commit/3e044b6272073cba9ff4ea088070248df95ea6ea))
+
+## [1.11.7](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.6...v1.11.7) (2026-07-30)
+
+
+### Bug Fixes
+
+* suggested fix for bonus tokens displaying correctly with new user sign in ([1726ab3](https://github.com/lightriderinc/cloud_platform_nextjs/commit/1726ab33cf5b8fe20e4eaf0c2f181f475c89fdb5))
+* suggested fix for bonus tokens displaying correctly with new user sign in ([528d729](https://github.com/lightriderinc/cloud_platform_nextjs/commit/528d72939afa13616daed4c1ef6f4a6363013d79))
+
+## [1.11.6](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.5...v1.11.6) (2026-07-30)
+
+
+### Bug Fixes
+
+* dashboard job list error for new users ([afedebb](https://github.com/lightriderinc/cloud_platform_nextjs/commit/afedebb6444b25fc055d9f7f6eb8aac7e60e7cc6))
+* minor div styles ([098760e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/098760e8d2466c50dfc1c12953b8671cb52037f1))
+* new user job list error ([a2da57a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/a2da57a6ca87073054f4203ab4a7111d08199e93))
+
+## [1.11.5](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.4...v1.11.5) (2026-07-29)
+
+
+### Bug Fixes
+
+* api key display bg ([1c764df](https://github.com/lightriderinc/cloud_platform_nextjs/commit/1c764dfd48e0c345f1e68be4926e739b6adcb945))
+* confirm buttons style update ([61c4794](https://github.com/lightriderinc/cloud_platform_nextjs/commit/61c4794ce7a23a86b8f72490d8a295b1da1a543d))
+* pricing table + minor style updates ([723350d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/723350dfc9cdd15d0a2a3ee282b850a28cfb62c3))
+* Runtime pricing chart ([1b5ada2](https://github.com/lightriderinc/cloud_platform_nextjs/commit/1b5ada2870198a83071e75acfbe72e24f6ba64ec))
+
+## [1.11.4](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.3...v1.11.4) (2026-07-29)
+
+
+### Bug Fixes
+
+* account card dropdown ([00df9e5](https://github.com/lightriderinc/cloud_platform_nextjs/commit/00df9e56446d5f5f7564175145eb049c5bcf6386))
+* account card dropdown ([20eb8bc](https://github.com/lightriderinc/cloud_platform_nextjs/commit/20eb8bc17a59201cc9d8dd78dbfda49bd2651435))
+
+## [1.11.3](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.2...v1.11.3) (2026-07-29)
+
+
+### Bug Fixes
+
+* minor style changes + job count ([6fe5204](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6fe5204b3e153e3f45c96c24b00dabb6f39f61bb))
+* total jobs count added ([03dc3cc](https://github.com/lightriderinc/cloud_platform_nextjs/commit/03dc3cc2e2f7fa71cfc4533d7dfb9240a381d8c8))
+
+## [1.11.2](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.1...v1.11.2) (2026-07-29)
+
+
+### Bug Fixes
+
+* backend card queue removed for now ([3dc2151](https://github.com/lightriderinc/cloud_platform_nextjs/commit/3dc21510f1f4d97ecb8049dc63860c37565b815b))
+* backend sample circuits ([6546f95](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6546f95ed8f58b742c999fe0b520183b5ec9a332))
+* warning message - sample qpu circuit submission ([31d8ee8](https://github.com/lightriderinc/cloud_platform_nextjs/commit/31d8ee8fe11521e788b5fab74fb85242f0eaa8f2))
+* welcome modal + quick tour commented out for time being ([bb99907](https://github.com/lightriderinc/cloud_platform_nextjs/commit/bb999075349bf532dc7aca0faaeba4203c8cdc6e))
+
+## [1.11.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.11.0...v1.11.1) (2026-07-29)
+
+
+### Bug Fixes
+
+* backend connection section ([d067ad7](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d067ad7b6973ad5619bd744372923baaf459dd31))
+* entropy selection unavailable tag updated ([d2a8fc8](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d2a8fc8b3c088a0d7cb805d8348d15c1f6ea51b8))
+* getting started styles fixed ([6f8034a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6f8034ab8596cece3bd041f676943e964c573ac2))
+* no circuit schematic when block by credits ([fb64fc4](https://github.com/lightriderinc/cloud_platform_nextjs/commit/fb64fc4dc951eb02fa7fe224d1de4455ae0f5751))
+* quickstart links in backend connection ([e9bae22](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e9bae22b8bea89a329c94347afc8baa8bbb4d7d4))
+* submit sample job moved to connection section ([f0ed619](https://github.com/lightriderinc/cloud_platform_nextjs/commit/f0ed6192414bbb54f897205f1675f4ca7cf0536d))
+* take tour commented for now ([d3674f6](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d3674f6de47308bb1c365fd9208cc9f23e5e8fe5))
+* token summary shown in qpu submit modal ([192cc35](https://github.com/lightriderinc/cloud_platform_nextjs/commit/192cc35d664a7336e0992ff777bc30902628dd4e))
+* view all jobs link fixed ([5edf27a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/5edf27af8ba902ae88fc25375719c141f0e6c750))
+
+# [1.11.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.8...v1.11.0) (2026-07-29)
+
+
+### Bug Fixes
+
+* api token card styles updated ([ccd4e7a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/ccd4e7a70aef0b144aeb30ccd7e67c7b17a3dcd6))
+* skeleton load for jobs ([8a2ad53](https://github.com/lightriderinc/cloud_platform_nextjs/commit/8a2ad53a983bd05aa619957a22a7d0a2fe72cf42))
+* updated primary-outline buttons to secondary ([b5fa451](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b5fa4512141cac0a61a81ba5b04eec1cf0058ab5))
+
+
+### Features
+
+* dashboard latest jobs ([096181d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/096181d215cf94ca510168623889e4ff782725a0))
+* dashboard latest jobs ([df1b6cb](https://github.com/lightriderinc/cloud_platform_nextjs/commit/df1b6cba642aa6d54e850a7cfce75fa82c460c6f))
+
+## [1.10.8](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.7...v1.10.8) (2026-07-29)
+
+
+### Bug Fixes
+
+* added LR button component ([62a2517](https://github.com/lightriderinc/cloud_platform_nextjs/commit/62a25174f3aa24c9d73821599a8cdd700f52a10d))
+* LRButton component added ([40ab0bd](https://github.com/lightriderinc/cloud_platform_nextjs/commit/40ab0bd86be603ab33e23360db79581433b01aaa))
+* LRButton styles ([95c7adf](https://github.com/lightriderinc/cloud_platform_nextjs/commit/95c7adffcaab148da55773629e87cef32eec79b1))
+* LRButton substitutes action buttons ([2e7db4d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2e7db4daa14be216eb587a09143ddd462b4c7dc4))
+
+## [1.10.7](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.6...v1.10.7) (2026-07-29)
+
+
+### Bug Fixes
+
+* checkout buttons open in new tab + credits -> called tokens ([0d413ee](https://github.com/lightriderinc/cloud_platform_nextjs/commit/0d413ee3dc313eaf1c371dc3bd70cfbe82a585aa))
+* payment card ([5b96e8e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/5b96e8ecde10e0237bebeb717a746613b1cc733f))
+* payment pages update ([4d6320a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/4d6320acba0d2f103cbb73bdaca9df02cd3ded1d))
+* removed manage plan action from plans page ([98336fb](https://github.com/lightriderinc/cloud_platform_nextjs/commit/98336fb64e18b1f726f89139d6e27bd2e9381001))
+
+## [1.10.6](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.5...v1.10.6) (2026-07-29)
+
+
+### Bug Fixes
+
+* usage page action buttons ([c98d69b](https://github.com/lightriderinc/cloud_platform_nextjs/commit/c98d69b5775d78260a00bfe18151db63cf6b9057))
+* usage page action buttons ([2d2998f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2d2998f8aed560d48f69ffb1882443e9f877d44e))
+
+## [1.10.5](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.4...v1.10.5) (2026-07-29)
+
+
+### Bug Fixes
+
+* credit summary skeleton ([6a15a3c](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6a15a3c360848dd6447df98c0a4f2f8b3f6a97bb))
+* payment card ([453379f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/453379f5e50ba53fb7e772433c6783dfca36ba89))
+* usage styles ([80ba46f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/80ba46f2041c450d2d8dc6ddd0530fa9d65a182c))
+
+## [1.10.4](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.3...v1.10.4) (2026-07-29)
+
+
+### Bug Fixes
+
+* backend tag styles updated ([2143bea](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2143bea29d0a05c217845a31259a62b15afde413))
+* responsive menu issues ([bbda43c](https://github.com/lightriderinc/cloud_platform_nextjs/commit/bbda43c57c9d3a08e9d5741ec37a09a150e1f3e2))
+* skeleton load added for subscription list ([5d530de](https://github.com/lightriderinc/cloud_platform_nextjs/commit/5d530de83d9cc68fdee527cfabbc4e486cfe9760))
+* skeleton loading for credits summary ([9f6199f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9f6199f762ba5df90f3b1cb882bbe4478390b6bd))
+* update usage page ([6ca5b45](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6ca5b453b45c320f39993c6e3ca587579f8ee7c4))
+* updated payment card ([82c9d31](https://github.com/lightriderinc/cloud_platform_nextjs/commit/82c9d317ce1e1f7e306a6fe35cce82bb2dac2801))
+
+## [1.10.3](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.2...v1.10.3) (2026-07-29)
+
+
+### Bug Fixes
+
+* job backend displayed on results modal ([ddf342a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/ddf342ae23d6457593998f2ac94f3e58e0faf3b8))
+* skeleton loading for job results ([e9330a4](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e9330a42cf7f125daee5172b3724f7858057aaa9))
+* updated job results modal ([772afc7](https://github.com/lightriderinc/cloud_platform_nextjs/commit/772afc777a3df04860cb24d710cdc9aa7493f2fa))
+
+## [1.10.2](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.1...v1.10.2) (2026-07-29)
+
+
+### Bug Fixes
+
+* jobs list styles ([95ae995](https://github.com/lightriderinc/cloud_platform_nextjs/commit/95ae995f1af6f2b625f3a66c9e9525cbe6e7ea72))
+* jobs list styles ([5e2e373](https://github.com/lightriderinc/cloud_platform_nextjs/commit/5e2e37362ff9e6b21b6d122e58bff680090a3f26))
+
+## [1.10.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.10.0...v1.10.1) (2026-07-28)
+
+
+### Bug Fixes
+
+* low credits banner text size ([878375e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/878375eb2bf54b7d04ed2fde3f90d0bfaa75fd59))
+
 # [1.10.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.9.8...v1.10.0) (2026-07-28)
 
 
