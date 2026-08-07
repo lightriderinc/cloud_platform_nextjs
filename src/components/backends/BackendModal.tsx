@@ -8,11 +8,7 @@ import { MdClose } from "react-icons/md";
 import BackendConnectSection from "./BackendConnectSection";
 import BackendStatusBadge from "./BackendStatusBadge";
 import QubitMap from "./QubitMap";
-
-function formatQueue(queueDepth: number | null): string {
-  if (queueDepth === null) return "—";
-  return `${queueDepth} ${queueDepth === 1 ? "job" : "jobs"}`;
-}
+import { formatAvailability, formatQueue } from "@/lib/backends/availability";
 
 type Spec = { label: string; value: React.ReactNode };
 
@@ -39,7 +35,8 @@ export default function BackendModal({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
 
-  const { name, status, queueDepth, type, qubits, provider, pricing } = backend;
+  const { name, status, queueDepth, type, qubits, provider, pricing, availability } =
+    backend;
   const quantumBackendId = getQuantumBackendId(backend.id);
   const d = backend.details ?? {};
 
@@ -51,6 +48,8 @@ export default function BackendModal({
       { label: "Type", value: type },
       { label: "Qubits", value: qubits },
       { label: "Provider", value: provider },
+      { label: "Queue", value: queueDepth !== null ? formatQueue(queueDepth) : null },
+      { label: "Availability", value: formatAvailability(availability) },
       { label: "ID", value: backend.id },
       { label: "Topology", value: d.topology },
       {
@@ -98,7 +97,6 @@ export default function BackendModal({
         <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 pr-12">
           <h1 className="text-2xl font-semibold">{name}</h1>
           <BackendStatusBadge status={status} />
-          {/* <span className="text-sm text-gray-500">Queue {formatQueue(queueDepth)}</span> */}
         </div>
 
         <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">

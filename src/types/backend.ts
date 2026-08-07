@@ -17,6 +17,27 @@ export interface BackendPricing {
   creditsPerHour: number;
 }
 
+/** A single window during which a machine can run jobs. */
+export interface AvailabilityWindow {
+  /** ISO 8601 start timestamp. */
+  start: string;
+  /** ISO 8601 end timestamp. */
+  end: string;
+}
+
+/** Live availability for a machine, derived from a provider's window feed
+ *  (IQM's queue-availability). Undefined on the Backend when the provider
+ *  doesn't report it. */
+export interface BackendAvailability {
+  /** True if the machine can run a job right now. */
+  availableNow: boolean;
+  /** ISO start of the next window when not available now; null when available
+   *  now or when no upcoming window is known. */
+  nextWindowStart: string | null;
+  /** Upcoming windows, kept for the modal (and a future availability calendar). */
+  windows?: AvailabilityWindow[];
+}
+
 export interface QubitNode {
   id: string;
   label: string;
@@ -76,6 +97,9 @@ export interface Backend {
   provider: string;
   /** Jobs currently queued, or null when unknown (e.g. coming soon). */
   queueDepth: number | null;
+  /** Live availability windows, or undefined when the provider doesn't report
+   *  it. */
+  availability?: BackendAvailability;
   pricing?: BackendPricing;
   details?: BackendDetails;
 }
