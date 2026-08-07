@@ -7,6 +7,10 @@
 //   "Image URL" paste a link to an already-hosted image. Kept from the
 //               original version of this modal.
 //
+// A "Remove photo" action sits below the tabs whenever there is a current
+// custom avatar. It clears the avatar back to the generated fallback with a
+// single inline confirm — no success screen, it just closes.
+//
 // Backend wiring note: `onUploadAvatar` receives a FormData with the cropped
 // file under the key "avatar" and is expected to resolve to the image's public
 // URL (i.e. upload to Supabase Storage, then PATCH that URL onto the Logto
@@ -15,7 +19,7 @@
 // built and reviewed ahead of the storage work.
 
 import { useRef, useState } from "react";
-import { MdLink, MdUploadFile } from "react-icons/md";
+import { MdDeleteOutline, MdLink, MdUploadFile } from "react-icons/md";
 
 import ModalShell from "@/components/applications/ModalShell";
 import AvatarEditor, {
@@ -42,7 +46,6 @@ const DEFAULT_MAX_FILE_BYTES = 5 * 1024 * 1024;
 type Tab = "upload" | "url";
 
 type Props = {
-  currentAvatar: string | null;
   /** Placeholder image used when there's no avatar yet, or one won't load. */
   fallbackSrc?: string | null;
   /** Last-resort fallback shown when no image is available. */
@@ -50,25 +53,36 @@ type Props = {
   /** Largest accepted upload, in bytes. Defaults to 5MB. */
   maxFileBytes?: number;
   /**
+   * Whether there's a current custom avatar to remove. When false (or
+   * `onRemoveAvatar` is omitted) the "Remove photo" action is hidden.
+   */
+  canRemove?: boolean;
+  /**
    * Uploads the cropped image and resolves to its public URL. Omit while the
    * storage backend is unbuilt — the modal falls back to a local preview.
    */
   onUploadAvatar?: (formData: FormData) => Promise<string>;
   /** Saves a directly-pasted image URL. Omit to hide the "Image URL" tab. */
   onUpdateAvatarUrl?: (url: string) => Promise<void>;
+  /** Clears the current avatar back to the generated fallback. */
+  onRemoveAvatar?: () => Promise<void>;
   /** Fired with the new avatar URL once saved, so the page can update in place. */
   onSaved?: (url: string) => void;
+  /** Fired once the avatar has been removed, so the page can update in place. */
+  onRemoved?: () => void;
   onClose: () => void;
 };
 
 export default function EditAvatarModal({
-  currentAvatar,
   fallbackSrc,
   initials,
   maxFileBytes = DEFAULT_MAX_FILE_BYTES,
+  canRemove = false,
   onUploadAvatar,
   onUpdateAvatarUrl,
+  onRemoveAvatar,
   onSaved,
+  onRemoved,
   onClose,
 }: Props) {
   const [tab, setTab] = useState<Tab>("upload");
@@ -78,17 +92,21 @@ export default function EditAvatarModal({
   const [savedUrl, setSavedUrl] = useState<string | null>(null);
   /** True when the save was a local preview because no upload handler exists. */
   const [previewOnly, setPreviewOnly] = useState(false);
+  /** First click arms the remove action; second click within the row confirms. */
+  const [confirmRemove, setConfirmRemove] = useState(false);
 
   // Upload tab
   const [file, setFile] = useState<File | null>(null);
   const editorRef = useRef<AvatarEditorHandle>(null);
 
-  // URL tab
-  const [url, setUrl] = useState(currentAvatar ?? "");
+  // URL tab. Intentionally starts empty even when an avatar is already set —
+  // the field is for entering a *new* link, not editing the current one.
+  const [url, setUrl] = useState("");
 
   function switchTab(next: Tab) {
     setTab(next);
     setError("");
+    setConfirmRemove(false);
   }
 
   async function handleSaveUpload() {
@@ -140,10 +158,27 @@ export default function EditAvatarModal({
     }
   }
 
+  async function handleRemove() {
+    if (!onRemoveAvatar) return;
+    setError("");
+    setLoading(true);
+    try {
+      await onRemoveAvatar();
+      // No confirmation screen for removal — apply it and close.
+      onRemoved?.();
+      onClose();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to remove avatar");
+      setLoading(false);
+    }
+  }
+
   function finish() {
     if (savedUrl) onSaved?.(savedUrl);
     onClose();
   }
+
+  const showRemove = canRemove && Boolean(onRemoveAvatar);
 
   return (
     <ModalShell title="Update avatar" onClose={onClose} maxWidth="max-w-md">
@@ -291,6 +326,46 @@ export default function EditAvatarModal({
                 {loading ? "Saving…" : "Save avatar"}
               </LRButton>
             </>
+          )}
+
+          {showRemove && (
+            <div className="mt-6 border-t border-gray-100 pt-4">
+              {confirmRemove ? (
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm text-gray-600">
+                    Remove your current photo?
+                  </p>
+                  <div className="flex flex-shrink-0 gap-2">
+                    <LRButton
+                      variant="secondary-outline"
+                      onClick={() => setConfirmRemove(false)}
+                      disabled={loading}
+                    >
+                      Cancel
+                    </LRButton>
+                    <LRButton
+                      variant="danger-outline"
+                      onClick={handleRemove}
+                      disabled={loading}
+                    >
+                      {loading ? "Removing…" : "Remove"}
+                    </LRButton>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError("");
+                    setConfirmRemove(true);
+                  }}
+                  className="mx-auto flex items-center gap-1.5 text-sm font-medium text-gray-400 transition-colors duration-200 hover:text-red-600 cursor-pointer"
+                >
+                  <MdDeleteOutline className="text-base" />
+                  Remove current photo
+                </button>
+              )}
+            </div>
           )}
         </div>
       )}

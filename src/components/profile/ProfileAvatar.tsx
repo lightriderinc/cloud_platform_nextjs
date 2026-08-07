@@ -32,6 +32,8 @@ type Props = {
   /** See EditAvatarModal — omit while the storage backend is unbuilt. */
   onUploadAvatar?: (formData: FormData) => Promise<string>;
   onUpdateAvatarUrl?: (url: string) => Promise<void>;
+  /** Clears the current avatar. Omit to hide the "Remove photo" action. */
+  onRemoveAvatar?: () => Promise<void>;
   className?: string;
 };
 
@@ -43,17 +45,24 @@ export default function ProfileAvatar({
   maxFileBytes,
   onUploadAvatar,
   onUpdateAvatarUrl,
+  onRemoveAvatar,
   className,
 }: Props) {
   const [open, setOpen] = useState(false);
   /**
-   * Shows the new avatar immediately after a save. The server-rendered `src`
-   * takes over again on the next refresh.
+   * Local override so a save/removal shows immediately, before the server
+   * re-render lands. Tri-state on purpose:
+   *   undefined -> no local change yet, defer to the server-rendered `src`
+   *   string    -> just set to this URL
+   *   null      -> just removed; show the fallback
    */
-  const [localSrc, setLocalSrc] = useState<string | null>(null);
+  const [localSrc, setLocalSrc] = useState<string | null | undefined>(undefined);
 
-  const shownSrc = localSrc ?? src ?? null;
+  const shownSrc = localSrc !== undefined ? localSrc : (src ?? null);
   const initials = getAvatarInitials(name);
+  // A removable avatar is any current custom picture — not the generated
+  // fallback, which isn't passed as `src`.
+  const canRemove = Boolean(shownSrc);
 
   return (
     <>
@@ -83,17 +92,15 @@ export default function ProfileAvatar({
 
       {open && (
         <EditAvatarModal
-          // Only prefill the URL field with a real link — the generated
-          // fallback avatar is a multi-KB data URI and isn't useful there.
-          currentAvatar={
-            shownSrc && /^https?:\/\//.test(shownSrc) ? shownSrc : null
-          }
           fallbackSrc={fallbackSrc}
           initials={initials}
           maxFileBytes={maxFileBytes}
+          canRemove={canRemove}
           onUploadAvatar={onUploadAvatar}
           onUpdateAvatarUrl={onUpdateAvatarUrl}
+          onRemoveAvatar={onRemoveAvatar}
           onSaved={setLocalSrc}
+          onRemoved={() => setLocalSrc(null)}
           onClose={() => setOpen(false)}
         />
       )}

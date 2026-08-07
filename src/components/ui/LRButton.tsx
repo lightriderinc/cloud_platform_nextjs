@@ -4,7 +4,9 @@ export type LRButtonVariant =
   | "primary"
   | "primary-outline"
   | "secondary"
-  | "secondary-outline";
+  | "secondary-outline"
+  | "danger"
+  | "danger-outline";
 
 export interface LRButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: LRButtonVariant;
@@ -24,6 +26,10 @@ const variantClasses: Record<LRButtonVariant, string> = {
     "bg-gray-700 text-white border border-gray-700 hover:bg-gray-500 hover:border-gray-500 focus-visible:ring-gray-400",
   "secondary-outline":
     "bg-transparent text-gray-800 font-semibold border border-gray-400 hover:bg-gray-200/50 focus-visible:ring-gray-400",
+  danger:
+    "bg-red-600 border border-red-600 text-white hover:bg-red-500 hover:border-red-500 focus-visible:ring-red-500",
+  "danger-outline":
+    "bg-transparent font-semibold text-red-600 border border-red-300 hover:bg-red-50 focus-visible:ring-red-400",
 };
 
 const LRButton = forwardRef<HTMLButtonElement, LRButtonProps>(function LRButton(

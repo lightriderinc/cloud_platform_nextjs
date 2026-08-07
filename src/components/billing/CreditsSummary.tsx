@@ -74,12 +74,12 @@ export default function CreditsSummary({
   if (credits.data.purchasedCents <= 0) {
     return (
       <div className="default-radius border border-gray-50 bg-gray-50 p-4">
-        <p className="mb-1 flex items-center gap-1.5 text-sm font-medium text-gray-800 opacity-80">
+        <p className="mb-1 flex items-center gap-1.5 font-medium text-gray-800 opacity-80">
           <MdLockOutline className="text-gray-400" />
-          {formatUsd(credits.data.remainingCents)} Light Rider tokens
+          Unlock {formatUsd(credits.data.remainingCents)} bonus Light Rider tokens
         </p>
         <p className="text-xs text-gray-500">
-          Unlocks after your first purchase.
+          Complete your first purchase to claim your tokens.
         </p>
         <div className="flex mt-6">
           <a href="/settings/purchases/quantum-compute">
