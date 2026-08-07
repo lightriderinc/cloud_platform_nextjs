@@ -29,10 +29,11 @@ export function formatUsd(cents: number): string {
 /**
  * Displays a cents balance as a whole credit count — 1 credit = $0.01 = 1
  * cent, so no conversion is needed (unlike formatUsd, which divides by 100
- * for an actual dollar figure).
+ * for an actual dollar figure). Compact notation (10K, 10M, …) since credit
+ * counts can run into the billions at this unit size.
  */
 export function formatCredits(cents: number): string {
-  return cents.toLocaleString();
+  return new Intl.NumberFormat(undefined, { notation: "compact" }).format(cents);
 }
 
 export function ProgressBar({ fraction }: { fraction: number }) {
