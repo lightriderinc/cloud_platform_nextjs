@@ -1,3 +1,10 @@
+## [1.13.7](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.13.6...v1.13.7) (2026-08-07)
+
+
+### Bug Fixes
+
+* constant refresh no longer causes offline machine status ([a0f69b6](https://github.com/lightriderinc/cloud_platform_nextjs/commit/a0f69b662b735888e6b89ab674106055c9f0b097))
+
 ## [1.13.6](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.13.5...v1.13.6) (2026-08-07)
 
 
