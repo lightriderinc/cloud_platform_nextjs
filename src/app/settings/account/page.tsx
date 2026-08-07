@@ -24,7 +24,7 @@ import {
   verifyEmailCode,
   verifyPassword,
 } from "@/lib/logto-account";
-import { uploadAvatar } from "@/lib/supabase/avatars";
+import { deleteAvatar, uploadAvatar } from "@/lib/supabase/avatars";
 import {
   findUserByPrimaryEmail,
   getUserAccountFacts,
@@ -219,6 +219,37 @@ export default async function AccountPage() {
     return url;
   }
 
+  /**
+   * Removes the user's avatar: best-effort delete of the stored object, then
+   * clears the avatar field on the Logto user so it falls back to the generated
+   * default. Storage cleanup failures are logged but don't block clearing the
+   * profile — a leftover object is harmless and gets overwritten on next upload.
+   */
+  async function doRemoveAvatar(): Promise<void> {
+    "use server";
+    let sub: string;
+    try {
+      ({ sub } = await requireLogtoUser());
+    } catch {
+      throw new Error("You must be signed in to remove your avatar.");
+    }
+
+    try {
+      await deleteAvatar(sub);
+    } catch (err) {
+      console.error("[account] avatar delete failed:", err);
+    }
+
+    // Logto validates `avatar` as a URL, so an empty string is rejected as an
+    // invalid body — null is what clears the field.
+    const token = await getAccessToken(logtoConfig);
+    await updateAvatar(token, null);
+    // "layout" scope so the header UserCard (in the root layout) updates too.
+    revalidatePath("/", "layout");
+    refresh();
+  }
+
+
   async function doUpdateBirthdate(birthdate: string): Promise<void> {
     "use server";
     const token = await getAccessToken(logtoConfig);
@@ -276,6 +307,7 @@ export default async function AccountPage() {
           size={64}
           onUpdateAvatarUrl={doUpdateAvatarUrl}
           onUploadAvatar={doUploadAvatar}
+          onRemoveAvatar={doRemoveAvatar}
         />
         <div className="min-w-0">
           {name && (

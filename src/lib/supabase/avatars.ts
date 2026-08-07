@@ -32,3 +32,22 @@ export async function uploadAvatar(
   const { data } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(path);
   return `${data.publicUrl}?v=${Date.now()}`;
 }
+
+/**
+ * Best-effort removal of a user's stored avatar. Removes both the current
+ * `.webp` object and the legacy `.png` one (earlier uploads used PNG), so a
+ * user who set an avatar before the switch to WebP is still fully cleared.
+ *
+ * Supabase's `remove` does not error on missing keys, so this is safe to call
+ * even when the user never had a stored avatar (e.g. a social-login picture).
+ */
+export async function deleteAvatar(logtoUserId: string): Promise<void> {
+  const { error } = await supabase.storage
+    .from(AVATAR_BUCKET)
+    .remove([`${logtoUserId}/avatar.webp`, `${logtoUserId}/avatar.png`]);
+
+  if (error) {
+    console.error("[avatars] delete failed:", error);
+    throw new Error("Could not remove the stored avatar.");
+  }
+}

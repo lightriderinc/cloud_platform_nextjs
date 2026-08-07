@@ -125,7 +125,7 @@ export async function updateName(accessToken: string, name: string): Promise<voi
   await throwOnError(res);
 }
 
-export async function updateAvatar(accessToken: string, avatarUrl: string): Promise<void> {
+export async function updateAvatar(accessToken: string, avatarUrl: string | null): Promise<void> {
   const res = await fetch(`${BASE}/api/my-account`, {
     method: 'PATCH',
     headers: {
