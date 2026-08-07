@@ -52,7 +52,7 @@ export default function PurchaseHistoryTable() {
   if (!isLoading && (!purchases || purchases.length === 0)) {
     return (
       <div className="default-radius border border-dashed border-gray-200 bg-gray-50 p-16 text-center mt-5 text-sm text-gray-500">
-        Your purchases will appear here once you buy compute tokens.
+        Your purchases will appear here once you buy compute credits.
       </div>
     );
   }
@@ -83,7 +83,7 @@ export default function PurchaseHistoryTable() {
                   <td className="whitespace-nowrap px-4 py-3 text-gray-700">
                     {purchase.type === "plan_credit"
                       ? "Plan credit"
-                      : "Compute token purchase"}
+                      : "Compute credit purchase"}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-gray-700">
                     ${formatUsd(purchase.amountCents)}

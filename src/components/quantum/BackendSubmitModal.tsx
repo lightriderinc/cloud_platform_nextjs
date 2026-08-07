@@ -240,7 +240,7 @@ export default function BackendSubmitModal({
 
                   {needsCredits && (
                     <WarningBox>
-                      Submitting circuits to QPUs will cost you tokens
+                      Submitting circuits to QPUs will cost you credits
                     </WarningBox>
                   )}
 

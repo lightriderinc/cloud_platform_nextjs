@@ -50,7 +50,7 @@ export default function UserPlansGrid() {
             "Everything in Basic",
             "Access to quantum applications",
             "Access to error correction tools",
-            `${pro.includedCreditsUsd} Light Rider tokens included`,
+            `${pro.includedCreditsUsd * 100} Light Rider credits included`,
             "Priority support",
           ]}
           selected={selected === "pro"}

@@ -26,6 +26,15 @@ export function formatUsd(cents: number): string {
   });
 }
 
+/**
+ * Displays a cents balance as a whole credit count — 1 credit = $0.01 = 1
+ * cent, so no conversion is needed (unlike formatUsd, which divides by 100
+ * for an actual dollar figure).
+ */
+export function formatCredits(cents: number): string {
+  return cents.toLocaleString();
+}
+
 export function ProgressBar({ fraction }: { fraction: number }) {
   const clamped = Math.min(1, Math.max(0, fraction));
   return (
@@ -39,7 +48,7 @@ export function ProgressBar({ fraction }: { fraction: number }) {
 }
 
 /**
- * Credit ledger balance, displayed as "Light Rider tokens" — this is a
+ * Credit ledger balance, displayed as "Light Rider credits" — this is a
  * display-label choice for the Pro-plan/billing context only (used on its
  * own on the Payment page and composed into UsageSummary on the Billing
  * page). The underlying CreditLedgerEntry/creditsBalanceCents fields, and
@@ -76,14 +85,14 @@ export default function CreditsSummary({
       <div className="default-radius border border-gray-50 bg-gray-50 p-4">
         <p className="mb-1 flex items-center gap-1.5 font-medium text-gray-800 opacity-80">
           <MdLockOutline className="text-gray-400" />
-          Unlock {formatUsd(credits.data.remainingCents)} bonus Light Rider tokens
+          Unlock {formatCredits(credits.data.remainingCents)} bonus Light Rider credits
         </p>
         <p className="text-xs text-gray-500">
-          Complete your first purchase to claim your tokens.
+          Complete your first purchase to claim your credits.
         </p>
         <div className="flex mt-6">
           <a href="/settings/purchases/quantum-compute">
-            <LRButton variant="primary">Purchase compute tokens</LRButton>
+            <LRButton variant="primary">Purchase compute credits</LRButton>
           </a>
         </div>
       </div>
@@ -94,17 +103,17 @@ export default function CreditsSummary({
     <div className="default-radius border border-gray-50 bg-gray-50 p-4">
       <p className="mb-2 flex items-end gap-1.5 text-gray-800">
         <span className="text-4xl font-medium mr-1">
-          {formatUsd(credits.data.remainingCents)}
+          {formatCredits(credits.data.remainingCents)}
         </span>{" "}
         <span className="pb-1">
-          Light Rider tokens remaining{" "}
-          <HintIcon text="Simulator (mock) jobs are free and never deduct tokens. QPU jobs (Garnet, Emerald, Sirius) deduct tokens per shot at submission time." />
+          Light Rider credits remaining{" "}
+          <HintIcon text="Simulator (mock) jobs are free and never deduct credits. QPU jobs (Garnet, Emerald, Sirius) deduct credits per shot at submission time." />
         </span>
       </p>
 
       <div className="flex w-full justify-between items-end mt-8">
         <a href="/settings/purchases/quantum-compute">
-          <LRButton variant="primary">Purchase compute tokens</LRButton>
+          <LRButton variant="primary">Purchase compute credits</LRButton>
         </a>
         {historyLink && (
           <Link
