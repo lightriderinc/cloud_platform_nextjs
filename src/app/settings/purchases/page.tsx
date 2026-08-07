@@ -36,7 +36,7 @@ export default function PricingOverviewPage() {
       <h1 className="text-2xl font-semibold text-gray-700">Purchases</h1>
       <p className="mb-12 text-sm text-gray-600">
         Light Rider purchases are modular. <br /> Start with quantum compute
-        tokens, manage platform access, then scale into quantum runtime, APIs,
+        credits, manage platform access, then scale into quantum runtime, APIs,
         and enterprise services as you grow.
       </p>
 

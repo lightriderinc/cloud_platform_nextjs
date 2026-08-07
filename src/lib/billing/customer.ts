@@ -3,8 +3,8 @@ import { stripe } from "@/lib/stripe/client";
 import type { Customer } from "@prisma/client";
 import Stripe from "stripe";
 
-// 10 Light Rider tokens ($1/token), granted once per new customer, no
-// payment required — V2 product model.
+// 1000 Light Rider credits ($0.01/credit = $10 total), granted once per new
+// customer, no payment required — V2 product model.
 const SIGNUP_CREDIT_CENTS = 1000;
 
 /**
