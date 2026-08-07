@@ -1,3 +1,13 @@
+## [1.13.6](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.13.5...v1.13.6) (2026-08-07)
+
+
+### Bug Fixes
+
+* avatar update updated + bonus token message ([bbdc7e9](https://github.com/lightriderinc/cloud_platform_nextjs/commit/bbdc7e99224216030490e541ab62bed9846b0b44))
+* hint icon updated + shots hint ([a293926](https://github.com/lightriderinc/cloud_platform_nextjs/commit/a29392621eda622e3a79432413f8adcaf61511dc))
+* Merge conflict caused import for avatar module to get dropped ([e2f5fe4](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e2f5fe4df9fe7e5307a47bd1b0842764241bdb46))
+* update bonus tokens messaging ([20ca4be](https://github.com/lightriderinc/cloud_platform_nextjs/commit/20ca4be2954b3b009f922d6c61d0b9690822a228))
+
 ## [1.13.5](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.13.4...v1.13.5) (2026-08-06)
 
 
