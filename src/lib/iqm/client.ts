@@ -1,5 +1,11 @@
-import type { Backend, BackendStatus, BackendType } from "@/types/backend";
+import type {
+  Backend,
+  BackendAvailability,
+  BackendStatus,
+  BackendType,
+} from "@/types/backend";
 import { asMicroseconds, asPercent, median } from "@/lib/metrics";
+import { deriveAvailability } from "@/lib/backends/availability";
 
 // Live IQM Resonance integration. Fetches each machine's static architecture
 // and latest calibration metrics through the server-side /api/iqm proxy, then
@@ -45,6 +51,14 @@ interface MetricsResponse {
 interface HealthResponse {
   healthy: boolean;
   updated_at: string;
+}
+
+// IQM's public queue + availability feed for a machine. `queue_length` is the
+// number of jobs waiting on that QPU; `available` are upcoming pay-as-you-go
+// windows during which a job can run.
+interface QueueAvailabilityResponse {
+  queue_length: number;
+  available: { start: string; end: string }[];
 }
 
 // IQM's health endpoint refreshes about every 15s, and its reading reaches us
@@ -115,6 +129,8 @@ function mapMachine(
   architecture: StaticArchitecture[] | StaticArchitecture,
   metrics: MetricsResponse | undefined,
   status: BackendStatus,
+  queueDepth: number | null,
+  availability: BackendAvailability | undefined,
 ): Backend {
   const arch = Array.isArray(architecture) ? architecture[0] : architecture;
   const valid = (metrics?.observations ?? []).filter(
@@ -169,7 +185,8 @@ function mapMachine(
     status,
     qubits: arch?.qubits?.length ?? 0,
     provider: "IQM",
-    queueDepth: null,
+    queueDepth,
+    availability,
     details: {
       description: `${name} is a ${kind}, with calibration data pulled live from IQM Resonance.`,
       nativeGates: metrics ? nativeGates : undefined,
@@ -205,22 +222,30 @@ function mapMachine(
 // Fetches all IQM machines in parallel. A machine that fails (offline, auth,
 // no architecture, etc.) is dropped rather than failing the whole list.
 // `withMetrics` decides whether the heavy calibration payload is included;
-// architecture and health stay in both phases because the cards need the
-// qubit count and status badge.
+// architecture, health, and queue/availability stay in both phases because the
+// cards need the qubit count, status badge, and queue/availability display.
 async function fetchMachines(withMetrics: boolean): Promise<Backend[]> {
   const settled = await Promise.allSettled(
     IQM_MACHINES.map(async (machine) => {
-      // Health only applies to real hardware; simulators are software and
-      // always available. Fetch it best-effort so a health failure yields an
-      // "unknown" status rather than dropping the whole machine.
-      const healthPromise =
-        machine.type === "QPU"
-          ? getJson<HealthResponse>(
-              `/api/iqm/api/v1/quantum-computers/${machine.alias}/health`,
-            ).catch(() => null)
-          : Promise.resolve<HealthResponse | null>(null);
+      const isQpu = machine.type === "QPU";
 
-      const [architecture, metrics, health] = await Promise.all([
+      // Health and queue/availability only apply to real hardware; simulators
+      // are software (always available, no queue). Fetch both best-effort so a
+      // failure degrades gracefully (unknown status / omitted queue) rather
+      // than dropping the whole machine.
+      const healthPromise = isQpu
+        ? getJson<HealthResponse>(
+            `/api/iqm/api/v1/quantum-computers/${machine.alias}/health`,
+          ).catch(() => null)
+        : Promise.resolve<HealthResponse | null>(null);
+
+      const queuePromise = isQpu
+        ? getJson<QueueAvailabilityResponse>(
+            `/api/iqm/api/v1/quantum-computers/${machine.alias}/queue-availability`,
+          ).catch(() => null)
+        : Promise.resolve<QueueAvailabilityResponse | null>(null);
+
+      const [architecture, metrics, health, queue] = await Promise.all([
         getJson<StaticArchitecture[]>(
           `/api/iqm/api/v1/quantum-computers/${machine.alias}/artifacts/static-quantum-architectures`,
         ),
@@ -230,14 +255,24 @@ async function fetchMachines(withMetrics: boolean): Promise<Backend[]> {
             )
           : Promise.resolve(undefined),
         healthPromise,
+        queuePromise,
       ]);
 
-      const status: BackendStatus =
-        machine.type === "Simulator"
-          ? "online"
-          : stickyStatus(machine.alias, deriveStatus(health));
+      const status: BackendStatus = isQpu
+        ? stickyStatus(machine.alias, deriveStatus(health))
+        : "online";
 
-      return mapMachine(machine, architecture, metrics, status);
+      const queueDepth = queue?.queue_length ?? null;
+      const availability = deriveAvailability(queue?.available, !isQpu);
+
+      return mapMachine(
+        machine,
+        architecture,
+        metrics,
+        status,
+        queueDepth,
+        availability,
+      );
     }),
   );
 
