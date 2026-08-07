@@ -26,8 +26,15 @@ export function deriveAvailability(
     .sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
   if (windows.length === 0) return undefined;
 
+  // IQM clamps the currently-open window's `start` to its own server clock at
+  // response time, which sits a few hundred ms — plus any client clock skew and
+  // proxy/network latency — ahead of the browser's `now`. A strict `start <= now`
+  // check just misses, so an open machine flickers to "Available at <now>". A
+  // grace margin at the start edge absorbs that (windows are hours long, so a
+  // minute of slack never mislabels a genuinely-later window).
+  const START_GRACE_MS = 60_000;
   const availableNow = windows.some(
-    (w) => Date.parse(w.start) <= now && now < Date.parse(w.end),
+    (w) => Date.parse(w.start) - START_GRACE_MS <= now && now < Date.parse(w.end),
   );
   if (availableNow) return { availableNow: true, nextWindowStart: null, windows };
 
