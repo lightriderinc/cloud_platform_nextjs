@@ -1,4 +1,9 @@
 import TiltCard from "@/components/ui/TiltCard";
+import {
+  availabilityTextClass,
+  formatAvailability,
+  formatQueue,
+} from "@/lib/backends/availability";
 import { getQuantumBackendId } from "@/lib/quantum/backends";
 import type { Backend } from "@/types/backend";
 import BackendSpec from "./BackendSpec";
@@ -6,9 +11,9 @@ import BackendStatusBadge from "./BackendStatusBadge";
 import BackendTypeTag from "./BackendTypeTag";
 
 // A single backend card. Composes the smaller status / spec / tag pieces
-// inside an interactive TiltCard surface. Queue and ID are intentionally
-// omitted from the summary; full metrics live in the detail modal opened
-// via onSelect.
+// inside an interactive TiltCard surface. Live queue depth and availability are
+// shown when the provider reports them (IQM); ID and full metrics live in the
+// detail modal opened via onSelect.
 export default function BackendCard({
   backend,
   onSelect,
@@ -16,8 +21,10 @@ export default function BackendCard({
   backend: Backend;
   onSelect?: (backend: Backend) => void;
 }) {
-  const { name, type, status, qubits, provider } = backend;
+  const { name, type, status, qubits, provider, queueDepth, availability } =
+    backend;
   const comingSoon = getQuantumBackendId(backend.id) === null;
+  const availabilityLabel = formatAvailability(availability);
 
   return (
     <TiltCard
@@ -32,6 +39,19 @@ export default function BackendCard({
       <div className="flex flex-col gap-1.5">
         <BackendSpec label="Qubits" value={qubits} />
         <BackendSpec label="Provider" value={provider} />
+        {queueDepth !== null && (
+          <BackendSpec label="Queue" value={formatQueue(queueDepth)} />
+        )}
+        {availabilityLabel && (
+          <BackendSpec
+            label="Availability"
+            value={
+              <span className={availabilityTextClass(availability)}>
+                {availabilityLabel}
+              </span>
+            }
+          />
+        )}
       </div>
 
       <div className="mt-auto flex items-center gap-2">

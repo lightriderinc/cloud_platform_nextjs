@@ -3,9 +3,9 @@ import InfoBox from "@/components/InfoBox";
 
 // Current pricing metric: $0.002/shot ($2 per 1,000 shots) = 0.2 credits/shot.
 const RUNTIME_TIERS = [
-  { range: "100 shots", rate: "20 credits" },
-  { range: "1,000 shots", rate: "200 credits" },
-  { range: "10,000 shots", rate: "2,000 credits" },
+  { range: "5K shots", rate: "1K credits" },
+  { range: "5M shots", rate: "1M credits" },
+  { range: "5B shots", rate: "1B credits" },
 ];
 
 /*
