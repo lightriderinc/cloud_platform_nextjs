@@ -1,11 +1,11 @@
 import CreditsTopUp from "@/components/billing/CreditsTopUp";
 import InfoBox from "@/components/InfoBox";
 
-// Current pricing metric: priced per token, where every 100 shots equals 1 token.
+// Current pricing metric: $0.002/shot ($2 per 1,000 shots) = 0.2 credits/shot.
 const RUNTIME_TIERS = [
-  { range: "100 shots", rate: "1 token" },
-  { range: "1,000 shots", rate: "10 tokens" },
-  { range: "10,000 shots", rate: "100 tokens" },
+  { range: "100 shots", rate: "20 credits" },
+  { range: "1,000 shots", rate: "200 credits" },
+  { range: "10,000 shots", rate: "2,000 credits" },
 ];
 
 /*
@@ -58,8 +58,8 @@ export default function QuantumComputePricingPage() {
           </h2>
           <div className="mb-3">
             <InfoBox>
-              Runtime is priced per token, where every 100 shots submitted to a QPU spends 1 token.<br/>
-              Submitting jobs to simulators does not consume tokens.
+              Runtime is priced at $0.002 per shot ($2 per 1,000 shots) submitted to a QPU — 0.2 credits per shot.<br/>
+              Submitting jobs to simulators does not consume credits.
             </InfoBox>
           </div>
 
@@ -88,7 +88,7 @@ export default function QuantumComputePricingPage() {
           NOTE: Legacy runtime pricing chart. Temporarily commented out because
           these rates no longer match our current metrics. Do NOT delete — this
           will be reused as our pricing metric in the future. The new pricing
-          chart is rendered above via <TokenPricingChart />.
+          chart is rendered above via RUNTIME_TIERS.
         */}
         {/*
         <div className="lg:col-span-2">

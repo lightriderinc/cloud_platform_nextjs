@@ -18,7 +18,7 @@ export const QUANTUM_BACKENDS = {
   "iqm-garnet": {
     proxyPath: "/jobs",
     deviceInstance: "garnet",
-    costPerShotCents: 1, // TODO: real pricing, placeholder only
+    costPerShotCents: 0.2, // $0.002/shot ($2 per 1,000 shots)
   },
   "iqm-emerald-mock": {
     proxyPath: "/jobs",
@@ -28,7 +28,7 @@ export const QUANTUM_BACKENDS = {
   "iqm-emerald": {
     proxyPath: "/jobs",
     deviceInstance: "emerald",
-    costPerShotCents: 1, // matches iqm-garnet's placeholder — TODO: real pricing
+    costPerShotCents: 0.2, // $0.002/shot ($2 per 1,000 shots)
   },
   "iqm-sirius-mock": {
     proxyPath: "/jobs",
@@ -38,7 +38,7 @@ export const QUANTUM_BACKENDS = {
   "iqm-sirius": {
     proxyPath: "/jobs",
     deviceInstance: "sirius",
-    costPerShotCents: 1, // matches iqm-garnet's placeholder — TODO: real pricing
+    costPerShotCents: 0.2, // $0.002/shot ($2 per 1,000 shots)
   },
 } as const;
 

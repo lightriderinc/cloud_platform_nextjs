@@ -52,7 +52,7 @@ export default async function Home() {
           <LowCreditsBanner />
           <div className="mb-8">
             <h2 className="mb-4 text-xl font-bold text-gray-600">
-              Compute tokens
+              Compute credits
             </h2>
             <div className="xl:w-1/2">
               <CreditsSummary historyLink />

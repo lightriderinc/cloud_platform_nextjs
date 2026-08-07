@@ -41,7 +41,9 @@ export async function POST(req: Request) {
   }
 
   const config = QUANTUM_BACKENDS[backend];
-  const costCents = (shots ?? 1) * config.costPerShotCents;
+  // Ceil to the nearest whole credit: costPerShotCents can be fractional
+  // (e.g. 0.2), but costCents/amountCents are Int columns in the DB.
+  const costCents = Math.ceil((shots ?? 1) * config.costPerShotCents);
 
   // Real QPU access (any backend that actually costs credits) requires
   // having purchased credits at least once — the free signup grant alone
