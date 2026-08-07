@@ -47,9 +47,27 @@ interface HealthResponse {
   updated_at: string;
 }
 
-// IQM's health endpoint refreshes about every 15s. If the newest reading is
-// older than this, its data has gone stale.
-const HEALTH_STALE_MS = 60_000;
+// IQM's health endpoint refreshes about every 15s, and its reading reaches us
+// through the /api/iqm proxy (cached ~5s, served at most ~10s stale), so a
+// healthy reading can legitimately look ~30s old by the time we evaluate it —
+// more if the browser clock and IQM's server clock disagree, since the check
+// below subtracts one from the other. Judge "stale" well above that window so
+// normal operation never trips it; brief overshoots are absorbed by the
+// last-known-good fallback in stickyStatus().
+const HEALTH_STALE_MS = 90_000;
+
+// How long a machine keeps its last confirmed status when a newer reading can't
+// confirm one. Bridges the transient gaps — a proxy blip, a rate-limited health
+// call, a momentarily stale timestamp — that would otherwise flip a healthy
+// machine to Unknown on a refresh or tab-in, without hiding a sustained outage.
+const LAST_GOOD_TTL_MS = 45_000;
+
+// Last confirmed (online/offline) status per machine alias. Module-level, so it
+// persists across React Query polls for the life of the browser tab.
+const lastConfirmedStatus = new Map<
+  string,
+  { status: BackendStatus; at: number }
+>();
 
 // Derives availability from a health reading:
 //   unhealthy flag                -> offline
@@ -63,6 +81,22 @@ function deriveStatus(health: HealthResponse | null): BackendStatus {
   const updatedMs = Date.parse(health.updated_at);
   if (Number.isNaN(updatedMs)) return "unknown";
   return Date.now() - updatedMs > HEALTH_STALE_MS ? "unknown" : "online";
+}
+
+// Smooths the raw per-reading status with a short memory so a single
+// inconclusive reading doesn't visibly flip a machine. "online" and "offline"
+// are definite signals: record and return them. "unknown" means we couldn't
+// tell right now, so fall back to the last confirmed status while it is recent.
+function stickyStatus(alias: string, reading: BackendStatus): BackendStatus {
+  if (reading === "online" || reading === "offline") {
+    lastConfirmedStatus.set(alias, { status: reading, at: Date.now() });
+    return reading;
+  }
+  const last = lastConfirmedStatus.get(alias);
+  if (last && Date.now() - last.at <= LAST_GOOD_TTL_MS) {
+    return last.status;
+  }
+  return reading; // "unknown"
 }
 
 async function getJson<T>(path: string): Promise<T> {
@@ -199,7 +233,9 @@ async function fetchMachines(withMetrics: boolean): Promise<Backend[]> {
       ]);
 
       const status: BackendStatus =
-        machine.type === "Simulator" ? "online" : deriveStatus(health);
+        machine.type === "Simulator"
+          ? "online"
+          : stickyStatus(machine.alias, deriveStatus(health));
 
       return mapMachine(machine, architecture, metrics, status);
     }),

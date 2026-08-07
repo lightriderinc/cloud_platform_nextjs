@@ -12,6 +12,11 @@ import { NextRequest, NextResponse, after } from "next/server";
 //
 // `cacheTtlMs` optionally caches successful responses in memory so repeat loads
 // reuse a recent upstream response instead of re-paying slow third-party calls.
+// It can be a flat number or a function of the request path, so one proxy can
+// cache heavy, slow-changing payloads for longer while keeping a small,
+// time-sensitive endpoint nearly live (e.g. IQM's per-machine `health`, whose
+// timestamp drives the status badge — caching it too long freezes that
+// timestamp and makes healthy machines read as stale).
 //
 // Stale-while-revalidate: an expired cache entry is still served immediately
 // (as "STALE") while a background refetch updates it for the next request —
@@ -21,6 +26,13 @@ import { NextRequest, NextResponse, after } from "next/server";
 // empty on every cold start, but the *previous* instance's last-known-good
 // response usually hasn't gone stale on the wall clock, so once this cache
 // is warm again post-deploy, subsequent cold starts still serve instantly.
+//
+// `maxStaleMs` bounds how long past expiry an entry may still be served STALE
+// (default: unbounded, i.e. pure stale-while-revalidate). Set it for endpoints
+// whose value decays with wall-clock time so a background refresh that never
+// lands (e.g. torn down on serverless) can't replay the same frozen payload
+// forever — past the cap the next request blocks on a fresh fetch instead. Like
+// `cacheTtlMs`, it can vary per request path.
 
 interface CacheEntry {
   expires: number;
@@ -40,6 +52,19 @@ const refreshInFlight = new Set<string>();
 
 type HeadersResult = { headers: Record<string, string> } | { error: NextResponse };
 
+// A millisecond tuning knob that is either a flat value or derived from the
+// request path, letting one proxy treat different endpoints differently.
+type PathTuning = number | ((path: string[]) => number);
+
+function resolveTuning(
+  option: PathTuning | undefined,
+  path: string[],
+  fallback: number,
+): number {
+  if (typeof option === "function") return option(path);
+  return option ?? fallback;
+}
+
 export function createProxyRoute(options: {
   baseUrl: string;
   token?: string;
@@ -47,15 +72,20 @@ export function createProxyRoute(options: {
   requireToken?: boolean;
   /** Async provider for auth headers; takes precedence over `token`. */
   authHeaders?: () => Promise<Record<string, string>> | Record<string, string>;
-  /** If > 0, cache successful (2xx) responses in memory for this many ms. */
-  cacheTtlMs?: number;
+  /** If > 0, cache successful (2xx) responses in memory for this many ms.
+   *  Pass a function of the request path to vary the TTL per endpoint. */
+  cacheTtlMs?: PathTuning;
+  /** Max ms past expiry an entry may still be served STALE before a request
+   *  blocks on a fresh fetch. Defaults to unbounded (pure SWR). */
+  maxStaleMs?: PathTuning;
 }) {
   const {
     baseUrl,
     token,
     requireToken = true,
     authHeaders,
-    cacheTtlMs = 0,
+    cacheTtlMs,
+    maxStaleMs,
   } = options;
 
   async function resolveHeaders(): Promise<HeadersResult> {
@@ -92,6 +122,7 @@ export function createProxyRoute(options: {
   async function fetchAndCache(
     target: string,
     headers: Record<string, string>,
+    ttlMs: number,
   ): Promise<{ ok: true; entry: CacheEntry } | { ok: false; detail: string }> {
     let upstream: Response;
     try {
@@ -105,20 +136,20 @@ export function createProxyRoute(options: {
     const body = await upstream.text();
     const contentType = upstream.headers.get("Content-Type") ?? "application/json";
     const entry: CacheEntry = {
-      expires: Date.now() + cacheTtlMs,
+      expires: Date.now() + ttlMs,
       status: upstream.status,
       body,
       contentType,
     };
 
-    if (cacheTtlMs > 0 && upstream.ok) {
+    if (ttlMs > 0 && upstream.ok) {
       responseCache.set(target, entry);
     }
 
     return { ok: true, entry };
   }
 
-  function refreshInBackground(target: string) {
+  function refreshInBackground(target: string, ttlMs: number) {
     if (refreshInFlight.has(target)) return;
     refreshInFlight.add(target);
 
@@ -126,7 +157,7 @@ export function createProxyRoute(options: {
       try {
         const resolved = await resolveHeaders();
         if ("error" in resolved) return; // auth failure - stale entry stays, retried next request
-        await fetchAndCache(target, resolved.headers);
+        await fetchAndCache(target, resolved.headers, ttlMs);
       } catch (err) {
         console.error(
           `[proxy] background refresh failed (${target}):`,
@@ -144,30 +175,37 @@ export function createProxyRoute(options: {
   ) {
     const { path } = await context.params;
     const target = `${baseUrl}/${path.map(encodeURIComponent).join("/")}${request.nextUrl.search}`;
+    const ttlMs = resolveTuning(cacheTtlMs, path, 0);
+    const maxStale = resolveTuning(maxStaleMs, path, Infinity);
 
-    if (cacheTtlMs > 0) {
+    if (ttlMs > 0) {
       const hit = responseCache.get(target);
       if (hit) {
-        const isFresh = hit.expires > Date.now();
-        if (!isFresh) {
-          refreshInBackground(target);
+        const staleForMs = Date.now() - hit.expires; // <= 0 while still fresh
+        const isFresh = staleForMs <= 0;
+        if (isFresh || staleForMs <= maxStale) {
+          if (!isFresh) {
+            refreshInBackground(target, ttlMs);
+          }
+          return new NextResponse(hit.body, {
+            status: hit.status,
+            headers: {
+              "Content-Type": hit.contentType,
+              "X-Proxy-Cache": isFresh ? "HIT" : "STALE",
+            },
+          });
         }
-        return new NextResponse(hit.body, {
-          status: hit.status,
-          headers: {
-            "Content-Type": hit.contentType,
-            "X-Proxy-Cache": isFresh ? "HIT" : "STALE",
-          },
-        });
+        // Too stale to trust - drop it and block on a fresh fetch below.
+        responseCache.delete(target);
       }
     }
 
-    // No cached value at all (first-ever cold call for this target) - only
-    // this path actually blocks on a live upstream fetch.
+    // No usable cached value (cold, or dropped as too-stale) - only this path
+    // actually blocks on a live upstream fetch.
     const resolved = await resolveHeaders();
     if ("error" in resolved) return resolved.error;
 
-    const result = await fetchAndCache(target, resolved.headers);
+    const result = await fetchAndCache(target, resolved.headers, ttlMs);
     if (!result.ok) {
       return NextResponse.json(
         { error: "Failed to reach upstream API.", detail: result.detail, target },
@@ -179,7 +217,7 @@ export function createProxyRoute(options: {
       status: result.entry.status,
       headers: {
         "Content-Type": result.entry.contentType,
-        ...(cacheTtlMs > 0 ? { "X-Proxy-Cache": "MISS" } : {}),
+        ...(ttlMs > 0 ? { "X-Proxy-Cache": "MISS" } : {}),
       },
     });
   };
