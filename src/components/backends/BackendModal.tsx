@@ -8,7 +8,11 @@ import { MdClose } from "react-icons/md";
 import BackendConnectSection from "./BackendConnectSection";
 import BackendStatusBadge from "./BackendStatusBadge";
 import QubitMap from "./QubitMap";
-import { formatAvailability, formatQueue } from "@/lib/backends/availability";
+import {
+  availabilityTextClass,
+  formatAvailability,
+  formatQueue,
+} from "@/lib/backends/availability";
 
 type Spec = { label: string; value: React.ReactNode };
 
@@ -42,6 +46,7 @@ export default function BackendModal({
 
   const pct = (n?: number) => (n != null ? `${n} %` : undefined);
   const us = (n?: number) => (n != null ? `${n} µs` : undefined);
+  const availabilityLabel = formatAvailability(availability);
 
   const specs: Spec[] = (
     [
@@ -49,7 +54,14 @@ export default function BackendModal({
       { label: "Qubits", value: qubits },
       { label: "Provider", value: provider },
       { label: "Queue", value: queueDepth !== null ? formatQueue(queueDepth) : null },
-      { label: "Availability", value: formatAvailability(availability) },
+      {
+        label: "Availability",
+        value: availabilityLabel ? (
+          <span className={availabilityTextClass(availability)}>
+            {availabilityLabel}
+          </span>
+        ) : null,
+      },
       { label: "ID", value: backend.id },
       { label: "Topology", value: d.topology },
       {

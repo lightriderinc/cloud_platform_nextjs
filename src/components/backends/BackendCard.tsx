@@ -1,5 +1,9 @@
 import TiltCard from "@/components/ui/TiltCard";
-import { formatAvailability, formatQueue } from "@/lib/backends/availability";
+import {
+  availabilityTextClass,
+  formatAvailability,
+  formatQueue,
+} from "@/lib/backends/availability";
 import { getQuantumBackendId } from "@/lib/quantum/backends";
 import type { Backend } from "@/types/backend";
 import BackendSpec from "./BackendSpec";
@@ -39,7 +43,14 @@ export default function BackendCard({
           <BackendSpec label="Queue" value={formatQueue(queueDepth)} />
         )}
         {availabilityLabel && (
-          <BackendSpec label="Availability" value={availabilityLabel} />
+          <BackendSpec
+            label="Availability"
+            value={
+              <span className={availabilityTextClass(availability)}>
+                {availabilityLabel}
+              </span>
+            }
+          />
         )}
       </div>
 

@@ -69,3 +69,12 @@ export function formatAvailability(
   const day = start.toLocaleDateString([], { weekday: "short" });
   return `Available ${day}, ${time}`;
 }
+
+// Tailwind text color for the availability label: the status badge's online
+// green when available now, its offline gray otherwise — so the availability
+// text tracks the same palette as the status light.
+export function availabilityTextClass(
+  availability: BackendAvailability | undefined,
+): string {
+  return availability?.availableNow ? "text-green-700" : "text-gray-500";
+}
