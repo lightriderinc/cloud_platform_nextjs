@@ -29,11 +29,21 @@ export default function BackendCard({
   return (
     <TiltCard
       onClick={onSelect ? () => onSelect(backend) : undefined}
-      className="flex h-full cursor-pointer flex-col gap-3 default-radius bg-gray-100 border border-gray-100 p-4"
+      className={`flex h-full cursor-pointer flex-col gap-3 default-radius bg-gray-100 border border-gray-100 p-4 ${
+        comingSoon ? "opacity-70" : "opacity-100"
+      }`}
     >
       <div className="flex items-start justify-between gap-2">
         <h2 className="text-base font-semibold leading-tight">{name}</h2>
-        <BackendStatusBadge status={status} />
+        {comingSoon && (
+          <span
+            className="w-fit default-radius px-2 py-0.5 text-xs font-medium text-white"
+            style={{ backgroundColor: "var(--brand-tertiary)" }}
+          >
+            Coming soon
+          </span>
+        )}
+        {!comingSoon && <BackendStatusBadge status={status} />}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -56,14 +66,6 @@ export default function BackendCard({
 
       <div className="mt-auto flex items-center gap-2">
         <BackendTypeTag type={type} />
-        {comingSoon && (
-          <span
-            className="w-fit default-radius px-2 py-0.5 text-xs font-medium text-white"
-            style={{ backgroundColor: "var(--brand-tertiary)" }}
-          >
-            Coming soon
-          </span>
-        )}
       </div>
     </TiltCard>
   );
