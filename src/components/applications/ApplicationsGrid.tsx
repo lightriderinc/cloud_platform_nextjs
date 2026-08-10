@@ -2,21 +2,16 @@
 
 import { useState } from "react";
 import { FaDiceD20 } from "react-icons/fa6";
-import { PiPasswordFill } from "react-icons/pi";
 import {
-  MdLock,
   MdEdit,
-  MdChecklist,
-  MdLeaderboard,
-  MdPublic,
-  MdInsertChart,
-  MdAssignmentTurnedIn,
+  MdLock
 } from "react-icons/md";
+import { PiPasswordFill } from "react-icons/pi";
 import ApplicationCard from "./ApplicationCard";
 import DiceRollModal from "./DiceRollModal";
 import PasswordModal from "./PasswordModal";
-import QuantumVaultModal from "./QuantumVaultModal";
 import QuantumSignerModal from "./QuantumSignerModal";
+import QuantumVaultModal from "./QuantumVaultModal";
 
 type OpenModal =
   | "dice"
@@ -34,7 +29,7 @@ export default function ApplicationsGrid() {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 mt-12">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 mt-12">
         <ApplicationCard
           title="True random dice roll"
           description="A dice roller powered by quantum entropy, delivering truly random results."
@@ -55,7 +50,7 @@ export default function ApplicationsGrid() {
           title="Quantum Vault"
           description="Encrypts a secret using ML-KEM-768 and AES-256-GCM."
           icon={MdLock}
-          tag="New"
+          tag="Demo"
           onClick={() => setOpenModal("vault")}
         />
 
@@ -63,10 +58,9 @@ export default function ApplicationsGrid() {
           title="Quantum-Safe Signer"
           description="Signs any text with ML-DSA-65."
           icon={MdEdit}
-          tag="New"
+          tag="Demo"
           onClick={() => setOpenModal("signer")}
         />
-
       </div>
 
       {openModal === "dice" && (

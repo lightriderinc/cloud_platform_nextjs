@@ -34,7 +34,10 @@ export default function BackendList({
         <thead className="bg-gray-100">
           <tr>
             {COLUMNS.map((column) => (
-              <th key={column.label} className="whitespace-nowrap px-4 py-2 font-medium text-gray-700">
+              <th
+                key={column.label}
+                className="whitespace-nowrap px-4 py-2 font-medium text-gray-700"
+              >
                 {column.sortKey ? (
                   <button
                     type="button"
@@ -43,7 +46,11 @@ export default function BackendList({
                   >
                     {column.label}
                     <span className="text-gray-400">
-                      {sortKey === column.sortKey ? (sortDirection === "asc" ? "↑" : "↓") : ""}
+                      {sortKey === column.sortKey
+                        ? sortDirection === "asc"
+                          ? "↑"
+                          : "↓"
+                        : ""}
                     </span>
                   </button>
                 ) : (
@@ -60,7 +67,7 @@ export default function BackendList({
               <tr
                 key={backend.id}
                 onClick={onSelect ? () => onSelect(backend) : undefined}
-                className="cursor-pointer border-b border-gray-100 bg-white transition-colors last:border-0 hover:bg-gray-50"
+                className={`cursor-pointer border-b border-gray-100 bg-white transition-colors last:border-0 hover:bg-gray-50 ${comingSoon ? "opacity-70" : "opacity-100"}`}
               >
                 <td className="whitespace-nowrap px-4 py-3 font-medium text-gray-800">
                   {backend.name}
@@ -74,18 +81,20 @@ export default function BackendList({
                 <td className="whitespace-nowrap px-4 py-3">
                   <div className="flex items-center gap-2">
                     <BackendTypeTag type={backend.type} />
-                    {comingSoon && (
-                      <span
-                        className="w-fit default-radius px-2 py-0.5 text-xs font-medium text-white"
-                        style={{ backgroundColor: "var(--brand-tertiary)" }}
-                      >
-                        Coming soon
-                      </span>
-                    )}
                   </div>
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">
-                  <BackendStatusBadge status={backend.status} />
+                  {comingSoon && (
+                    <span
+                      className="w-fit default-radius px-2 py-0.5 text-xs font-medium text-white"
+                      style={{ backgroundColor: "var(--brand-tertiary)" }}
+                    >
+                      Coming soon
+                    </span>
+                  )}
+                  {!comingSoon && (
+                    <BackendStatusBadge status={backend.status} />
+                  )}
                 </td>
               </tr>
             );
