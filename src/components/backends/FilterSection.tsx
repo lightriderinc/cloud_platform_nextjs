@@ -21,7 +21,7 @@ export default function FilterSection({
 }) {
   return (
     <div>
-      <p className="mb-1 px-2 text-xs font-medium uppercase tracking-wide text-gray-400">
+      <p className="mb-1 px-2 text-2xs font-medium uppercase tracking-wider text-gray-300">
         {title}
       </p>
       <div className="flex flex-col">
