@@ -118,7 +118,7 @@ export default function CreditsSummary({
         </a>
         {historyLink && (
           <Link
-            href="/settings/usage"
+            href="/settings/purchase-history"
             className="text-sm font-medium text-gray-700 inline-flex items-center gap-2 hover:text-[var(--brand-primary)]"
           >
             View purchase history <MdArrowForward />
