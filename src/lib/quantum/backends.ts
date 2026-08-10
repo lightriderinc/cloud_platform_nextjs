@@ -40,6 +40,11 @@ export const QUANTUM_BACKENDS = {
     deviceInstance: "sirius",
     costPerShotCents: 0.2, // $0.002/shot ($2 per 1,000 shots)
   },
+  "rigetti-ankaa-mock": {
+    proxyPath: "/jobs",
+    deviceInstance: "rigetti:mock",
+    costPerShotCents: 0, // free — mock backend, no credits required
+  },
 } as const;
 
 export type QuantumBackendId = keyof typeof QUANTUM_BACKENDS;
@@ -52,7 +57,16 @@ export function isValidBackend(id: string): id is QuantumBackendId {
 // src/lib/iqm/client.ts) to the QuantumBackendId used by
 // /api/lr/quantum/submit. The catalog lists 6 IQM machines (garnet/emerald/
 // sirius, each with a :mock variant) plus Rigetti and IBM devices — all 6
-// IQM ones are wired up for API submission now (Rigetti/IBM still aren't).
+// IQM ones are wired up for API submission now.
+//
+// "rigetti-ankaa-mock" above is valid for direct submission (API/notebook)
+// but is deliberately NOT mapped from "rigetti.qpu.Cepheus-1-108Q" here: this
+// same lookup drives the /backends card's "Coming soon" badge and its
+// Connect-section API panel (BackendCard.tsx, BackendList.tsx,
+// BackendConnectSection.tsx all key off `getQuantumBackendId(...) === null`),
+// so linking it would flip that card out of "Coming soon" as a side effect.
+// IBM still isn't wired up at all.
+//
 // Returns null for every other card so the UI can show "not available yet"
 // instead of a snippet with a backend id that would 400.
 //
