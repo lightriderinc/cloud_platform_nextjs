@@ -1,3 +1,13 @@
+## [2.0.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v2.0.0...v2.0.1) (2026-08-10)
+
+
+### Bug Fixes
+
+* applications grid + new application tags updated ([91721d0](https://github.com/lightriderinc/cloud_platform_nextjs/commit/91721d034b52e17b5597952c854a0ad86e1ac0ce))
+* coming soon backends styles updated ([f7ccde5](https://github.com/lightriderinc/cloud_platform_nextjs/commit/f7ccde515a3651f1d3496dc471dc7fcbd2d7c8de))
+* purchase history link ([72f96cc](https://github.com/lightriderinc/cloud_platform_nextjs/commit/72f96ccd7520367a078134344f90e97e504aa141))
+* updated application grid layout + unavailable backend styles ([610a78e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/610a78efae4755f2f09b14fb01d0a223c6da2a72))
+
 ## [1.13.7](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v1.13.6...v1.13.7) (2026-08-07)
 
 
