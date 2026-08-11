@@ -8,9 +8,17 @@
 export function formatDuration(startIso: string, endIso: string): string | null {
   const start = new Date(startIso).getTime();
   const end = new Date(endIso).getTime();
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return null;
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return null;
 
-  const totalSeconds = (end - start) / 1000;
+  // Some providers report finishedAt truncated to whole seconds (no
+  // fractional part) while our own createdAt is millisecond-precise, which
+  // can make a genuinely-instant job's finishedAt land up to ~1s before its
+  // createdAt. Clamp that noise to zero rather than rejecting it outright;
+  // a larger negative gap still indicates real bad data, not truncation.
+  const rawSeconds = (end - start) / 1000;
+  if (rawSeconds < -2) return null;
+  const totalSeconds = Math.max(0, rawSeconds);
+
   if (totalSeconds < 10) return `${totalSeconds.toFixed(1)}s`;
   if (totalSeconds < 60) return `${Math.round(totalSeconds)}s`;
 

@@ -135,10 +135,35 @@ function mapProcessor(id: string, isa: RigettiISA): Backend {
   };
 }
 
+// Synthetic catalog card for Rigetti's mock device, mirroring IQM's *:mock
+// pattern (see iqm/client.ts: IQM_MACHINES' "garnet:mock" entries) — a
+// separate, hardcoded entry rather than the real one with a status override.
+// One difference from IQM's mocks: IQM's still live-fetch architecture from a
+// real ":mock"-suffixed Resonance endpoint; Rigetti/QCS has no equivalent
+// mock processor to query, so this one is fully static. `qubits` mirrors the
+// real Cepheus-1-108Q's actual live node count (107, not the nominal "108Q"
+// in its name) since it's a mock of that same device.
+function mockBackend(): Backend {
+  const name = "Rigetti Cepheus-1-108Q (mock)";
+  return {
+    id: "rigetti.qpu.Cepheus-1-108Q:mock",
+    name,
+    type: "Simulator",
+    status: "online",
+    qubits: 107,
+    provider: "Rigetti",
+    queueDepth: null,
+    details: {
+      description: `${name} is a noise-model simulator of the real Cepheus-1-108Q (Rigetti Ankaa family) device, always free and unlimited.`,
+    },
+  };
+}
+
 // Fetches the hardcoded Rigetti processors in parallel. A processor that
 // fails is dropped rather than failing the whole list. Card data and
 // calibration share one ISA payload, so Rigetti is single-phase: there is no
-// lighter endpoint to fetch first.
+// lighter endpoint to fetch first. The mock card is appended statically —
+// it never fails, so it always renders even if the live ISA fetch above does.
 export async function fetchRigettiBackends(): Promise<Backend[]> {
   const settled = await Promise.allSettled(
     RIGETTI_MACHINES.map(async (id) => {
@@ -148,9 +173,10 @@ export async function fetchRigettiBackends(): Promise<Backend[]> {
       return mapProcessor(id, isa);
     }),
   );
-  return settled
+  const liveBackends = settled
     .filter(
       (r): r is PromiseFulfilledResult<Backend> => r.status === "fulfilled",
     )
     .map((r) => r.value);
+  return [...liveBackends, mockBackend()];
 }

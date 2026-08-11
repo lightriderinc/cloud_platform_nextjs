@@ -71,7 +71,11 @@ export default function DashboardLatestJobs() {
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-3">
-                <JobRowStatus jobId={job.jobId} cachedStatus={job.status} />
+                <JobRowStatus
+                  jobId={job.jobId}
+                  cachedStatus={job.status}
+                  finishedAt={job.finishedAt}
+                />
                 <span className="text-xs text-gray-500 font-medium">
                   {new Date(job.createdAt).toLocaleString()}
                 </span>
