@@ -1,0 +1,7 @@
+.default-radius {
+  border-radius: 2px;
+}
+
+.border-color-brand {
+  border-color: var(--brand-tertiary);
+}
