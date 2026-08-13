@@ -6,4 +6,5 @@ export const logtoConfig = {
   baseUrl: 'https://lightriderapp.vercel.app/', // Change to your own base URL
   cookieSecret: 'TAliBkZPfmuENQPbrgwxzb17VDhrBj4T', // Auto-generated 32 digit secret
   cookieSecure: process.env.NODE_ENV === 'production',
+  proRoleID: "d4px0fafm78qfb574wgfm",
 };
