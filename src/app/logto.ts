@@ -1,5 +1,5 @@
 export const logtoConfig = {
-  endpoint: 'https://4e7d0k.logto.app/',
+  managementEndpoint: 'https://4e7d0k.logto.app/',
   appId: 'vqq5tqptgjud45vt23yfs',
   appSecret: 'ehaOI5tObMldStzqk3o3R8YgUqTBOrNj',
   baseUrl: 'https://lightriderapp.vercel.app/', // Change to your own base URL
