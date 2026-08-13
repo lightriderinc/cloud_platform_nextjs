@@ -20,6 +20,14 @@ import { NextResponse } from "next/server";
  * free signup credit grant happens (see getOrCreateCustomer).
  */
 export async function POST(req: Request) {
+  // Captured before the proxy call (not read via Prisma's createdAt
+  // @default(now()) at insert time, which happens after awaiting it) — a
+  // synchronous backend (Rigetti mock, IQM mock) can fully finish before that
+  // insert ever runs, which made our own createdAt structurally always land
+  // after the proxy's own finishedAt, so every runtime calculation that pairs
+  // this row's createdAt with the proxy's finishedAt came out negative.
+  const submitStartedAt = new Date();
+
   const customer = await resolveCustomerFromRequest(req, { createIfMissing: true });
   if (!customer) {
     return NextResponse.json(
@@ -111,6 +119,7 @@ export async function POST(req: Request) {
           shots: shots ?? 1,
           status: typeof data.status === "string" ? data.status : "PENDING",
           costCents,
+          createdAt: submitStartedAt,
         },
       }),
     );

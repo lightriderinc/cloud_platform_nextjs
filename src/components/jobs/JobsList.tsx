@@ -7,8 +7,8 @@ import JobStatusBadge from "@/components/jobs/JobStatusBadge";
 import { formatDuration } from "@/lib/formatDuration";
 import { fetchQuantumJobDetail } from "@/lib/quantum/client";
 import type { JobStatus } from "@/types/job";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
 const TERMINAL = new Set(["COMPLETED", "FAILED", "ABORTED"]);
 
@@ -38,22 +38,41 @@ function shortId(jobId: string): string {
  * live, same interval/logic as JobResultView, so a list of many jobs
  * doesn't force N live iqm-proxy calls on every page load — only the ones
  * still in flight.
+ *
+ * `finishedAt` is only ever backfilled into our DB by a live detail fetch
+ * (see jobs/[id]/route.ts) — normally that happens for free here, since this
+ * same query polls until a job goes terminal. A job that's already terminal
+ * at creation (e.g. a synchronous mock completion) never gets that polling
+ * window, so `needsBackfill` fires this query once anyway purely to trigger
+ * that write, then invalidates the jobs list so the row picks up the newly-
+ * persisted `finishedAt` (and therefore a real Runtime instead of "—").
  */
 export function JobRowStatus({
   jobId,
   cachedStatus,
+  finishedAt,
 }: {
   jobId: string;
   cachedStatus: JobStatus;
+  finishedAt: string | null;
 }) {
+  const queryClient = useQueryClient();
+  const needsBackfill = TERMINAL.has(cachedStatus) && !finishedAt;
+
   const { data: detail } = useQuery({
     queryKey: ["lr-job-detail", jobId],
     queryFn: () => fetchQuantumJobDetail(jobId),
     retry: 0,
-    enabled: !TERMINAL.has(cachedStatus),
+    enabled: !TERMINAL.has(cachedStatus) || needsBackfill,
     refetchInterval: (query) =>
       TERMINAL.has(query.state.data?.status ?? cachedStatus) ? false : 3000,
   });
+
+  useEffect(() => {
+    if (needsBackfill && detail?.finishedAt) {
+      queryClient.invalidateQueries({ queryKey: ["lr-jobs-list"] });
+    }
+  }, [needsBackfill, detail?.finishedAt, queryClient]);
 
   return <JobStatusBadge status={detail?.status ?? cachedStatus} />;
 }
@@ -139,7 +158,11 @@ export default function JobsList() {
                       {job.backend} · {job.shots.toLocaleString()} shots
                     </td>
                     <td className="whitespace-nowrap px-4 py-3">
-                      <JobRowStatus jobId={job.jobId} cachedStatus={job.status} />
+                      <JobRowStatus
+                        jobId={job.jobId}
+                        cachedStatus={job.status}
+                        finishedAt={job.finishedAt}
+                      />
                     </td>
                     <td className="whitespace-nowrap px-4 py-3">
                       <JobModeTag backend={job.backend} />
