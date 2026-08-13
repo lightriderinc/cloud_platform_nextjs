@@ -3,7 +3,7 @@ import { asMicroseconds, asPercent, median } from "@/lib/metrics";
 
 // Live Rigetti QCS integration. Maps each hardcoded processor's Instruction
 // Set Architecture (ISA) into our Backend shape. Field names below were
-// derived from a real ISA response (Cepheus-1-108Q / Ankaa).
+// derived from a real ISA response for Cepheus-1-108Q.
 
 // Hardcoded machine list, like IQM and IBM (project convention: no
 // auto-discovery). Skipping the processor-list round trip lets the cards
@@ -154,7 +154,7 @@ function mockBackend(): Backend {
     provider: "Rigetti",
     queueDepth: null,
     details: {
-      description: `${name} is a noise-model simulator of the real Cepheus-1-108Q (Rigetti Ankaa family) device, always free and unlimited.`,
+      description: `${name} is a noise-model simulator of the real Cepheus-1-108Q device, always free and unlimited.`,
     },
   };
 }

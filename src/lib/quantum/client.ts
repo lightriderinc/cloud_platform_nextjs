@@ -1,4 +1,4 @@
-import type { QuantumBackendId } from "@/lib/quantum/backends";
+import { QUANTUM_BACKENDS, type QuantumBackendId } from "@/lib/quantum/backends";
 import type { JobDetail, JobStatus, MeasurementCounts } from "@/types/job";
 
 interface QuantumCircuitInstruction {
@@ -64,6 +64,15 @@ function normalizeJob(data: Record<string, unknown>): QuantumJobHandle {
  * (External SDK/Colab callers use the same route with a bearer key instead;
  * see resolveCustomerFromRequest.)
  */
+export class BackendBusyError extends Error {
+  constructor(public nextAvailableAt: string, deviceLabel: string) {
+    super(
+      `${deviceLabel} is busy right now. Next available at ${new Date(nextAvailableAt).toLocaleString()}.`,
+    );
+    this.name = "BackendBusyError";
+  }
+}
+
 export async function submitQuantumJob(
   backend: QuantumBackendId,
   circuit: QuantumCircuitPayload,
@@ -74,6 +83,12 @@ export async function submitQuantumJob(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ backend, circuit, shots }),
   });
+  if (res.status === 503) {
+    const data = await res.json().catch(() => ({}));
+    if (data.error === "busy" && typeof data.nextAvailableAt === "string") {
+      throw new BackendBusyError(data.nextAvailableAt, QUANTUM_BACKENDS[backend].deviceInstance);
+    }
+  }
   if (!res.ok) {
     throw new Error(await parseErrorMessage(res));
   }

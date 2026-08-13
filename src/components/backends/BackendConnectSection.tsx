@@ -15,14 +15,14 @@ const COLAB_NOTEBOOKS_BASE_URL =
 // Real backends get their own notebook (backend hardcoded in the submit
 // cell); mock backends — and anything unrecognized — fall through to the
 // shared base notebook, which still defaults to iqm-garnet-mock.
-// rigetti-ankaa-mock is the one mock exception: unlike the IQM mocks, it's
+// rigetti-cepheus-mock is the one mock exception: unlike the IQM mocks, it's
 // not reachable via the base notebook's own backend list, so it gets its own
 // file the same way the real IQM backends do.
 const COLAB_NOTEBOOK_BY_BACKEND: Record<string, string> = {
   "iqm-garnet": "quantum-quickstart-iqm-garnet.ipynb",
   "iqm-emerald": "quantum-quickstart-iqm-emerald.ipynb",
   "iqm-sirius": "quantum-quickstart-iqm-sirius.ipynb",
-  "rigetti-ankaa-mock": "quantum-quickstart-rigetti-mock.ipynb",
+  "rigetti-cepheus-mock": "quantum-quickstart-rigetti-mock.ipynb",
 };
 
 function colabUrl(backendId: string | null): string {
