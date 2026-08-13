@@ -94,7 +94,29 @@ export async function POST(req: Request) {
     return null;
   });
 
-  if (!proxyRes || !proxyRes.ok) {
+  if (!proxyRes) {
+    return NextResponse.json(
+      { error: "Job submission service is currently unreachable. Try again later." },
+      { status: 502 },
+    );
+  }
+
+  if (!proxyRes.ok) {
+    // Rigetti's availability gating: qpu-proxy rejects a submission outright
+    // (503) when the device has no capacity, rather than queuing it. As of
+    // 2026-08-12 the body is a free-text `detail` string, e.g.
+    // 'no capacity available (next_available_at=2026-08-12T18:00:00Z)' — not
+    // a structured field. Parsed defensively; ask qpu-proxy to switch to
+    // {"status":"busy","next_available_at":"..."} instead of expanding this
+    // regex further if the wording changes.
+    if (proxyRes.status === 503) {
+      const errBody: Record<string, unknown> = await proxyRes.json().catch(() => ({}));
+      const detail = typeof errBody.detail === "string" ? errBody.detail : "";
+      const match = detail.match(/next_available_at=([^)]+)\)/);
+      if (match) {
+        return NextResponse.json({ error: "busy", nextAvailableAt: match[1] }, { status: 503 });
+      }
+    }
     return NextResponse.json(
       { error: "Job submission service is currently unreachable. Try again later." },
       { status: 502 },

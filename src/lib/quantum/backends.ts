@@ -40,10 +40,19 @@ export const QUANTUM_BACKENDS = {
     deviceInstance: "sirius",
     costPerShotCents: 0.2, // $0.002/shot ($2 per 1,000 shots)
   },
-  "rigetti-ankaa-mock": {
+  "rigetti-cepheus-mock": {
     proxyPath: "/jobs",
     deviceInstance: "rigetti:mock",
     costPerShotCents: 0, // free — mock backend, no credits required
+  },
+  "rigetti-cepheus": {
+    proxyPath: "/jobs",
+    deviceInstance: "Cepheus-1-108Q",
+    // PLACEHOLDER: reuses the IQM real-hardware rate ($0.002/shot) as a
+    // stand-in. Rigetti/QCS bills by QPU-time (per-second), not per-shot —
+    // this needs replacing with real per-second pricing once qpu-proxy
+    // exposes it. Do not treat this figure as final.
+    costPerShotCents: 0.2,
   },
 } as const;
 
@@ -59,18 +68,19 @@ export function isValidBackend(id: string): id is QuantumBackendId {
 // sirius, each with a :mock variant) plus Rigetti and IBM devices — all 6
 // IQM ones are wired up for API submission now.
 //
-// "rigetti-ankaa-mock" above is valid for direct submission (API/notebook)
-// and IS mapped below, from "rigetti.qpu.Cepheus-1-108Q:mock" (the synthetic
-// mock catalog card — see mockBackend() in rigetti/client.ts): it's genuinely
-// fully wired and tested end-to-end, so letting its catalog card show
-// "Available now" and its Connect-section panel offer the real submit flow is
-// accurate, not a workaround. The real hardware catalog id,
-// "rigetti.qpu.Cepheus-1-108Q", stays deliberately unmapped — there's no
-// working real-QPU submission path yet, and this same lookup drives the
-// /backends card's "Coming soon" badge and Connect-section panel
-// (BackendCard.tsx, BackendList.tsx, BackendConnectSection.tsx all key off
-// `getQuantumBackendId(...) === null`), so mapping it would falsely flip that
-// card out of "Coming soon". IBM still isn't wired up at all.
+// "rigetti-cepheus-mock" and "rigetti-cepheus" are both mapped below — the
+// mock from "rigetti.qpu.Cepheus-1-108Q:mock" (synthetic card, see
+// mockBackend() in rigetti/client.ts), the real one from
+// "rigetti.qpu.Cepheus-1-108Q". qpu-proxy + rigetti-proxy now support live
+// execution on real Cepheus-1-108Q, gated by a pre-submission availability
+// check (submit/route.ts turns a 503 "no capacity" response into a
+// BackendBusyError — see client.ts). This same lookup drives the /backends
+// card's "Coming soon" badge and Connect-section panel (BackendCard.tsx,
+// BackendList.tsx, BackendConnectSection.tsx all key off
+// `getQuantumBackendId(...) === null`), so mapping "rigetti-cepheus" flips
+// that card from "Coming soon" to the normal credit-gated real-hardware
+// submit flow, same as the IQM real backends below. IBM still isn't wired up
+// at all.
 //
 // Returns null for every other card so the UI can show "not available yet"
 // instead of a snippet with a backend id that would 400.
@@ -87,7 +97,8 @@ const CATALOG_ID_TO_QUANTUM_BACKEND: Partial<Record<string, QuantumBackendId>> =
   "iqm.emerald:mock": "iqm-emerald-mock",
   "iqm.sirius": "iqm-sirius",
   "iqm.sirius:mock": "iqm-sirius-mock",
-  "rigetti.qpu.Cepheus-1-108Q:mock": "rigetti-ankaa-mock",
+  "rigetti.qpu.Cepheus-1-108Q:mock": "rigetti-cepheus-mock",
+  "rigetti.qpu.Cepheus-1-108Q": "rigetti-cepheus",
 };
 
 export function getQuantumBackendId(catalogBackendId: string): QuantumBackendId | null {
