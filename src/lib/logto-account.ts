@@ -1,4 +1,4 @@
-const BASE = 'https://auth.lightriderinc.com';
+const BASE = process.env.LOGTO_ENDPOINT!.replace(/\/$/, '');
 
 type JsonError = { message?: string };
 
