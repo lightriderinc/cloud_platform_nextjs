@@ -67,7 +67,7 @@ export default function WelcomePage() {
                 description="View available QPUs and simulators."
               />
               <WelcomePageCard
-                href="https://docs.lightriderinc.com/sdk/getting-started.html"
+                href="https://docs.lightriderinc.com/platform/sdk/getting-started.html"
                 title="SDK documentation"
                 icon={FaFileCode}
                 external

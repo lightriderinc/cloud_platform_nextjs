@@ -106,7 +106,7 @@ export default function BackendConnectSection({
         <p className="mt-3 mb-6 text-sm text-gray-600">
           Simulators run without an API key — see the{" "}
           <a
-            href="https://docs.lightriderinc.com/sdk/getting-started.html"
+            href="https://docs.lightriderinc.com/platform/sdk/getting-started.html"
             target="_blank"
             rel="noopener noreferrer"
             className="brand-link"
