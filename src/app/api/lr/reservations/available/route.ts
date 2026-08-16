@@ -38,7 +38,16 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const proxyParams = new URLSearchParams({ device_instance: deviceInstance, duration });
+  // qpu-proxy/QCS requires a Go-style duration string ("15m"/"30m"/"60m") for
+  // this param — NOT a bare number and NOT an ISO 8601 duration ("PT15M";
+  // that exact wrong format already cost a debugging cycle on the backend
+  // once before). Our own contract with the client (ReservationDuration, in
+  // lib/quantum/reservations.ts) stays a plain number of minutes — this is
+  // the one place it's converted, right before the call it's actually for.
+  const proxyParams = new URLSearchParams({
+    device_instance: deviceInstance,
+    duration: `${duration}m`,
+  });
   if (startTimeFrom) proxyParams.set("start_time_from", startTimeFrom);
 
   const proxyRes = await fetch(
