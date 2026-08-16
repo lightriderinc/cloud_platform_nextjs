@@ -1,5 +1,6 @@
 import type { BackendSortKey, SortDirection } from "@/lib/backends/sort";
 import { getQuantumBackendId } from "@/lib/quantum/backends";
+import { isReservationCatalogId } from "@/lib/quantum/reservations";
 import type { Backend } from "@/types/backend";
 import BackendStatusBadge from "./BackendStatusBadge";
 import BackendTypeTag from "./BackendTypeTag";
@@ -62,7 +63,8 @@ export default function BackendList({
         </thead>
         <tbody>
           {backends.map((backend) => {
-            const comingSoon = getQuantumBackendId(backend.id) === null;
+            const comingSoon =
+              !isReservationCatalogId(backend.id) && getQuantumBackendId(backend.id) === null;
             return (
               <tr
                 key={backend.id}

@@ -58,12 +58,6 @@ function normalizeJob(data: Record<string, unknown>): QuantumJobHandle {
   };
 }
 
-/**
- * Submits via the caller's own Logto session — same-origin fetch() carries
- * session cookies automatically, so no API key is needed for in-app calls.
- * (External SDK/Colab callers use the same route with a bearer key instead;
- * see resolveCustomerFromRequest.)
- */
 export class BackendBusyError extends Error {
   constructor(public nextAvailableAt: string, deviceLabel: string) {
     super(
@@ -73,6 +67,12 @@ export class BackendBusyError extends Error {
   }
 }
 
+/**
+ * Submits via the caller's own Logto session — same-origin fetch() carries
+ * session cookies automatically, so no API key is needed for in-app calls.
+ * (External SDK/Colab callers use the same route with a bearer key instead;
+ * see resolveCustomerFromRequest.)
+ */
 export async function submitQuantumJob(
   backend: QuantumBackendId,
   circuit: QuantumCircuitPayload,

@@ -14,6 +14,11 @@ import {
   type BackendSortKey,
   type SortDirection,
 } from "@/lib/backends/sort";
+import {
+  isReservationCatalogId,
+  RESERVED_CEPHEUS_BACKEND_CARD,
+} from "@/lib/quantum/reservations";
+import ReservationBackendModal from "@/components/reservations/ReservationBackendModal";
 import type { Backend } from "@/types/backend";
 import { useEffect, useState } from "react";
 import { MdGridView, MdViewList } from "react-icons/md";
@@ -94,7 +99,16 @@ export default function BackendCatalog({
   const { data: ibmBackends = [], isLoading: ibmLoading } = useIbmBackends();
 
   const anyLoading = iqmLoading || rigettiLoading || ibmLoading;
-  const allBackends = [...iqmBackends, ...rigettiBackends, ...ibmBackends];
+  // RESERVED_CEPHEUS_BACKEND_CARD is a synthetic, UI-only entry for the same
+  // physical device as the real "rigetti.qpu.Cepheus-1-108Q" card above —
+  // temporary, alongside it, until one of the two access models ships (see
+  // the reservation-vs-on-demand branch in the modal render below).
+  const allBackends = [
+    ...iqmBackends,
+    ...rigettiBackends,
+    RESERVED_CEPHEUS_BACKEND_CARD,
+    ...ibmBackends,
+  ];
   const providerOptions: FilterOption[] = Array.from(
     new Set(allBackends.map((b) => b.provider)),
   )
@@ -234,13 +248,19 @@ export default function BackendCatalog({
       {/* Render the freshest copy of the selection so the modal upgrades in
           place when a provider's heavy details (qubit map, fidelities) finish
           loading after the card was clicked. */}
-      {selected && (
-        <BackendModal
-          backend={allBackends.find((b) => b.id === selected.id) ?? selected}
-          onClose={() => setSelected(null)}
-          isAuthenticated={isAuthenticated}
-        />
-      )}
+      {selected &&
+        (isReservationCatalogId(selected.id) ? (
+          <ReservationBackendModal
+            backend={allBackends.find((b) => b.id === selected.id) ?? selected}
+            onClose={() => setSelected(null)}
+          />
+        ) : (
+          <BackendModal
+            backend={allBackends.find((b) => b.id === selected.id) ?? selected}
+            onClose={() => setSelected(null)}
+            isAuthenticated={isAuthenticated}
+          />
+        ))}
     </>
   );
 }
