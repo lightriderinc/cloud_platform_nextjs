@@ -63,6 +63,19 @@ export interface Reservation {
   createdAt: string;
 }
 
+/**
+ * Short local timezone abbreviation (e.g. "PDT") for a given instant — used
+ * to make the timezone of displayed slot times unambiguous. Takes a
+ * reference date (rather than always "now") so it reflects the right side
+ * of a DST transition for dates that aren't today.
+ */
+export function getLocalTimezoneLabel(referenceDate: Date): string {
+  const parts = new Intl.DateTimeFormat(undefined, { timeZoneName: "short" }).formatToParts(
+    referenceDate,
+  );
+  return parts.find((p) => p.type === "timeZoneName")?.value ?? "";
+}
+
 async function parseErrorBody(res: Response): Promise<Record<string, unknown>> {
   return res.json().catch(() => ({}));
 }

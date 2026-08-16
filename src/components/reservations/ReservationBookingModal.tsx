@@ -3,8 +3,9 @@
 import CreditsSummary, { fetchJson, formatCreditsWithUsd, type Credits } from "@/components/billing/CreditsSummary";
 import LRButton from "@/components/ui/LRButton";
 import WarningBox from "@/components/WarningBox";
-import { bookReservation, type AvailableSlot } from "@/lib/quantum/reservations";
+import { bookReservation, getLocalTimezoneLabel, type AvailableSlot } from "@/lib/quantum/reservations";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { MdSchedule } from "react-icons/md";
 
 function formatWindow(slot: AvailableSlot): string {
   const start = new Date(slot.startTime);
@@ -45,6 +46,10 @@ export default function ReservationBookingModal({
   const blockedByCredits =
     credits !== undefined && (credits.purchasedCents <= 0 || credits.remainingCents <= 0);
 
+  // Based on the slot's own date (not "now") so it reflects the right side
+  // of a DST transition if the slot falls on the other side of one.
+  const tzLabel = getLocalTimezoneLabel(new Date(slot.startTime));
+
   const {
     mutate,
     isPending,
@@ -81,9 +86,18 @@ export default function ReservationBookingModal({
       >
         <h3 className="mb-4 text-lg font-semibold">Confirm reservation</h3>
 
-        <div className="mb-5 flex flex-col gap-1 text-sm">
+        <div className="mb-3 flex flex-col gap-1 text-sm">
           <p className="font-medium text-gray-800">{formatWindow(slot)}</p>
           <p className="text-gray-600">{formatCreditsWithUsd(slot.creditsPrice)}</p>
+        </div>
+
+        {/* Prominent, not fine print — this is the same window a misread
+            hour here books real money against a slot that can't be
+            cancelled, so the timezone is repeated here, not just in the
+            slot picker. */}
+        <div className="mb-5 flex items-center gap-2 default-radius border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-800">
+          <MdSchedule className="shrink-0 text-base" />
+          All times shown in your local timezone — {tzLabel}
         </div>
 
         {credits === undefined ? null : blockedByCredits ? (
