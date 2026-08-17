@@ -227,10 +227,11 @@ export default function ReservationSlotPicker({
         </button>
       </div>
 
-      {/* Legend, matching Rigetti's own filled/available vs. grey/unavailable key. */}
+      {/* Legend, matching Rigetti's own filled/available vs. grey/unavailable
+          layout — colored with the platform's own accent, not Rigetti's teal. */}
       <div className="flex items-center gap-4 text-xs text-gray-600">
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-sm bg-teal-500" /> Available
+          <span className="h-3 w-3 rounded-sm bg-[var(--brand-primary)]" /> Available
         </span>
         <span className="flex items-center gap-1.5">
           <span className="h-3 w-3 rounded-sm bg-gray-200" /> Unavailable
@@ -238,7 +239,12 @@ export default function ReservationSlotPicker({
       </div>
 
       {isLoading ? (
-        <div className="h-72 animate-pulse default-radius bg-gray-100" />
+        <div className="relative flex h-72 items-center justify-center default-radius bg-gray-100">
+          <div className="flex flex-col items-center gap-2">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-[var(--brand-primary)]" />
+            <p className="text-xs text-gray-500">Loading availability…</p>
+          </div>
+        </div>
       ) : isError ? (
         <p className="text-sm text-red-500">Failed to load available slots. Try again later.</p>
       ) : (
@@ -284,7 +290,7 @@ export default function ReservationSlotPicker({
                         className={[
                           "border border-white transition-colors",
                           slot
-                            ? "cursor-pointer bg-teal-500 hover:bg-teal-600"
+                            ? "cursor-pointer bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)]"
                             : "cursor-not-allowed bg-gray-200",
                           isNowMarker ? "border-t-2 border-t-red-500" : "",
                         ].join(" ")}

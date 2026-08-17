@@ -9,13 +9,16 @@ const RESERVATION_MARKUP_MULTIPLIER = Number(process.env.RESERVATION_MARKUP_MULT
 
 // Verified live against qpu-proxy (2026-08-18): GET /reservations/available
 // always returns exactly 10 slots per call — a fixed COUNT, not a time
-// window (2.5 hours of coverage at 15m, 10 hours at 60m). start_time_from
-// pages forward cleanly (confirmed: start_time_from=<T> returns slots
-// starting exactly at T). So covering a multi-day grid requires repeatedly
-// advancing start_time_from past the last returned slot until the requested
-// range is covered — a single call was never meant to answer "give me a
-// whole day".
-const MAX_UPSTREAM_CALLS = 30; // a 3-day 15m range needs ~29 calls (72h / 2.5h per batch)
+// window (2.5h of coverage at 15m, 5h at 30m, 10h at 60m) — and
+// start_time_from pages forward cleanly (confirmed: start_time_from=<T>
+// returns slots starting exactly at T). Because the batch size is a fixed,
+// predictable count, the start_time_from for every batch across a range can
+// be computed upfront — there's no need to discover each cursor from the
+// previous batch's last slot, so all batches fire in parallel instead of a
+// sequential chain (that sequential chain was what made first load slow).
+const SLOTS_PER_BATCH = 10;
+const MAX_UPSTREAM_CALLS = 30; // a 3-day 15m range needs ~29 batches (72h / 2.5h per batch)
+const FAN_OUT_CONCURRENCY = 8; // cap on simultaneous upstream calls, so a big range doesn't hammer qpu-proxy in one burst
 
 interface RawSlot {
   start_time: string;
@@ -32,10 +35,10 @@ interface AvailableSlotOut {
 
 // Process-local cache, same idiom as the Prisma singleton in lib/billing/db.ts
 // — not shared across horizontally-scaled instances, but availability
-// doesn't change second-to-second and this is what makes ~29 upstream calls
-// per page load tolerable under repeated renders/re-mounts. Keyed by the
-// exact request shape; entries just expire in place on next read, no
-// separate cleanup timer.
+// doesn't change second-to-second and this is what makes a burst of
+// upstream calls per page load tolerable under repeated renders/re-mounts.
+// Keyed by the exact request shape; entries just expire in place on next
+// read, no separate cleanup timer.
 const CACHE_TTL_MS = 45_000;
 const availabilityCache = new Map<string, { available: AvailableSlotOut[]; expiresAt: number }>();
 
@@ -60,17 +63,36 @@ async function fetchAvailabilityPage(
   return data.available ?? [];
 }
 
+/** Runs `fn` over `items` with at most `limit` in flight at once, preserving each result's index. */
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let nextIndex = 0;
+  async function worker() {
+    while (nextIndex < items.length) {
+      const i = nextIndex++;
+      results[i] = await fn(items[i]);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}
+
 /**
  * GET /api/lr/reservations/available
  *
- * Fans out to qpu-proxy's fixed-10-slots-per-call availability endpoint as
- * many times as needed to cover [start_time_from, range_end), merging the
- * results into one response — the customer-facing (marked-up) credit price
- * is added server-side, same as before. `range_end` is purely an internal
- * contract between this route and its caller (the slot picker); qpu-proxy
- * never sees it. Omitting `range_end` falls back to a single upstream call
- * (today's original behavior), for any future caller that just wants "the
- * next batch" rather than a bounded range.
+ * Fans out to qpu-proxy's fixed-10-slots-per-call availability endpoint —
+ * in parallel, batch start times computed upfront from the fixed batch size
+ * — to cover [start_time_from, range_end), merging the results into one
+ * response. The customer-facing (marked-up) credit price is added
+ * server-side, same as before. `range_end` is purely an internal contract
+ * between this route and its caller (the slot picker); qpu-proxy never sees
+ * it. Omitting `range_end` falls back to a single upstream call (today's
+ * original behavior), for any future caller that just wants "the next
+ * batch" rather than a bounded range.
  *
  * Requires a resolved customer (same auth as /api/lr/quantum/*) even though
  * the data itself isn't customer-scoped, so this isn't an open,
@@ -104,6 +126,7 @@ export async function GET(req: NextRequest) {
   // once before). Our own contract with the client (ReservationDuration, in
   // lib/quantum/reservations.ts) stays a plain number of minutes — this is
   // the one place it's converted, right before the call it's actually for.
+  const durationMinutes = Number(durationParam);
   const duration = `${durationParam}m`;
 
   const cacheKey = `${deviceInstance}|${duration}|${startTimeFrom}|${rangeEnd ?? ""}`;
@@ -112,53 +135,51 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ available: cached.available });
   }
 
+  // One batch covers SLOTS_PER_BATCH slots of `durationMinutes` each — the
+  // stride differs per duration (2.5h at 15m, 5h at 30m, 10h at 60m), so
+  // it's computed from the actual duration rather than hardcoded.
+  const strideMs = SLOTS_PER_BATCH * durationMinutes * 60_000;
+  const startMs = new Date(startTimeFrom).getTime();
   const endBoundary = rangeEnd ? new Date(rangeEnd).getTime() : null;
+
+  const batchStarts: string[] = [];
+  if (endBoundary === null) {
+    // No explicit range requested — this is the "just give me the next
+    // batch" caller, so one call is the whole answer.
+    batchStarts.push(startTimeFrom);
+  } else {
+    for (let t = startMs; t < endBoundary && batchStarts.length < MAX_UPSTREAM_CALLS; t += strideMs) {
+      batchStarts.push(new Date(t).toISOString());
+    }
+  }
+
+  const results = await mapWithConcurrency(batchStarts, FAN_OUT_CONCURRENCY, (cursor) =>
+    fetchAvailabilityPage(deviceInstance, duration, cursor).catch((err) => {
+      console.error("qpu-proxy unreachable for batch starting at", cursor, err);
+      return null;
+    }),
+  );
+
+  // A batch can legitimately come back empty (that stretch of time is fully
+  // booked) — that's not a failure. A failure is `null` (the upstream call
+  // itself errored). All-null means every batch failed, which reads as a
+  // real outage rather than "everything's booked" and should surface as one.
+  if (results.every((r) => r === null)) {
+    return NextResponse.json(
+      { error: "Reservation availability is currently unreachable. Try again later." },
+      { status: 502 },
+    );
+  }
+
   const merged: RawSlot[] = [];
   const seenStarts = new Set<string>();
-  let cursor = startTimeFrom;
-
-  for (let call = 0; call < MAX_UPSTREAM_CALLS; call++) {
-    let page: RawSlot[];
-    try {
-      page = await fetchAvailabilityPage(deviceInstance, duration, cursor);
-    } catch (err) {
-      console.error("qpu-proxy unreachable:", err);
-      // A failure on the very first call is a real outage — surface it as
-      // one, rather than a silent empty list that reads as "fully booked".
-      // A failure partway through a fan-out degrades gracefully instead:
-      // return whatever's already been merged rather than failing the whole
-      // request for a transient blip.
-      if (merged.length === 0) {
-        return NextResponse.json(
-          { error: "Reservation availability is currently unreachable. Try again later." },
-          { status: 502 },
-        );
-      }
-      break;
-    }
-
-    if (page.length === 0) break;
-
-    for (const slot of page) {
+  for (const page of results) {
+    for (const slot of page ?? []) {
       if (!seenStarts.has(slot.start_time)) {
         seenStarts.add(slot.start_time);
         merged.push(slot);
       }
     }
-
-    // No explicit range requested — this is the "just give me the next
-    // batch" caller, so one call is the whole answer.
-    if (endBoundary === null) break;
-
-    const lastSlot = page[page.length - 1];
-    if (new Date(lastSlot.end_time).getTime() >= endBoundary) break;
-
-    const nextCursor = lastSlot.end_time;
-    // The actual runaway condition isn't "too many calls" — it's the cursor
-    // not moving forward (e.g. a backend quirk repeating the same batch).
-    // Catch that directly rather than relying solely on MAX_UPSTREAM_CALLS.
-    if (new Date(nextCursor).getTime() <= new Date(cursor).getTime()) break;
-    cursor = nextCursor;
   }
 
   const available: AvailableSlotOut[] = merged.map((slot) => ({
