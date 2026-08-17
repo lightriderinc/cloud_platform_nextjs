@@ -76,6 +76,16 @@ export function getLocalTimezoneLabel(referenceDate: Date): string {
   return parts.find((p) => p.type === "timeZoneName")?.value ?? "";
 }
 
+/**
+ * "Timezone: America/Los_Angeles (PDT)" — the fuller banner caption, echoing
+ * Rigetti's own reservation calendar's "Timezone <IANA name>" convention
+ * plus the abbreviation used in per-slot displays, so both read consistently.
+ */
+export function getTimezoneCaption(referenceDate: Date): string {
+  const ianaName = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return `Timezone: ${ianaName} (${getLocalTimezoneLabel(referenceDate)})`;
+}
+
 async function parseErrorBody(res: Response): Promise<Record<string, unknown>> {
   return res.json().catch(() => ({}));
 }
@@ -83,12 +93,15 @@ async function parseErrorBody(res: Response): Promise<Record<string, unknown>> {
 export async function fetchAvailableSlots(
   duration: ReservationDuration,
   startTimeFrom?: string,
+  /** Exclusive end of the range to fan out for — internal to our own BFF route, never sent to qpu-proxy itself. Omit for "just the next batch". */
+  rangeEnd?: string,
 ): Promise<AvailableSlot[]> {
   const params = new URLSearchParams({
     device_instance: RESERVATION_DEVICE_INSTANCE,
     duration: String(duration),
   });
   if (startTimeFrom) params.set("start_time_from", startTimeFrom);
+  if (rangeEnd) params.set("range_end", rangeEnd);
 
   const res = await fetch(`/api/lr/reservations/available?${params}`);
   if (!res.ok) {

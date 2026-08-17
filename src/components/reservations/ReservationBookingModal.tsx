@@ -3,7 +3,7 @@
 import CreditsSummary, { fetchJson, formatCreditsWithUsd, type Credits } from "@/components/billing/CreditsSummary";
 import LRButton from "@/components/ui/LRButton";
 import WarningBox from "@/components/WarningBox";
-import { bookReservation, getLocalTimezoneLabel, type AvailableSlot } from "@/lib/quantum/reservations";
+import { bookReservation, getTimezoneCaption, type AvailableSlot } from "@/lib/quantum/reservations";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MdSchedule } from "react-icons/md";
 
@@ -47,8 +47,9 @@ export default function ReservationBookingModal({
     credits !== undefined && (credits.purchasedCents <= 0 || credits.remainingCents <= 0);
 
   // Based on the slot's own date (not "now") so it reflects the right side
-  // of a DST transition if the slot falls on the other side of one.
-  const tzLabel = getLocalTimezoneLabel(new Date(slot.startTime));
+  // of a DST transition if the slot falls on the other side of one. Same
+  // caption format as the slot picker's banner, for consistency.
+  const tzCaption = getTimezoneCaption(new Date(slot.startTime));
 
   const {
     mutate,
@@ -97,7 +98,7 @@ export default function ReservationBookingModal({
             slot picker. */}
         <div className="mb-5 flex items-center gap-2 default-radius border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-800">
           <MdSchedule className="shrink-0 text-base" />
-          All times shown in your local timezone — {tzLabel}
+          {tzCaption}
         </div>
 
         {credits === undefined ? null : blockedByCredits ? (

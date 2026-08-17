@@ -4,6 +4,7 @@ import { formatCreditsWithUsd } from "@/components/billing/CreditsSummary";
 import {
   fetchAvailableSlots,
   getLocalTimezoneLabel,
+  getTimezoneCaption,
   type AvailableSlot,
   type ReservationDuration,
 } from "@/lib/quantum/reservations";
@@ -23,7 +24,7 @@ const ROWS_PER_DAY = (24 * 60) / ROW_MINUTES; // 96
 // Coupled to the row cells' `style={{ height: ROW_HEIGHT_PX }}` below — kept
 // as one constant (not a Tailwind class) so the auto-scroll math below can
 // never drift from the actual rendered row height.
-const ROW_HEIGHT_PX = 28;
+const ROW_HEIGHT_PX = 24;
 
 function startOfLocalDay(iso: string): Date {
   const d = new Date(iso);
@@ -46,9 +47,12 @@ function dayLabel(date: Date): string {
   return date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
 }
 
-function hourLabel(offsetMinutes: number): string {
+// Rigetti's own calendar labels every 30 minutes ("12:00 AM", "12:30 AM", …)
+// with the 15-minute rows as unlabeled subdivisions between them — matched
+// here rather than hourly labels, which were harder to read against.
+function rowLabel(offsetMinutes: number): string {
   const d = new Date(2000, 0, 1, 0, offsetMinutes);
-  return d.toLocaleTimeString(undefined, { hour: "numeric" });
+  return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 }
 
 function cellDate(day: Date, offsetMinutes: number): Date {
@@ -61,10 +65,33 @@ function cellDate(day: Date, offsetMinutes: number): Date {
   );
 }
 
+// "Sun, Aug 16 · 5:00–5:15 PM PDT" — the full bookable window plus the
+// timezone, collapsed to a single AM/PM suffix when start and end share one
+// (matching how people naturally write a time range).
+function formatSlotTooltip(slot: AvailableSlot, tzLabel: string): string {
+  const start = new Date(slot.startTime);
+  const end = new Date(slot.endTime);
+  const day = dayLabel(start);
+  const startStr = start.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  const endStr = end.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  const startPeriod = startStr.split(" ")[1];
+  const endPeriod = endStr.split(" ")[1];
+  const timeRange =
+    startPeriod && startPeriod === endPeriod ? `${startStr.split(" ")[0]}–${endStr}` : `${startStr}–${endStr}`;
+  return `${day} · ${timeRange} ${tzLabel}`;
+}
+
 /**
  * Duration is passed straight through to GET /reservations/available —
  * qpu-proxy/QCS does its own 15-minute-block stitching server-side, so no
  * client-side block-merging is needed.
+ *
+ * A single call to the availability endpoint only ever returns a fixed
+ * batch of 10 slots (verified live: ~2.5h of coverage at 15m, ~10h at 60m) —
+ * nowhere near a 3-day grid's worth. `rangeEnd` tells our own BFF route
+ * (available/route.ts) to fan out across as many upstream calls as needed
+ * to cover the visible range, cached there for 30-60s since that fan-out is
+ * expensive to repeat on every render.
  *
  * Rows cover the FULL 24 hours (96 rows of 15 min) rather than being trimmed
  * to only where availability exists — a mostly-grey grid communicates real
@@ -94,14 +121,15 @@ export default function ReservationSlotPicker({
   }
 
   const rangeStart = history[history.length - 1];
+  const rangeEnd = addDays(startOfLocalDay(rangeStart), VISIBLE_DAYS).toISOString();
 
   const {
     data: slots,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["reservations", "available", duration, rangeStart],
-    queryFn: () => fetchAvailableSlots(duration, rangeStart),
+    queryKey: ["reservations", "available", duration, rangeStart, rangeEnd],
+    queryFn: () => fetchAvailableSlots(duration, rangeStart, rangeEnd),
   });
 
   const visibleDays = Array.from({ length: VISIBLE_DAYS }, (_, i) =>
@@ -134,6 +162,7 @@ export default function ReservationSlotPicker({
   const initialNow = new Date(initialRangeStart);
   const nowRow = Math.floor((initialNow.getHours() * 60 + initialNow.getMinutes()) / ROW_MINUTES);
   const tzLabel = getLocalTimezoneLabel(initialNow);
+  const tzCaption = getTimezoneCaption(initialNow);
   const priceLabel = slots && slots.length > 0 ? formatCreditsWithUsd(slots[0].creditsPrice) : null;
   const durationLabel = DURATIONS.find((d) => d.value === duration)?.label;
 
@@ -168,10 +197,11 @@ export default function ReservationSlotPicker({
       </div>
 
       {/* Prominent, not fine print — a misread hour here books real money
-          against a slot that can't be cancelled. */}
+          against a slot that can't be cancelled. Placed at the top of the
+          calendar area, echoing Rigetti's own "Timezone <name>" header. */}
       <div className="flex items-center gap-2 default-radius border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-800">
         <MdSchedule className="shrink-0 text-base" />
-        All times shown in your local timezone — {tzLabel}
+        {tzCaption}
       </div>
 
       <div className="flex items-center justify-between">
@@ -197,6 +227,16 @@ export default function ReservationSlotPicker({
         </button>
       </div>
 
+      {/* Legend, matching Rigetti's own filled/available vs. grey/unavailable key. */}
+      <div className="flex items-center gap-4 text-xs text-gray-600">
+        <span className="flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-sm bg-teal-500" /> Available
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-sm bg-gray-200" /> Unavailable
+        </span>
+      </div>
+
       {isLoading ? (
         <div className="h-72 animate-pulse default-radius bg-gray-100" />
       ) : isError ? (
@@ -204,17 +244,17 @@ export default function ReservationSlotPicker({
       ) : (
         <div
           ref={scrollRef}
-          className="max-h-72 overflow-auto default-radius border border-gray-100"
+          className="max-h-72 overflow-auto default-radius border border-gray-200"
         >
           <div
             className="grid"
-            style={{ gridTemplateColumns: `48px repeat(${VISIBLE_DAYS}, minmax(64px, 1fr))` }}
+            style={{ gridTemplateColumns: `56px repeat(${VISIBLE_DAYS}, minmax(64px, 1fr))` }}
           >
-            <div className="sticky top-0 z-10 border-b border-gray-100 bg-white" />
+            <div className="sticky top-0 z-10 border-b border-gray-200 bg-white" />
             {visibleDays.map((day) => (
               <div
                 key={day.toISOString()}
-                className="sticky top-0 z-10 border-b border-l border-gray-100 bg-white px-1 py-1.5 text-center text-xs font-medium text-gray-700"
+                className="sticky top-0 z-10 border-b border-l border-gray-200 bg-white px-1 py-1.5 text-center text-xs font-medium text-gray-700"
               >
                 {dayLabel(day)}
               </div>
@@ -222,14 +262,14 @@ export default function ReservationSlotPicker({
 
             {Array.from({ length: ROWS_PER_DAY }, (_, row) => {
               const offset = row * ROW_MINUTES;
-              const onTheHour = offset % 60 === 0;
+              const onTheHalfHour = offset % 30 === 0;
               return (
                 <Fragment key={row}>
                   <div
-                    className="flex items-start justify-end border-t border-gray-50 pr-1.5 text-[11px] text-gray-400"
+                    className="flex items-start justify-end border-t border-gray-100 pr-1.5 text-[10px] text-gray-400"
                     style={{ height: ROW_HEIGHT_PX }}
                   >
-                    {onTheHour ? hourLabel(offset) : ""}
+                    {onTheHalfHour ? rowLabel(offset) : ""}
                   </div>
                   {visibleDays.map((day) => {
                     const slot = slotsByEpoch.get(cellDate(day, offset).getTime());
@@ -240,13 +280,13 @@ export default function ReservationSlotPicker({
                         type="button"
                         disabled={!slot}
                         onClick={() => slot && onPick(slot)}
-                        title={slot ? `${dayLabel(day)} ${hourLabel(offset) || ""}` : undefined}
+                        title={slot ? formatSlotTooltip(slot, tzLabel) : undefined}
                         className={[
-                          "border-t border-l border-gray-50 transition-colors",
+                          "border border-white transition-colors",
                           slot
-                            ? "cursor-pointer bg-[var(--brand-primary)]/20 hover:bg-[var(--brand-primary)]/40"
-                            : "cursor-not-allowed bg-gray-50",
-                          isNowMarker ? "border-t-2 border-t-red-400" : "",
+                            ? "cursor-pointer bg-teal-500 hover:bg-teal-600"
+                            : "cursor-not-allowed bg-gray-200",
+                          isNowMarker ? "border-t-2 border-t-red-500" : "",
                         ].join(" ")}
                         style={{ height: ROW_HEIGHT_PX }}
                       />
