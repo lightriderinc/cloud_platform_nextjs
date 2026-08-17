@@ -35,6 +35,7 @@ model Customer {
   usageEvents     ApiUsageEvent[]
   apiKey          ApiKey?
   quantumJobs     QuantumJobSubmission[]
+  reservations    Reservation[]
 }
 
 // Mirrors a Stripe Subscription (used by both User Pricing plans and API
@@ -114,6 +115,28 @@ model QuantumJobSubmission {
   costCents  Int
   createdAt  DateTime @default(now())
   finishedAt DateTime? // backfilled opportunistically from iqm-proxy's finishedAt whenever GET jobs/[id] is called — null until then, even for already-completed jobs nobody has reopened since this field was added
+}
+
+// Records a customer's paid, exclusive-access booking of a Rigetti QPU time
+// slot. Same reasoning as QuantumJobSubmission: this app always calls
+// qpu-proxy with one shared QUANTUM_PROXY_SERVICE_KEY, so qpu-proxy's own
+// "current user" scoping on GET /reservations can't tell our customers apart
+// from each other — this table is the actual source of truth for "my
+// reservations", and qpu-proxy is never queried directly for the list.
+model Reservation {
+  id               String   @id @default(cuid())
+  customerId       String
+  customer         Customer @relation(fields: [customerId], references: [id])
+  reservationId    String   @unique // qpu-proxy's reservation_id
+  qcsReservationId String   // Rigetti QCS's own reservation id — kept for support/debugging, not used for lookups
+  deviceInstance   String   // e.g. "Cepheus-1-108Q"
+  startTime        DateTime
+  endTime          DateTime
+  priceCents       Int      // Rigetti's raw cost, from the confirmed booking response (not the pre-booking quote)
+  markupMultiplier Float    // RESERVATION_MARKUP_MULTIPLIER snapshotted at booking time, so a later env change can't retroactively change what a past booking appears to have cost
+  chargedCredits   Int      // what was actually deducted = round(priceCents * markupMultiplier)
+  notes            String?
+  createdAt        DateTime @default(now())
 }
 
 // Captures submissions from the Enterprise & Government "Get Custom

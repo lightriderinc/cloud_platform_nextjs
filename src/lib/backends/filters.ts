@@ -1,4 +1,5 @@
 import { getQuantumBackendId } from "@/lib/quantum/backends";
+import { isReservationCatalogId } from "@/lib/quantum/reservations";
 import type { Backend } from "@/types/backend";
 
 export type FilterCategory = "provider" | "type" | "access";
@@ -19,6 +20,7 @@ export function createEmptyFilters(): BackendFilterState {
 }
 
 export function backendAccess(backend: Backend): AccessValue {
+  if (isReservationCatalogId(backend.id)) return "available";
   return getQuantumBackendId(backend.id) === null ? "comingSoon" : "available";
 }
 

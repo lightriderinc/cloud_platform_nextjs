@@ -5,6 +5,7 @@ import {
   formatQueue,
 } from "@/lib/backends/availability";
 import { getQuantumBackendId } from "@/lib/quantum/backends";
+import { isReservationCatalogId } from "@/lib/quantum/reservations";
 import type { Backend } from "@/types/backend";
 import BackendSpec from "./BackendSpec";
 import BackendStatusBadge from "./BackendStatusBadge";
@@ -23,7 +24,11 @@ export default function BackendCard({
 }) {
   const { name, type, status, qubits, provider, queueDepth, availability } =
     backend;
-  const comingSoon = getQuantumBackendId(backend.id) === null;
+  // The reservation card is a real, bookable access path today even though
+  // it has no QUANTUM_BACKENDS submission mapping of its own (see
+  // reservations.ts) — it isn't "coming soon" like a genuinely unmapped card.
+  const comingSoon =
+    !isReservationCatalogId(backend.id) && getQuantumBackendId(backend.id) === null;
   const availabilityLabel = formatAvailability(availability);
 
   return (
