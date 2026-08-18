@@ -1,5 +1,6 @@
 import CreditsTopUp from "@/components/billing/CreditsTopUp";
 import InfoBox from "@/components/InfoBox";
+import BackButton from "@/components/ui/BackButton";
 
 // Current pricing metric: $0.002/shot ($2 per 1,000 shots) = 0.2 credits/shot.
 const RUNTIME_TIERS = [
@@ -39,6 +40,7 @@ const RUNTIME_TIERS = [
 export default function QuantumComputePricingPage() {
   return (
     <div>
+      <BackButton href="/settings/purchases" previousPageName="Purchases" />
       <h1 className="text-2xl font-semibold text-gray-700">
         Quantum Compute Pricing
       </h1>
@@ -58,7 +60,9 @@ export default function QuantumComputePricingPage() {
           </h2>
           <div className="mb-3">
             <InfoBox>
-              Runtime is priced at $0.002 per shot ($2 per 1,000 shots) submitted to a QPU — 0.2 credits per shot.<br/>
+              Runtime is priced at $0.002 per shot ($2 per 1,000 shots)
+              submitted to a QPU — 0.2 credits per shot.
+              <br />
               Submitting jobs to simulators does not consume credits.
             </InfoBox>
           </div>
