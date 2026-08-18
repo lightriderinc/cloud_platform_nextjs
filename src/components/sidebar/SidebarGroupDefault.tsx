@@ -42,6 +42,13 @@ export default function SidebarGroupDefault({
       </SidebarNavGroup> */}
 
       <SidebarNavGroup label="Explore">
+        {/* <SidebarNavItem
+          name="Services"
+          href="/services"
+          icon={FaCode}
+          onNavigate={onNavigate}
+          tourId="sidebar-services"
+        /> */}
         <SidebarNavItem
           name="Applications"
           href="/applications"
