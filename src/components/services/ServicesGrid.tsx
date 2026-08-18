@@ -14,7 +14,7 @@ export default function ServicesGrid() {
           description="Quantum-derived entropy for secure communications, cryptographic workflows, AI training data, and randomness-dependent applications."
         />
         <ServiceCard
-          href="#"
+          href="/services/qec"
           imageSrc="/services/QEC-vis.svg"
           coloredImageSrc="/services/QEC-vis-colored.svg"
           imageAlt="Entropy as a Service visual"
