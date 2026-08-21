@@ -17,12 +17,23 @@ const COLAB_NOTEBOOKS_BASE_URL =
 // shared base notebook, which still defaults to iqm-garnet-mock.
 // rigetti-cepheus-mock is the one mock exception: unlike the IQM mocks, it's
 // not reachable via the base notebook's own backend list, so it gets its own
-// file the same way the real IQM backends do.
+// file the same way the real IQM backends do. rigetti-cepheus (real
+// Cepheus-1-108Q) got the same treatment once its own notebook existed —
+// until this entry, the real card silently fell through to the generic
+// notebook instead of a 404, which is why the gap went unnoticed.
+//
+// NOTE: colabUrl() below points at github.com/.../blob/main/docs/notebooks —
+// Colab loads notebooks straight from `main`. quantum-quickstart-rigetti-
+// cepheus.ipynb lands on develop-merge-main first, so this link 404s in
+// Colab until that branch merges to main. Do not change the URL prefix to
+// point at this branch instead — main is the correct target for customers;
+// this is just a sequencing gap until the merge happens.
 const COLAB_NOTEBOOK_BY_BACKEND: Record<string, string> = {
   "iqm-garnet": "quantum-quickstart-iqm-garnet.ipynb",
   "iqm-emerald": "quantum-quickstart-iqm-emerald.ipynb",
   "iqm-sirius": "quantum-quickstart-iqm-sirius.ipynb",
   "rigetti-cepheus-mock": "quantum-quickstart-rigetti-mock.ipynb",
+  "rigetti-cepheus": "quantum-quickstart-rigetti-cepheus.ipynb",
 };
 
 function colabUrl(backendId: string | null): string {
