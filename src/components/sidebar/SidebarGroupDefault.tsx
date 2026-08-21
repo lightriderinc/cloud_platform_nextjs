@@ -1,5 +1,5 @@
 import { IoDocumentTextSharp } from "react-icons/io5";
-import { MdApps, MdBarChart, MdDashboard } from "react-icons/md";
+import { MdApps, MdBarChart, MdDashboard, MdHub } from "react-icons/md";
 import { RiCpuFill } from "react-icons/ri";
 
 import SidebarNavGroup from "./SidebarNavGroup";
@@ -62,6 +62,13 @@ export default function SidebarGroupDefault({
           icon={RiCpuFill}
           onNavigate={onNavigate}
           tourId="sidebar-backends"
+        />
+        <SidebarNavItem
+          name="Topology"
+          href="/backends/topology"
+          icon={MdHub}
+          onNavigate={onNavigate}
+          tourId="sidebar-topology"
         />
       </SidebarNavGroup>
 

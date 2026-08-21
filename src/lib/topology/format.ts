@@ -45,3 +45,16 @@ export function formatMetricValue(m: Metric, formatter: (v: number | null) => st
   if (m.state === "absent") return "—";
   return formatter(m.value);
 }
+
+/** "4h 36m old" — for the top-strip snapshot age stat. */
+export function formatAgeShort(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours === 0) return `${minutes}m old`;
+  return `${hours}h ${minutes}m old`;
+}
+
+/** "484423c6" — calibration_id truncated to a short, still-distinguishing form for display alongside the age, not for lookups. */
+export function formatCalibrationShort(calibrationId: string): string {
+  return calibrationId.replace(/^sha256:/, "").slice(0, 8);
+}

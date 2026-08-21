@@ -13,6 +13,8 @@ import {
   type TopologyEnvelope,
 } from "@/lib/topology/client";
 import {
+  formatAgeShort,
+  formatCalibrationShort,
   formatDurationNs,
   formatFidelityPct,
   formatMetricValue,
@@ -23,11 +25,11 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 
-// Layout choices (not data): 12 chiplets rendered 3-per-row, each a 3x3
-// qubit mini-grid — matches Cepheus's documented 3x4 modular array. Chiplet
-// identity, membership, and every value below come from the live qubits/
-// edges/corridors responses on every load; nothing here is a fixed lookup
-// table of which chiplet holds which qubits, unlike the frozen mockup.
+// Layout choice (not data): 12 chiplets rendered 3-per-row, matching
+// Cepheus's documented 3x4 modular array. Chiplet identity, membership, and
+// every value below come from the live qubits/edges/corridors responses on
+// every load — nothing here is a fixed lookup table of which chiplet holds
+// which qubits.
 const CHIPLET_GRID_COLS = 3;
 
 type Selection =
@@ -46,17 +48,41 @@ function chipletSortKey(chipletId: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-function stateSwatchClass(state: MetricState): string {
-  switch (state) {
-    case "active":
-      return "swatch-active";
-    case "degraded":
-      return "swatch-degraded";
-    case "sentinel":
-      return "swatch-sentinel";
-    case "absent":
-      return "swatch-absent";
-  }
+// Green/amber/red-ish semantics reused from JobStatusBadge's existing
+// active/warning/failed convention elsewhere in this app, rather than
+// inventing a new palette. Sentinel and absent get a dashed border — they
+// are "unknown"/"not exposed", not points on the same quality scale.
+const STATE_CLASSES: Record<MetricState, { badge: string; cell: string }> = {
+  active: { badge: "bg-green-50 text-green-700 border-green-200", cell: "bg-green-500" },
+  degraded: { badge: "bg-amber-50 text-amber-700 border-amber-200", cell: "bg-amber-400" },
+  sentinel: {
+    badge: "bg-purple-50 text-purple-700 border-purple-300 border-dashed",
+    cell: "bg-purple-100 border-dashed border-purple-400",
+  },
+  absent: {
+    badge: "bg-gray-50 text-gray-400 border-gray-200 border-dashed",
+    cell: "bg-transparent border-dashed border-gray-300",
+  },
+};
+
+function StateBadge({ state }: { state: MetricState }) {
+  return (
+    <span
+      className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium ${STATE_CLASSES[state].badge}`}
+    >
+      {stateLabel(state)}
+    </span>
+  );
+}
+
+// Interpolates green-200 -> green-600 across the live meanFcz range actually
+// present (never a fixed guess baked in from a frozen snapshot).
+function fczColor(value: number, lo: number, hi: number): string {
+  const t = hi === lo ? 1 : Math.max(0, Math.min(1, (value - lo) / (hi - lo)));
+  const from = [187, 247, 208];
+  const to = [22, 163, 74];
+  const rgb = from.map((f, i) => Math.round(f + (to[i] - f) * t));
+  return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
 }
 
 function MetricRow({
@@ -69,11 +95,11 @@ function MetricRow({
   formatter: (v: number | null) => string;
 }) {
   return (
-    <div className="metric-row">
-      <span className="metric-label">{label}</span>
-      <span className={`metric-state ${stateSwatchClass(metric.state)}`}>{stateLabel(metric.state)}</span>
-      <span className="metric-value">{formatMetricValue(metric, formatter)}</span>
-      <span className="metric-error">
+    <div className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-0.5 border-b border-gray-100 py-2 text-sm last:border-0">
+      <span className="font-medium text-gray-700">{label}</span>
+      <StateBadge state={metric.state} />
+      <span className="text-gray-900">{formatMetricValue(metric, formatter)}</span>
+      <span className="text-xs text-gray-400">
         {metric.error === null ? "no error reported" : `± ${metric.error.toFixed(4)}`}
       </span>
     </div>
@@ -83,15 +109,19 @@ function MetricRow({
 function RawValuesBlock({ raw }: { raw: Record<string, unknown> }) {
   const empty = Object.keys(raw).length === 0;
   return (
-    <details className="raw-values">
-      <summary>Raw vendor record{empty ? " (empty)" : ""}</summary>
+    <details className="mt-3 text-xs">
+      <summary className="cursor-pointer font-medium text-gray-500">
+        Raw vendor record{empty ? " (empty)" : ""}
+      </summary>
       {!empty && (
         <>
-          <p className="raw-values-note">
+          <p className="mt-1.5 text-gray-400">
             Informational only — a sentinel placeholder here (e.g. value 0.5, error 1.0) is the
             vendor&apos;s &ldquo;not measured&rdquo; marker, never a real fidelity.
           </p>
-          <pre>{JSON.stringify(raw, null, 2)}</pre>
+          <pre className="mt-1.5 overflow-x-auto rounded bg-gray-50 p-2 text-[11px]">
+            {JSON.stringify(raw, null, 2)}
+          </pre>
         </>
       )}
     </details>
@@ -110,34 +140,23 @@ function DetailPanel({
   if (selection.kind === "qubit") {
     const q = selection.qubit;
     return (
-      <div className="detail-panel">
-        <div className="detail-head">
-          <span className="detail-title">Qubit q{q.qubitIndex}</span>
-          <span className={`metric-state ${stateSwatchClass(q.presence)}`}>
-            {stateLabel(q.presence)}
-          </span>
+      <div>
+        <div className="mb-1 flex items-center gap-2">
+          <span className="text-base font-semibold text-gray-900">Qubit q{q.qubitIndex}</span>
+          <StateBadge state={q.presence} />
         </div>
-        <p className="detail-sub">Chiplet {q.chipletId ?? "—"}</p>
+        <p className="mb-2 text-xs text-gray-500">Chiplet {q.chipletId ?? "—"}</p>
         <MetricRow label="T1" metric={q.t1} formatter={formatSeconds} />
         <MetricRow label="T2" metric={q.t2} formatter={formatSeconds} />
         <MetricRow label="Readout fidelity" metric={q.readout} formatter={formatFidelityPct} />
+        <MetricRow label="fRB — isolated (driven alone)" metric={q.frbIsolated} formatter={formatFidelityPct} />
         <MetricRow
-          label="fRB — isolated (driven alone)"
-          metric={q.frbIsolated}
-          formatter={formatFidelityPct}
-        />
-        <MetricRow
-          label="fRB — simultaneous (all 107, incl. crosstalk — the honest figure for real circuits)"
+          label="fRB — simultaneous (all 107, incl. crosstalk)"
           metric={q.frbSimultaneous}
           formatter={formatFidelityPct}
         />
-        <div className="metric-row">
-          <span className="metric-label">RX gate duration</span>
-          <span />
-          <span className="metric-value">{formatDurationNs(q.rxDurationNs)}</span>
-          <span />
-        </div>
-        <p className="detail-sub">Calibration pulse present: {q.hasCalibration ? "yes" : "no"}</p>
+        <p className="mt-2 text-xs text-gray-500">RX gate duration: {formatDurationNs(q.rxDurationNs)}</p>
+        <p className="text-xs text-gray-500">Calibration pulse present: {q.hasCalibration ? "yes" : "no"}</p>
         <RawValuesBlock raw={q.rawValues} />
       </div>
     );
@@ -146,30 +165,23 @@ function DetailPanel({
   if (selection.kind === "edge") {
     const e = selection.edge;
     return (
-      <div className="detail-panel">
-        <div className="detail-head">
-          <span className="detail-title">
+      <div>
+        <div className="mb-1 flex items-center gap-2">
+          <span className="text-base font-semibold text-gray-900">
             Coupler q{e.nodeA}–q{e.nodeB}
           </span>
-          <span className={`metric-state ${stateSwatchClass(e.presence)}`}>
-            {stateLabel(e.presence)}
-          </span>
+          <StateBadge state={e.presence} />
         </div>
-        <p className="detail-sub">
+        <p className="mb-2 text-xs text-gray-500">
           {e.chipletA} → {e.chipletB}
           {e.corridorId ? ` · corridor ${e.corridorId}` : " · intra-chiplet (no corridor)"}
         </p>
         <MetricRow label="CZ fidelity" metric={e.cz} formatter={formatFidelityPct} />
-        <div className="metric-row">
-          <span className="metric-label">CZ gate duration</span>
-          <span />
-          <span className="metric-value">{formatDurationNs(e.czDurationNs)}</span>
-          <span />
-        </div>
-        <p className="detail-sub">
+        <p className="mt-2 text-xs text-gray-500">CZ gate duration: {formatDurationNs(e.czDurationNs)}</p>
+        <p className="text-xs text-gray-500">
           Calibration pulse present: {e.hasCalibration ? "yes" : "no"}
           {e.cz.state === "sentinel" && e.hasCalibration
-            ? " — a tuned pulse exists on an uncharacterized coupler; evidence it's unmeasured, not broken."
+            ? " — evidence it's unmeasured, not broken."
             : ""}
         </p>
         <RawValuesBlock raw={e.rawValues} />
@@ -179,77 +191,94 @@ function DetailPanel({
 
   const c = selection.corridor;
   const isUnranked = c.score === null;
+  const constituentEdges = edges.filter((e) => e.corridorId === c.corridorId);
   return (
-    <div className="detail-panel">
-      <div className="detail-head">
-        <span className="detail-title">Corridor {c.corridorId}</span>
-        {isUnranked && <span className="metric-state swatch-sentinel">Uncharacterized</span>}
+    <div>
+      <div className="mb-2 flex items-center gap-2">
+        <span className="text-base font-semibold text-gray-900">Corridor {c.corridorId}</span>
+        {isUnranked && <StateBadge state="sentinel" />}
       </div>
-      <div className="metric-row">
-        <span className="metric-label">Coverage</span>
-        <span />
-        <span className="metric-value">
+      <div className="grid grid-cols-[1fr_auto] gap-y-1 text-sm">
+        <span className="text-gray-500">Coverage</span>
+        <span className="text-gray-900">
           {c.validLinks}/{c.expectedLinks} links ({(c.coverage * 100).toFixed(0)}%)
         </span>
-        <span />
-      </div>
-      <div className="metric-row">
-        <span className="metric-label">Mean CZ fidelity</span>
-        <span />
-        <span className="metric-value">{formatFidelityPct(c.meanFcz)}</span>
-        <span />
-      </div>
-      <div className="metric-row">
-        <span className="metric-label">Best link fCZ (marker only)</span>
-        <span />
-        <span className="metric-value">
+        <span className="text-gray-500">Mean CZ fidelity</span>
+        <span className="text-gray-900">{formatFidelityPct(c.meanFcz)}</span>
+        <span className="text-gray-500">Best link fCZ (marker only)</span>
+        <span className="text-gray-900">
           {formatFidelityPct(c.bestLinkFcz)}
           {c.bestLink ? ` (q${c.bestLink[0]}–q${c.bestLink[1]})` : ""}
         </span>
-        <span />
-      </div>
-      <div className="metric-row">
-        <span className="metric-label">Corridor score (mean fCZ × coverage)</span>
-        <span />
-        <span className="metric-value">{formatScore(c.score)}</span>
-        <span />
+        <span className="text-gray-500">Score (mean fCZ × coverage)</span>
+        <span className="text-gray-900">{formatScore(c.score)}</span>
       </div>
       {c.sentinelLinks > 0 && (
-        <p className="detail-sub">
+        <p className="mt-2 text-xs text-purple-700">
           {c.sentinelLinks} of {c.expectedLinks} links uncharacterized (sentinel) — unmeasured, not
           bad.
         </p>
       )}
       {c.missingLinks > 0 && (
-        <p className="detail-sub">
-          {c.missingLinks} of {c.expectedLinks} expected links not present in the ISA at all —
-          distinct from sentinel.
+        <p className="mt-1 text-xs text-gray-500">
+          {c.missingLinks} of {c.expectedLinks} expected links not present in the ISA at all.
         </p>
       )}
-      <p className="detail-sub" style={{ marginTop: 12 }}>
-        Individual couplers in this corridor — click one for its own detail:
-      </p>
-      <div className="corridor-edge-list">
-        {edges
-          .filter((e) => e.corridorId === c.corridorId)
-          .map((e) => (
-            <button
-              key={`${e.nodeA}-${e.nodeB}`}
-              type="button"
-              className="corridor-edge-item"
-              onClick={() => onSelect({ kind: "edge", edge: e })}
-            >
-              <span>
-                q{e.nodeA}–q{e.nodeB}
-              </span>
-              <span className={`metric-state ${stateSwatchClass(e.cz.state)}`}>
-                {stateLabel(e.cz.state)}
-              </span>
-              <span>{formatMetricValue(e.cz, formatFidelityPct)}</span>
-            </button>
-          ))}
-      </div>
+      {constituentEdges.length > 0 && (
+        <>
+          <p className="mt-3 mb-1 text-xs font-medium text-gray-500">Individual couplers</p>
+          <div className="flex flex-col gap-1">
+            {constituentEdges.map((e) => (
+              <button
+                key={`${e.nodeA}-${e.nodeB}`}
+                type="button"
+                onClick={() => onSelect({ kind: "edge", edge: e })}
+                className="flex items-center justify-between rounded border border-gray-100 px-2 py-1 text-left text-xs hover:border-gray-300"
+              >
+                <span>
+                  q{e.nodeA}–q{e.nodeB}
+                </span>
+                <StateBadge state={e.cz.state} />
+                <span>{formatMetricValue(e.cz, formatFidelityPct)}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
+  );
+}
+
+function RankRow({ corridor, onSelect }: { corridor: CorridorEntry; onSelect: (s: Selection) => void }) {
+  const barPct = corridor.score === null ? 0 : Math.max(1, corridor.score * 100);
+  const tickPct = corridor.bestLinkFcz === null ? null : corridor.bestLinkFcz * 100;
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect({ kind: "corridor", corridor })}
+      className="grid w-full grid-cols-[64px_1fr_64px_44px_120px] items-center gap-3 rounded px-1 py-1 text-left hover:bg-gray-50"
+    >
+      <span className="text-sm font-medium text-gray-800">{corridor.corridorId}</span>
+      <span className="relative h-3.5 overflow-hidden rounded bg-gray-100">
+        <span
+          className="absolute inset-y-0 left-0 rounded bg-green-500"
+          style={{ width: `${barPct}%` }}
+        />
+        {tickPct !== null && (
+          <span className="absolute inset-y-0 w-0.5 bg-gray-700" style={{ left: `${tickPct}%` }} />
+        )}
+      </span>
+      <span className="text-right text-sm font-medium text-gray-900">
+        {corridor.score === null ? "not measured" : `${(corridor.score * 100).toFixed(2)}%`}
+      </span>
+      <span className="text-right text-xs text-gray-400">
+        {corridor.validLinks}/{corridor.expectedLinks}
+      </span>
+      <span className="text-right text-xs text-gray-400">
+        {corridor.bestLink ? `q${corridor.bestLink[0]}-q${corridor.bestLink[1]} ` : ""}
+        {formatFidelityPct(corridor.bestLinkFcz, 2)}
+      </span>
+    </button>
   );
 }
 
@@ -258,11 +287,8 @@ export default function TopologyExplorer({
 }: {
   backendId?: string;
 }) {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-  const [colorMode, setColorMode] = useState<"quality" | "coverage">("quality");
   const [selection, setSelection] = useState<Selection | null>(null);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
-
   const mapWrapRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -283,14 +309,11 @@ export default function TopologyExplorer({
   const isError = corridorsQuery.isError || qubitsQuery.isError || edgesQuery.isError;
 
   // Every endpoint's envelope describes the same underlying snapshot — any
-  // one that's loaded is enough for the freshness/provenance banner, so no
-  // separate /topology/status call is made just for this.
+  // one that's loaded is enough for the top-strip banner, so no separate
+  // /topology/status call is made just for this.
   const envelope: TopologyEnvelope<unknown> | undefined =
     qubitsQuery.data ?? corridorsQuery.data ?? edgesQuery.data;
 
-  // useMemo (not a plain `?? []` fallback) so the empty-array case is a
-  // stable reference across renders, not a fresh literal each time — the
-  // dependency arrays below rely on that stability.
   const qubits = useMemo(() => qubitsQuery.data?.data ?? [], [qubitsQuery.data]);
   const edges = useMemo(() => edgesQuery.data?.data ?? [], [edgesQuery.data]);
   const corridors = corridorsQuery.data?.data;
@@ -317,27 +340,24 @@ export default function TopologyExplorer({
     [corridors],
   );
 
-  // Color scale range derived from the live data actually present, not a
-  // fixed guess baked in from the mockup's frozen snapshot.
   const fczRange = useMemo(() => {
     const values = allCorridors.map((c) => c.meanFcz).filter((v): v is number => v !== null);
     if (values.length === 0) return { lo: 0, hi: 1 };
     return { lo: Math.min(...values), hi: Math.max(...values) };
   }, [allCorridors]);
 
-  function corridorColor(c: CorridorEntry): string {
-    if (c.score === null) return "var(--series-7)"; // uncharacterized
-    if (colorMode === "coverage") {
-      if (c.coverage >= 1) return "var(--series-1-450)";
-      if (c.coverage >= 2 / 3) return "var(--status-warning)";
-      return "var(--status-critical)";
+  // The top-strip answer: "best corridor" (composite score) and "best
+  // coupler" (raw fCZ) are deliberately kept as two separate stats, since
+  // they can name different corridors — that gap is the entire point of
+  // scoring by mean x coverage instead of best-link alone.
+  const topCorridor = corridors?.ranked[0] ?? null;
+  const bestCoupler = useMemo(() => {
+    let best: CorridorEntry | null = null;
+    for (const c of allCorridors) {
+      if (c.bestLinkFcz !== null && (!best || c.bestLinkFcz > (best.bestLinkFcz as number))) best = c;
     }
-    const { lo, hi } = fczRange;
-    const t = hi === lo ? 1 : Math.max(0, Math.min(1, ((c.meanFcz as number) - lo) / (hi - lo)));
-    const steps = [250, 300, 350, 400, 450, 500, 550, 600];
-    const idx = Math.round(t * (steps.length - 1));
-    return `var(--series-1-${steps[idx]})`;
-  }
+    return best;
+  }, [allCorridors]);
 
   function drawCorridors() {
     const svg = svgRef.current;
@@ -363,31 +383,40 @@ export default function TopologyExplorer({
       const dx = bx - ax;
       const dy = by - ay;
       const len = Math.sqrt(dx * dx + dy * dy) || 1;
-      const pullX = (ra.width / 2 - 4) * (dx / len);
-      const pullY = (ra.height / 2 - 4) * (dy / len);
+      const pullX = (ra.width / 2 - 2) * (dx / len);
+      const pullY = (ra.height / 2 - 2) * (dy / len);
 
       const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
       line.setAttribute("x1", String(ax + pullX));
       line.setAttribute("y1", String(ay + pullY));
       line.setAttribute("x2", String(bx - pullX));
       line.setAttribute("y2", String(by - pullY));
-      line.setAttribute("stroke-width", corridor.score === null ? "8" : String(4 + corridor.coverage * 4));
+      line.setAttribute(
+        "stroke-width",
+        corridor.score === null ? "3" : String(1.5 + corridor.coverage * 2.5),
+      );
       line.setAttribute("stroke-linecap", "round");
-      line.setAttribute("stroke", corridorColor(corridor));
+      line.setAttribute(
+        "stroke",
+        corridor.meanFcz === null ? "#a78bfa" : fczColor(corridor.meanFcz, fczRange.lo, fczRange.hi),
+      );
       if (corridor.score !== null && corridor.coverage < 1) {
-        line.setAttribute("stroke-dasharray", "10 6");
+        line.setAttribute("stroke-dasharray", "5 3");
       }
       line.style.cursor = "pointer";
       line.setAttribute("pointer-events", "stroke");
       line.addEventListener("click", () => setSelection({ kind: "corridor", corridor }));
       line.addEventListener("mouseenter", (evt) => {
-        const html = corridor.score === null
-          ? `<b>${corridor.corridorId} — uncharacterized</b>${corridor.sentinelLinks}/${corridor.expectedLinks} links sentinel. Not blocked — measurement pending.`
-          : `<b>${corridor.corridorId}</b>Mean fCZ ${formatFidelityPct(corridor.meanFcz)} · coverage ${corridor.validLinks}/${corridor.expectedLinks} · score ${formatScore(corridor.score)}`;
-        setTooltip({ html, x: (evt as MouseEvent).clientX + 14, y: (evt as MouseEvent).clientY + 14 });
+        const html =
+          corridor.score === null
+            ? `<b>${corridor.corridorId} — uncharacterized</b>${corridor.sentinelLinks}/${corridor.expectedLinks} links sentinel.`
+            : `<b>${corridor.corridorId}</b>score ${formatScore(corridor.score, 3)} · mean fCZ ${formatFidelityPct(corridor.meanFcz, 2)} · ${corridor.validLinks}/${corridor.expectedLinks}`;
+        setTooltip({ html, x: (evt as MouseEvent).clientX + 12, y: (evt as MouseEvent).clientY + 12 });
       });
       line.addEventListener("mousemove", (evt) => {
-        setTooltip((t) => (t ? { ...t, x: (evt as MouseEvent).clientX + 14, y: (evt as MouseEvent).clientY + 14 } : t));
+        setTooltip((t) =>
+          t ? { ...t, x: (evt as MouseEvent).clientX + 12, y: (evt as MouseEvent).clientY + 12 } : t,
+        );
       });
       line.addEventListener("mouseleave", () => setTooltip(null));
       svg.appendChild(line);
@@ -402,378 +431,243 @@ export default function TopologyExplorer({
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allCorridors, colorMode, chipletIds, theme]);
+  }, [allCorridors, chipletIds]);
 
   if (isError) {
-    return (
-      <p className="text-sm text-red-500">
-        Failed to load topology data. Try again later.
-      </p>
-    );
+    return <p className="text-sm text-red-500">Failed to load topology data. Try again later.</p>;
   }
 
   return (
-    <div className="viz-topology" data-theme={theme}>
-      <div className="header">
-        <div className="header-row">
-          <div>
-            <div className="title">{backendId} — Chiplet Topology &amp; Status</div>
-            {envelope && (
-              <div className="subtitle">
-                Snapshot {envelope.calibrationId.slice(0, 18)}… ·{" "}
-                {new Date(envelope.sourceTimestamp).toLocaleString()} ·{" "}
-                {Math.round(envelope.snapshotAgeSeconds / 60)} min old
+    <div className="flex flex-col gap-4">
+      {/* TOP STRIP — the answer, most important element on the page. */}
+      <div className="grid grid-cols-2 gap-4 default-radius border border-gray-100 bg-white p-4 sm:grid-cols-4">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Best corridor</p>
+          <p className="mt-0.5 text-lg font-semibold text-gray-900">{topCorridor?.corridorId ?? "—"}</p>
+          <p className="text-xs text-gray-500">
+            {topCorridor ? `score ${(topCorridor.score as number * 100).toFixed(2)}%` : "—"}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Best coupler</p>
+          <p className="mt-0.5 text-lg font-semibold text-gray-900">
+            {bestCoupler?.bestLink ? `q${bestCoupler.bestLink[0]}-q${bestCoupler.bestLink[1]}` : "—"}
+          </p>
+          <p className="text-xs text-gray-500">
+            {bestCoupler ? `${formatFidelityPct(bestCoupler.bestLinkFcz, 2)} fCZ` : "—"}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Snapshot</p>
+          <p className="mt-0.5 text-lg font-semibold text-gray-900">
+            {envelope ? formatAgeShort(envelope.snapshotAgeSeconds) : "—"}
+          </p>
+          <p className="text-xs text-gray-500">
+            {envelope ? `calibration ${formatCalibrationShort(envelope.calibrationId)}` : "—"}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Provenance</p>
+          <p className="mt-0.5 text-lg font-semibold text-gray-900">
+            {envelope?.topologyProvenance ?? "—"}
+          </p>
+          {envelope?.isStale && (
+            <span className="mt-1 inline-block rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-600">
+              Stale snapshot
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* MAP + RANKING (left) / DETAIL (right, sticky — not below the fold) */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
+        <div className="flex flex-col gap-4">
+          <div className="default-radius border border-gray-100 bg-white p-4">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold text-gray-700">Processor map</h2>
+              <div className="flex items-center gap-3 text-xs text-gray-500">
+                <span className="flex items-center gap-1">
+                  <span className="h-2.5 w-2.5 rounded-sm bg-green-500" />
+                  Active
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="h-2.5 w-2.5 rounded-sm bg-amber-400" />
+                  Degraded
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="h-2.5 w-2.5 rounded-sm border border-dashed border-purple-400 bg-purple-100" />
+                  Sentinel (unmeasured)
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="h-2.5 w-2.5 rounded-sm border border-dashed border-gray-300" />
+                  Absent
+                </span>
+              </div>
+            </div>
+
+            {isLoading ? (
+              <div className="flex h-48 items-center justify-center text-sm text-gray-400">
+                Loading topology…
+              </div>
+            ) : (
+              <div className="relative mx-auto max-w-md" ref={mapWrapRef}>
+                <svg ref={svgRef} className="absolute inset-0 h-full w-full overflow-visible" style={{ pointerEvents: "none" }} />
+                <div
+                  className="relative grid gap-4 p-3"
+                  style={{ gridTemplateColumns: `repeat(${CHIPLET_GRID_COLS}, 1fr)` }}
+                >
+                  {chipletIds.map((chipletId) => {
+                    const chipletQubits = qubitsByChiplet.get(chipletId) ?? [];
+                    const activeCount = chipletQubits.filter((q) => q.presence !== "absent").length;
+                    return (
+                      <div
+                        key={chipletId}
+                        id={`chip-${chipletId}`}
+                        className="relative z-10 cursor-pointer rounded border border-gray-200 bg-white p-1.5 hover:border-gray-400"
+                        onClick={() =>
+                          chipletQubits[0] && setSelection({ kind: "qubit", qubit: chipletQubits[0] })
+                        }
+                      >
+                        <div className="mb-1 flex items-center justify-between">
+                          <span className="text-[11px] font-semibold text-gray-700">{chipletId}</span>
+                          <span className="text-[9px] text-gray-400">
+                            {activeCount}/{chipletQubits.length}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-0.5">
+                          {chipletQubits.map((q) => (
+                            <div
+                              key={q.qubitIndex}
+                              className={`aspect-square rounded-sm border border-gray-200 ${
+                                q.presence === "absent"
+                                  ? STATE_CLASSES.absent.cell
+                                  : STATE_CLASSES[q.frbSimultaneous.state].cell
+                              }`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelection({ kind: "qubit", qubit: q });
+                              }}
+                              onMouseEnter={(e) => {
+                                const html =
+                                  q.presence === "absent"
+                                    ? `<b>q${q.qubitIndex} — ABSENT</b>Not exposed in the ISA.`
+                                    : `<b>q${q.qubitIndex}</b>fRB (simultaneous): ${formatMetricValue(q.frbSimultaneous, formatFidelityPct)}`;
+                                setTooltip({ html, x: e.clientX + 12, y: e.clientY + 12 });
+                              }}
+                              onMouseMove={(e) =>
+                                setTooltip((t) => (t ? { ...t, x: e.clientX + 12, y: e.clientY + 12 } : t))
+                              }
+                              onMouseLeave={() => setTooltip(null)}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
-          <div className="badges">
-            {envelope?.isStale && <span className="badge stale">Stale snapshot</span>}
-            {envelope && (
-              <span className="badge provenance">
-                Topology provenance: {envelope.topologyProvenance}
-              </span>
-            )}
-            <button
-              type="button"
-              className="theme-toggle"
-              onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
-            >
-              Toggle dark mode
-            </button>
-          </div>
-        </div>
-        {envelope?.topologyProvenance === "inferred" && (
-          <p className="provenance-note">
-            The chiplet mapping (C1–C{chipletIds.length || 12}) is Light Rider&apos;s reconstruction
-            from observed ISA connectivity, not Rigetti&apos;s official die numbering. Treat as
-            inferred until vendor-confirmed.
-          </p>
-        )}
-      </div>
 
-      <div className="panel">
-        <h2>Qubit &amp; edge state key</h2>
-        <p className="desc">
-          A sentinel record means uncharacterized, not bad, and is never rendered as low quality.
-        </p>
-        <div className="legend-row">
-          <span className="legend-item">
-            <span className="swatch swatch-active" />ACTIVE — normal, in service
-          </span>
-          <span className="legend-item">
-            <span className="swatch swatch-degraded" />DEGRADED — measured, below threshold
-          </span>
-          <span className="legend-item">
-            <span className="swatch swatch-sentinel" />SENTINEL — uncharacterized (unknown, not bad)
-          </span>
-          <span className="legend-item">
-            <span className="swatch swatch-absent" />ABSENT — not exposed in the ISA
-          </span>
-        </div>
-      </div>
+          <div className="default-radius border border-gray-100 bg-white p-4">
+            <h2 className="mb-3 text-sm font-semibold text-gray-700">
+              Corridor ranking — score (mean fCZ × coverage)
+            </h2>
+            {isLoading ? (
+              <div className="flex h-32 items-center justify-center text-sm text-gray-400">
+                Loading corridors…
+              </div>
+            ) : (
+              corridors && (
+                <>
+                  <div className="grid grid-cols-[64px_1fr_64px_44px_120px] gap-3 border-b border-gray-100 pb-1.5 text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                    <span>Corridor</span>
+                    <span>Score</span>
+                    <span className="text-right">Score %</span>
+                    <span className="text-right">Cov.</span>
+                    <span className="text-right">Best link</span>
+                  </div>
+                  <div className="flex flex-col divide-y divide-gray-50">
+                    {corridors.ranked.map((c) => (
+                      <RankRow key={c.corridorId} corridor={c} onSelect={setSelection} />
+                    ))}
+                  </div>
 
-      <div className="panel">
-        <h2>Processor map</h2>
-        <p className="desc">
-          Connector color/weight encodes the corridor&apos;s mean CZ fidelity across all its links,
-          not just its best coupler. Click a chiplet, qubit, or connector for full detail.
-        </p>
-        <div className="map-controls">
-          <button
-            type="button"
-            className="ctrl-btn"
-            aria-pressed={colorMode === "quality"}
-            onClick={() => setColorMode("quality")}
-          >
-            Color by mean corridor fidelity
-          </button>
-          <button
-            type="button"
-            className="ctrl-btn"
-            aria-pressed={colorMode === "coverage"}
-            onClick={() => setColorMode("coverage")}
-          >
-            Color by link coverage
-          </button>
-        </div>
-
-        {isLoading ? (
-          <div className="loading-block">Loading topology…</div>
-        ) : (
-          <div className="map-wrap" ref={mapWrapRef}>
-            <svg ref={svgRef} className="corridor-svg" />
-            <div
-              className="chiplet-grid"
-              style={{ gridTemplateColumns: `repeat(${CHIPLET_GRID_COLS}, 1fr)` }}
-            >
-              {chipletIds.map((chipletId) => {
-                const chipletQubits = qubitsByChiplet.get(chipletId) ?? [];
-                const activeCount = chipletQubits.filter((q) => q.presence !== "absent").length;
-                return (
-                  <div
-                    key={chipletId}
-                    id={`chip-${chipletId}`}
-                    className="chiplet-card"
-                    onClick={() => chipletQubits[0] && setSelection({ kind: "qubit", qubit: chipletQubits[0] })}
-                  >
-                    <div className="chip-head">
-                      <span className="chip-id">{chipletId}</span>
-                      <span className="chip-count">
-                        {activeCount}/{chipletQubits.length} active
-                      </span>
-                    </div>
-                    <div className="qubit-mini-grid">
-                      {chipletQubits.map((q) => (
-                        <div
-                          key={q.qubitIndex}
-                          className={`qcell ${q.presence === "absent" ? "absent" : stateSwatchClass(q.frbSimultaneous.state)}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelection({ kind: "qubit", qubit: q });
-                          }}
-                          onMouseEnter={(e) => {
-                            const html =
-                              q.presence === "absent"
-                                ? `<b>q${q.qubitIndex} — ABSENT</b>Not exposed in the ISA. Nominal position only.`
-                                : `<b>q${q.qubitIndex}</b>fRB (simultaneous): ${formatMetricValue(q.frbSimultaneous, formatFidelityPct)}`;
-                            setTooltip({ html, x: e.clientX + 14, y: e.clientY + 14 });
-                          }}
-                          onMouseMove={(e) =>
-                            setTooltip((t) => (t ? { ...t, x: e.clientX + 14, y: e.clientY + 14 } : t))
-                          }
-                          onMouseLeave={() => setTooltip(null)}
+                  {corridors.unranked.length > 0 && (
+                    <div className="mt-4 rounded border border-dashed border-purple-300 bg-purple-50/40 p-3">
+                      <p className="mb-2 text-xs font-medium text-purple-700">
+                        Uncharacterized corridors — excluded from ranking, not the bottom of it
+                      </p>
+                      {corridors.unranked.map((c) => (
+                        <button
+                          key={c.corridorId}
+                          type="button"
+                          onClick={() => setSelection({ kind: "corridor", corridor: c })}
+                          className="flex w-full items-center justify-between gap-3 rounded px-1 py-1 text-left hover:bg-purple-50"
                         >
-                          {q.presence === "absent" ? "×" : q.qubitIndex}
-                        </div>
+                          <span className="text-sm font-medium text-gray-800">{c.corridorId}</span>
+                          <span className="text-xs text-gray-500">not measured</span>
+                          <span className="text-xs text-gray-500">
+                            {c.validLinks}/{c.expectedLinks}
+                          </span>
+                          <span className="text-xs text-purple-700">
+                            {c.sentinelLinks} link(s) sentinel — unmeasured, not blocked
+                          </span>
+                        </button>
                       ))}
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="panel">
-        <h2>Corridor ranking — composite score (mean fCZ × coverage)</h2>
-        <p className="desc">
-          Default sort is corridor score, never best-link fidelity alone — the orange tick marks
-          each corridor&apos;s single best coupler as a secondary marker only.
-        </p>
-        {isLoading ? (
-          <div className="loading-block">Loading corridors…</div>
-        ) : (
-          corridors && (
-            <>
-              <div className="rank-chart">
-                <div className="rank-row head">
-                  <div>Corridor</div>
-                  <div>Score (mean fCZ × coverage)</div>
-                  <div>Best link</div>
-                  <div>Coverage</div>
-                </div>
-                {corridors.ranked.map((c) => (
-                  <RankRow key={c.corridorId} corridor={c} onSelect={setSelection} />
-                ))}
-              </div>
-              <div className="chart-legend">
-                <span className="li">
-                  <span className="dot" />
-                  Corridor score (bar length)
-                </span>
-                <span className="li">
-                  <span className="tick" />
-                  Best individual coupler fCZ (marker)
-                </span>
-              </div>
-
-              {corridors.unranked.length > 0 && (
-                <>
-                  <h3 className="unranked-heading">Uncharacterized corridors — excluded from ranking</h3>
-                  <p className="desc">
-                    Every link sentinel-valued. Shown separately, never appended to the bottom of the
-                    ranking as if it were simply the worst corridor.
-                  </p>
-                  {corridors.unranked.map((c) => (
-                    <RankRow key={c.corridorId} corridor={c} onSelect={setSelection} />
-                  ))}
+                  )}
                 </>
-              )}
-            </>
-          )
-        )}
-      </div>
+              )
+            )}
+          </div>
 
-      {selection && (
-        <div className="panel">
-          <h2>Detail</h2>
-          <DetailPanel selection={selection} edges={edges} onSelect={setSelection} />
+          <details className="default-radius border border-gray-100 bg-white p-4">
+            <summary className="cursor-pointer text-sm font-medium text-gray-700">
+              How this is scored
+            </summary>
+            <div className="mt-2 flex flex-col gap-2 text-xs text-gray-600">
+              <p>
+                Corridor score = mean CZ fidelity × coverage (valid links / expected links).
+                Coverage-weighting is deliberate: a corridor with one excellent link and two
+                sentinels must not outrank one with three good links.
+              </p>
+              <p>
+                Best-link fidelity is shown as a secondary marker only — never as the sort key.
+                &ldquo;Best coupler&rdquo; in the top strip and &ldquo;best corridor&rdquo; can
+                legitimately name different corridors; that gap is the reason for scoring this
+                way rather than by best link alone.
+              </p>
+              <p>
+                A sentinel record means uncharacterized, not bad — it is never treated as low
+                quality or sorted among genuinely poor hardware. The chiplet mapping
+                (C1–C{chipletIds.length || 12}) is Light Rider&apos;s reconstruction from observed
+                ISA connectivity, not Rigetti&apos;s official die numbering.
+              </p>
+            </div>
+          </details>
         </div>
-      )}
+
+        {/* DETAIL PANEL — sticky, always visible, not below the fold. */}
+        <aside className="default-radius border border-gray-100 bg-white p-4 lg:sticky lg:top-4 lg:self-start">
+          <h2 className="mb-3 text-sm font-semibold text-gray-700">Detail</h2>
+          {selection ? (
+            <DetailPanel selection={selection} edges={edges} onSelect={setSelection} />
+          ) : (
+            <p className="text-sm text-gray-400">
+              Click a chiplet, qubit, or corridor to see its full detail here.
+            </p>
+          )}
+        </aside>
+      </div>
 
       {tooltip && (
         <div
-          className="tooltip show"
-          style={{ left: tooltip.x, top: tooltip.y }}
+          className="fixed z-50 max-w-[280px] rounded bg-gray-900 px-3 py-2 text-xs leading-relaxed text-white shadow-lg"
+          style={{ left: tooltip.x, top: tooltip.y, pointerEvents: "none" }}
           dangerouslySetInnerHTML={{ __html: tooltip.html }}
         />
       )}
-
-      <style jsx>{`
-        .viz-topology {
-          --surface-1: #fcfcfb;
-          --page-plane: #f9f9f7;
-          --text-primary: #0b0b0b;
-          --text-secondary: #52514e;
-          --muted: #898781;
-          --gridline: #e1e0d9;
-          --border: rgba(11, 11, 11, 0.1);
-          --series-1-250: #86b6ef;
-          --series-1-300: #6da7ec;
-          --series-1-350: #5598e7;
-          --series-1-400: #3987e5;
-          --series-1-450: #2a78d6;
-          --series-1-500: #256abf;
-          --series-1-550: #1c5cab;
-          --series-1-600: #184f95;
-          --series-2: #eb6834;
-          --series-7: #4a3aa7;
-          --status-good: #0ca30c;
-          --status-warning: #fab219;
-          --status-critical: #d03b3b;
-          padding: 24px;
-          border-radius: 12px;
-          background: var(--page-plane);
-          color: var(--text-primary);
-          font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-        }
-        .viz-topology[data-theme="dark"] {
-          --surface-1: #1a1a19;
-          --page-plane: #0d0d0d;
-          --text-primary: #ffffff;
-          --text-secondary: #c3c2b7;
-          --muted: #898781;
-          --gridline: #2c2c2a;
-          --border: rgba(255, 255, 255, 0.1);
-          --series-1-450: #3987e5;
-          --series-2: #d95926;
-          --series-7: #9085e9;
-          --status-critical: #e66767;
-        }
-        .header, .panel {
-          background: var(--surface-1);
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          padding: 18px 22px;
-          margin-bottom: 16px;
-        }
-        .header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
-        .title { font-size: 19px; font-weight: 700; letter-spacing: -0.01em; }
-        .subtitle { font-size: 12.5px; color: var(--text-secondary); margin-top: 3px; }
-        .provenance-note { font-size: 12px; color: var(--series-7); margin: 10px 0 0; font-weight: 600; }
-        .badges { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
-        .badge { font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-secondary); white-space: nowrap; }
-        .badge.provenance { color: var(--series-7); border-color: var(--series-7); }
-        .badge.stale { color: var(--status-critical); border-color: var(--status-critical); }
-        .theme-toggle { font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); cursor: pointer; }
-        .panel h2 { font-size: 14px; margin: 0 0 2px 0; }
-        .panel h3.unranked-heading { font-size: 13px; margin: 18px 0 4px; color: var(--series-7); }
-        .panel .desc { font-size: 12.5px; color: var(--text-secondary); margin: 0 0 16px 0; max-width: 74ch; }
-        .legend-row { display: flex; flex-wrap: wrap; gap: 18px; }
-        .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-secondary); }
-        .swatch { width: 14px; height: 14px; border-radius: 4px; flex: none; border: 1px solid var(--border); display: inline-block; }
-        .swatch-active { background: var(--series-1-450); }
-        .swatch-degraded { background: var(--status-warning); }
-        .swatch-sentinel { background: repeating-linear-gradient(45deg, var(--series-7), var(--series-7) 2px, transparent 2px, transparent 5px); border-color: var(--series-7); }
-        .swatch-absent { background: transparent; border: 1.5px dashed var(--muted); }
-        .map-controls { display: flex; gap: 6px; margin-bottom: 16px; }
-        .ctrl-btn { font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); cursor: pointer; }
-        .ctrl-btn[aria-pressed="true"] { background: var(--series-1-450); border-color: var(--series-1-450); color: #fff; }
-        .loading-block { height: 200px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 13px; }
-        .map-wrap { position: relative; }
-        .corridor-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
-        .chiplet-grid { position: relative; display: grid; gap: 40px 48px; padding: 10px 24px; }
-        .chiplet-card { position: relative; background: var(--page-plane); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px 12px; z-index: 2; cursor: pointer; }
-        .chip-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-        .chip-id { font-size: 13px; font-weight: 700; }
-        .chip-count { font-size: 10.5px; color: var(--muted); }
-        .qubit-mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
-        .qcell { aspect-ratio: 1; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 8.5px; color: var(--text-secondary); border: 1px solid var(--border); cursor: pointer; }
-        .qcell.swatch-active { background: var(--series-1-250); }
-        .qcell.swatch-degraded { background: var(--status-warning); }
-        .qcell.swatch-sentinel { background: repeating-linear-gradient(45deg, var(--series-7), var(--series-7) 2px, transparent 2px, transparent 5px); color: #fff; }
-        .qcell.absent { background: transparent; border: 1.5px dashed var(--muted); color: var(--muted); }
-        .rank-chart { display: flex; flex-direction: column; }
-        .rank-row { display: grid; grid-template-columns: 82px 1fr 140px 64px; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer; }
-        .rank-row.head { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; padding-bottom: 8px; border-bottom: 1px solid var(--gridline); margin-bottom: 4px; cursor: default; }
-        .rank-label { font-size: 12.5px; font-weight: 600; }
-        .rank-track { position: relative; height: 16px; background: var(--gridline); border-radius: 4px; overflow: visible; }
-        .rank-bar { position: absolute; top: 0; left: 0; bottom: 0; border-radius: 4px; background: var(--series-1-450); }
-        .rank-tick { position: absolute; top: -3px; width: 3px; height: 22px; background: var(--series-2); border-radius: 2px; transform: translateX(-1.5px); }
-        .rank-score { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--text-secondary); text-align: right; }
-        .rank-cov { font-size: 11px; font-variant-numeric: tabular-nums; color: var(--muted); text-align: right; }
-        .rank-row.uncharacterized .rank-track { background: repeating-linear-gradient(45deg, var(--series-7), var(--series-7) 3px, transparent 3px, transparent 7px); border: 1px dashed var(--series-7); }
-        .chart-legend { display: flex; gap: 20px; margin-top: 14px; font-size: 11.5px; color: var(--text-secondary); }
-        .chart-legend .li { display: flex; align-items: center; gap: 6px; }
-        .chart-legend .dot { width: 10px; height: 10px; border-radius: 2px; background: var(--series-1-450); }
-        .chart-legend .tick { width: 3px; height: 12px; background: var(--series-2); border-radius: 2px; }
-        .detail-panel { font-size: 12.5px; color: var(--text-secondary); }
-        .detail-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
-        .detail-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
-        .detail-sub { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
-        .metric-row { display: grid; grid-template-columns: 1fr 100px 140px 140px; gap: 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--gridline); }
-        .metric-label { font-weight: 600; color: var(--text-primary); }
-        .metric-state { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; text-align: center; color: #fff; }
-        .metric-state.swatch-active { background: var(--series-1-450); }
-        .metric-state.swatch-degraded { background: var(--status-warning); color: #3a2a00; }
-        .metric-state.swatch-sentinel { background: var(--series-7); }
-        .metric-state.swatch-absent { background: var(--muted); }
-        .metric-value { font-variant-numeric: tabular-nums; }
-        .metric-error { font-size: 11px; color: var(--muted); }
-        .raw-values { margin-top: 12px; font-size: 11.5px; }
-        .raw-values summary { cursor: pointer; color: var(--series-7); font-weight: 600; }
-        .raw-values-note { color: var(--muted); margin: 6px 0; }
-        .raw-values pre { background: var(--gridline); padding: 8px; border-radius: 6px; overflow-x: auto; }
-        .tooltip { position: fixed; pointer-events: none; z-index: 50; background: var(--text-primary); color: var(--surface-1); font-size: 12px; line-height: 1.5; padding: 8px 11px; border-radius: 8px; max-width: 280px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); }
-        .corridor-edge-list { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
-        .corridor-edge-item { display: grid; grid-template-columns: 90px 100px 1fr; align-items: center; gap: 10px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--page-plane); color: var(--text-secondary); font-size: 12px; cursor: pointer; text-align: left; }
-        .corridor-edge-item:hover { border-color: var(--series-1-450); }
-      `}</style>
-    </div>
-  );
-}
-
-function RankRow({
-  corridor,
-  onSelect,
-}: {
-  corridor: CorridorEntry;
-  onSelect: (s: Selection) => void;
-}) {
-  const uncharacterized = corridor.score === null;
-  const barPct = uncharacterized ? 0 : Math.max(2, (corridor.score as number) * 100);
-  const tickPct = corridor.bestLinkFcz === null ? null : corridor.bestLinkFcz * 100;
-  return (
-    <div
-      className={`rank-row ${uncharacterized ? "uncharacterized" : ""}`}
-      onClick={() => onSelect({ kind: "corridor", corridor })}
-    >
-      <div className="rank-label">{corridor.corridorId}</div>
-      <div className="rank-track">
-        {!uncharacterized && <div className="rank-bar" style={{ width: `${barPct}%` }} />}
-        {tickPct !== null && <div className="rank-tick" style={{ left: `${tickPct}%` }} />}
-      </div>
-      <div className="rank-score">
-        {uncharacterized
-          ? "not measured"
-          : corridor.bestLink
-            ? `q${corridor.bestLink[0]}–q${corridor.bestLink[1]} ${formatFidelityPct(corridor.bestLinkFcz, 2)}`
-            : "—"}
-      </div>
-      <div className="rank-cov">
-        {corridor.validLinks}/{corridor.expectedLinks}
-      </div>
     </div>
   );
 }
