@@ -3,8 +3,9 @@
 import BackendSubmitModal from "@/components/quantum/BackendSubmitModal";
 import { getQuantumBackendId } from "@/lib/quantum/backends";
 import type { Backend } from "@/types/backend";
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { MdClose } from "react-icons/md";
+import { MdClose, MdOpenInNew } from "react-icons/md";
 import BackendConnectSection from "./BackendConnectSection";
 import BackendStatusBadge from "./BackendStatusBadge";
 import QubitMap from "./QubitMap";
@@ -109,6 +110,17 @@ export default function BackendModal({
         <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 pr-12">
           <h1 className="text-2xl font-semibold">{name}</h1>
           <BackendStatusBadge status={status} />
+          {/* Only the real Cepheus-1-108Q device (not its mock or the
+              reservation card) has topology/calibration data — LR-TECH-001
+              Phase 6. */}
+          {backend.id === "rigetti.qpu.Cepheus-1-108Q" && (
+            <Link
+              href={`/backends/topology?backend_id=${encodeURIComponent("Cepheus-1-108Q")}`}
+              className="brand-link inline-flex items-center gap-1 text-sm"
+            >
+              View live topology <MdOpenInNew className="text-base" />
+            </Link>
+          )}
         </div>
 
         <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
