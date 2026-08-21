@@ -5,8 +5,13 @@ import JobDetailModal from "@/components/jobs/JobDetailModal";
 import { fetchJobs, JobRowStatus } from "@/components/jobs/JobsList";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { MdOpenInNew } from "react-icons/md";
+import { SiGooglecolab } from "react-icons/si";
+import { TbAtom2Filled } from "react-icons/tb";
 
 const LATEST_JOBS_LIMIT = 3;
+const COLAB_NOTEBOOKS_BASE_URL =
+  "https://colab.research.google.com/github/lightriderinc/cloud_platform_nextjs/blob/main/docs/notebooks";
 
 export default function DashboardLatestJobs() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
@@ -42,9 +47,34 @@ export default function DashboardLatestJobs() {
 
   if (!jobs || jobs.length === 0) {
     return (
-      <div className="default-radius border border-dashed border-gray-200 bg-gray-50 p-16 text-center mt-5 text-sm text-gray-500">
-        The latest jobs you submit will appear here. You can track their
-        status and view results once they complete.
+      <div className="default-radius border border-dashed border-gray-200 bg-gray-50 p-8 text-center mt-5 text-sm text-gray-500">
+        <div className="mb-2 flex items-center justify-center text-4xl text-gray-200">
+          <TbAtom2Filled />
+        </div>
+        <h3 className="text-lg font-semibold text-gray-700 mb-1">
+          Get started with your first quantum job
+        </h3>
+        <div className="mb-4">
+          <span>
+            The latest jobs you submit will appear here. You can track their
+            status and view results once they complete.
+          </span>
+        </div>
+
+        <div>
+          <a
+            href={`${COLAB_NOTEBOOKS_BASE_URL}/quantum-quickstart.ipynb`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-fit items-center gap-1.5 default-radius text-sm font-medium text-gray-700 transition-colors"
+          >
+            <SiGooglecolab className="text-xl text-gray-400" />
+            <span className="brand-link flex flex-row inline-flex items-center gap-1">
+              {" "}
+              Google Colab quickstart <MdOpenInNew className="text-xs" />
+            </span>
+          </a>
+        </div>
       </div>
     );
   }
@@ -84,7 +114,6 @@ export default function DashboardLatestJobs() {
           </li>
         ))}
       </ul>
-
 
       {selectedJob && (
         <JobDetailModal
