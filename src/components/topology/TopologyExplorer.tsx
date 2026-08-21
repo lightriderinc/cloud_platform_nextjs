@@ -5,6 +5,7 @@ import {
   fetchCorridors,
   fetchEdges,
   fetchQubits,
+  fetchTopologyStatus,
   type CorridorEntry,
   type EdgeEntry,
   type Metric,
@@ -14,8 +15,10 @@ import {
 } from "@/lib/topology/client";
 import {
   formatAgeShort,
+  formatAgoShort,
   formatCalibrationShort,
   formatDurationNs,
+  formatEtaShort,
   formatFidelityPct,
   formatMetricValue,
   formatScore,
@@ -31,6 +34,12 @@ import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 // every load — nothing here is a fixed lookup table of which chiplet holds
 // which qubits.
 const CHIPLET_GRID_COLS = 3;
+
+// A poll's own processing takes a few seconds (lastPollAt and lastSuccessAt
+// land within ~1s of each other in a healthy run) — anything beyond this
+// tolerance between them means a poll actually ran and did not succeed,
+// even before consecutiveFailures reflects it.
+const POLL_DIVERGENCE_TOLERANCE_SECONDS = 60;
 
 type Selection =
   | { kind: "qubit"; qubit: QubitEntry }
@@ -304,15 +313,50 @@ export default function TopologyExplorer({
     queryKey: ["topology", "edges", backendId],
     queryFn: () => fetchEdges(backendId),
   });
+  // Poller health is independent of the map/ranking data below — a failed
+  // status fetch shouldn't block the rest of the page, so it's kept out of
+  // isLoading/isError and handled on its own in the top strip.
+  const statusQuery = useQuery({
+    queryKey: ["topology", "status", backendId],
+    queryFn: () => fetchTopologyStatus(backendId),
+  });
 
   const isLoading = corridorsQuery.isLoading || qubitsQuery.isLoading || edgesQuery.isLoading;
   const isError = corridorsQuery.isError || qubitsQuery.isError || edgesQuery.isError;
 
   // Every endpoint's envelope describes the same underlying snapshot — any
-  // one that's loaded is enough for the top-strip banner, so no separate
-  // /topology/status call is made just for this.
+  // one that's loaded is enough for the calibration-age stat, so no extra
+  // call is made just for that.
   const envelope: TopologyEnvelope<unknown> | undefined =
     qubitsQuery.data ?? corridorsQuery.data ?? edgesQuery.data;
+
+  // Poller health, not Rigetti's calibration age (envelope.snapshotAgeSeconds)
+  // — deliberately kept separate. A stopped poller and a healthy one look
+  // identical via calibration age alone (it just creeps up slowly either
+  // way), so poller health needs its own signal.
+  const pollStatus = statusQuery.data;
+  // secondsSinceLastSuccess and pollIntervalSeconds both come straight from
+  // the server, not computed from a captured client-side "now" against
+  // lastSuccessAt — avoids client/server clock skew and a re-render-staleness
+  // concern entirely.
+  const lastPollAgoSeconds = pollStatus?.secondsSinceLastSuccess ?? null;
+  const nextPollEtaSeconds = pollStatus
+    ? Math.max(0, pollStatus.pollIntervalSeconds - pollStatus.secondsSinceLastSuccess)
+    : null;
+  // lastPollAt vs lastSuccessAt: identical while healthy, diverge the
+  // moment a poll runs but fails — checked independently of
+  // consecutiveFailures so this doesn't rely on a single counter being
+  // right.
+  const pollDiverged = pollStatus
+    ? new Date(pollStatus.lastPollAt).getTime() - new Date(pollStatus.lastSuccessAt).getTime() >
+      POLL_DIVERGENCE_TOLERANCE_SECONDS * 1000
+    : false;
+  // pollingEnabled is only sometimes present on this response — absence
+  // means no signal either way, not "disabled", so this checks `=== false`
+  // rather than negating a possibly-undefined value.
+  const pollerUnhealthy = pollStatus
+    ? pollStatus.consecutiveFailures > 0 || pollStatus.pollingEnabled === false || pollDiverged
+    : false;
 
   const qubits = useMemo(() => qubitsQuery.data?.data ?? [], [qubitsQuery.data]);
   const edges = useMemo(() => edgesQuery.data?.data ?? [], [edgesQuery.data]);
@@ -440,7 +484,7 @@ export default function TopologyExplorer({
   return (
     <div className="flex flex-col gap-4">
       {/* TOP STRIP — the answer, most important element on the page. */}
-      <div className="grid grid-cols-2 gap-4 default-radius border border-gray-100 bg-white p-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 default-radius border border-gray-100 bg-white p-4 sm:grid-cols-3 lg:grid-cols-5">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Best corridor</p>
           <p className="mt-0.5 text-lg font-semibold text-gray-900">{topCorridor?.corridorId ?? "—"}</p>
@@ -458,24 +502,51 @@ export default function TopologyExplorer({
           </p>
         </div>
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Snapshot</p>
+          {/* Rigetti's calibration age — not ours. See "Last poll" below for
+              our own poller's health; the two answer different questions. */}
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Calibration</p>
           <p className="mt-0.5 text-lg font-semibold text-gray-900">
             {envelope ? formatAgeShort(envelope.snapshotAgeSeconds) : "—"}
           </p>
           <p className="text-xs text-gray-500">
-            {envelope ? `calibration ${formatCalibrationShort(envelope.calibrationId)}` : "—"}
-          </p>
-        </div>
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Provenance</p>
-          <p className="mt-0.5 text-lg font-semibold text-gray-900">
-            {envelope?.topologyProvenance ?? "—"}
+            {envelope ? `Rigetti's data · ${formatCalibrationShort(envelope.calibrationId)}` : "—"}
           </p>
           {envelope?.isStale && (
             <span className="mt-1 inline-block rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-600">
               Stale snapshot
             </span>
           )}
+        </div>
+        <div>
+          {/* Our own poller. A stopped poller looks identical to a healthy
+              one via calibration age alone — this is the actual signal. */}
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Last poll</p>
+          <p className="mt-0.5 text-lg font-semibold text-gray-900">
+            {lastPollAgoSeconds !== null ? formatAgoShort(lastPollAgoSeconds) : "—"}
+          </p>
+          <p className="text-xs text-gray-500">
+            {nextPollEtaSeconds !== null ? formatEtaShort(nextPollEtaSeconds) : "—"}
+          </p>
+          {pollerUnhealthy && (
+            <span
+              className="mt-1 inline-block cursor-help rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-600"
+              title={
+                pollStatus?.lastError
+                  ? pollStatus.lastError
+                  : pollStatus?.pollingEnabled === false
+                    ? "Polling is disabled"
+                    : "Poll ran but did not succeed — no error message recorded"
+              }
+            >
+              {pollStatus?.pollingEnabled === false ? "Polling disabled" : "Poll failures"}
+            </span>
+          )}
+        </div>
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Provenance</p>
+          <p className="mt-0.5 text-lg font-semibold text-gray-900">
+            {envelope?.topologyProvenance ?? "—"}
+          </p>
         </div>
       </div>
 

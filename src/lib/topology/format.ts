@@ -46,12 +46,31 @@ export function formatMetricValue(m: Metric, formatter: (v: number | null) => st
   return formatter(m.value);
 }
 
-/** "4h 36m old" — for the top-strip snapshot age stat. */
-export function formatAgeShort(seconds: number): string {
+function hoursAndMinutes(seconds: number): { hours: number; minutes: number } {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
+  return { hours, minutes };
+}
+
+/** "4h 36m old" — calibration age (source_timestamp), the vendor's data, not ours. */
+export function formatAgeShort(seconds: number): string {
+  const { hours, minutes } = hoursAndMinutes(seconds);
   if (hours === 0) return `${minutes}m old`;
   return `${hours}h ${minutes}m old`;
+}
+
+/** "32m ago" — our own poller's last successful fetch. Distinct from formatAgeShort: same math, different subject and phrasing, so the two are never visually confusable. */
+export function formatAgoShort(seconds: number): string {
+  const { hours, minutes } = hoursAndMinutes(seconds);
+  if (hours === 0) return `${minutes}m ago`;
+  return `${hours}h ${minutes}m ago`;
+}
+
+/** "next in 3h 28m" — time remaining until the poller's next scheduled run. */
+export function formatEtaShort(seconds: number): string {
+  const { hours, minutes } = hoursAndMinutes(Math.max(0, seconds));
+  if (hours === 0) return `next in ${minutes}m`;
+  return `next in ${hours}h ${minutes}m`;
 }
 
 /** "484423c6" — calibration_id truncated to a short, still-distinguishing form for display alongside the age, not for lookups. */

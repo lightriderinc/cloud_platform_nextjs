@@ -100,8 +100,44 @@ export interface EdgeEntry {
   rawValues: Record<string, unknown>;
 }
 
-/** /topology/status's `data` shape isn't documented beyond the shared envelope fields — treated as opaque until a live shape is confirmed. */
-export type TopologyStatusData = Record<string, unknown>;
+/**
+ * Poller health — distinct from the shared envelope's own
+ * snapshot_age_seconds/is_stale (which describe the age of RIGETTI's
+ * calibration data). This describes OUR OWN poller: when it last ran, when
+ * it last actually succeeded, and whether it's currently failing or
+ * disabled. Someone seeing only calibration age can't tell "the vendor
+ * hasn't recalibrated in a while" (normal) from "our poller is dead" (not
+ * normal) — that's why these are surfaced separately.
+ *
+ * lastPollAt vs lastSuccessAt: identical while things work, and diverge the
+ * moment a poll starts failing — a poll that ran but errored shows a recent
+ * lastPollAt alongside a stale lastSuccessAt. That gap is the earliest
+ * failure signal, checked independently of consecutiveFailures below.
+ *
+ * Unlike corridors/qubits/edges, GET /topology/status is NOT wrapped in the
+ * shared envelope ({backend_id, calibration_id, ..., data}) — it's a flat
+ * object of its own. Field names verified against the live endpoint,
+ * 2026-08-21, same as corridors/qubits/edges.
+ */
+export interface TopologyStatusData {
+  pollIntervalSeconds: number;
+  lastPollAt: string;
+  lastSuccessAt: string;
+  secondsSinceLastSuccess: number;
+  consecutiveFailures: number;
+  lastError: string | null;
+  latestCalibrationId: string;
+  snapshotAgeSeconds: number;
+  isStale: boolean;
+  /**
+   * Optional, not confirmed present on every response: confirmed returned
+   * live in one check, but absent from the full reference payload quoted
+   * separately. Treated as "no signal" (not "disabled") when missing —
+   * callers must check `=== false` explicitly, never `!pollingEnabled`,
+   * since that would misread "absent" as "disabled".
+   */
+  pollingEnabled?: boolean;
+}
 
 interface RawEnvelope<T> {
   backend_id: string;
@@ -287,9 +323,43 @@ export async function fetchEdges(
   return normalizeEnvelope(raw, (data) => (data.edges ?? []).map(normalizeEdgeEntry));
 }
 
+interface RawTopologyStatusData {
+  poll_interval_seconds: number;
+  last_poll_at: string;
+  last_success_at: string;
+  seconds_since_last_success: number;
+  consecutive_failures: number;
+  last_error: string | null;
+  latest_calibration_id: string;
+  snapshot_age_seconds: number;
+  is_stale: boolean;
+  polling_enabled?: boolean;
+}
+
+// /topology/status is flat; corridors/qubits/edges are wrapped in
+// RawEnvelope<T>. Don't re-unify this with fetchTopologyJson — it was
+// briefly routed through there and silently produced `undefined` for every
+// field (there's no `.data` to unwrap), with no error to catch it.
 export async function fetchTopologyStatus(
   backendId: string = DEFAULT_TOPOLOGY_BACKEND_ID,
-): Promise<TopologyEnvelope<TopologyStatusData>> {
-  const raw = await fetchTopologyJson<TopologyStatusData>("status", backendId);
-  return normalizeEnvelope(raw, (data) => data ?? {});
+): Promise<TopologyStatusData> {
+  const params = new URLSearchParams({ backend_id: backendId });
+  const res = await fetch(`/api/lr/topology/status?${params}`);
+  if (!res.ok) {
+    const body: Record<string, unknown> = await res.json().catch(() => ({}));
+    throw new Error((body.message as string) ?? (body.error as string) ?? `HTTP ${res.status}`);
+  }
+  const raw: RawTopologyStatusData = await res.json();
+  return {
+    pollIntervalSeconds: raw.poll_interval_seconds,
+    lastPollAt: raw.last_poll_at,
+    lastSuccessAt: raw.last_success_at,
+    secondsSinceLastSuccess: raw.seconds_since_last_success,
+    consecutiveFailures: raw.consecutive_failures,
+    lastError: raw.last_error,
+    latestCalibrationId: raw.latest_calibration_id,
+    snapshotAgeSeconds: raw.snapshot_age_seconds,
+    isStale: raw.is_stale,
+    pollingEnabled: raw.polling_enabled,
+  };
 }
