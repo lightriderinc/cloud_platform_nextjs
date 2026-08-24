@@ -21,6 +21,7 @@ import {
   formatEtaShort,
   formatFidelityPct,
   formatMetricValue,
+  formatProvenance,
   formatScore,
   formatSeconds,
   stateLabel,
@@ -545,7 +546,7 @@ export default function TopologyExplorer({
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Provenance</p>
           <p className="mt-0.5 text-lg font-semibold text-gray-900">
-            {envelope?.topologyProvenance ?? "—"}
+            {envelope ? formatProvenance(envelope.topologyProvenance) : "—"}
           </p>
         </div>
       </div>
@@ -711,9 +712,7 @@ export default function TopologyExplorer({
               </p>
               <p>
                 A sentinel record means uncharacterized, not bad — it is never treated as low
-                quality or sorted among genuinely poor hardware. The chiplet mapping
-                (C1–C{chipletIds.length || 12}) is Light Rider&apos;s reconstruction from observed
-                ISA connectivity, not Rigetti&apos;s official die numbering.
+                quality or sorted among genuinely poor hardware.
               </p>
             </div>
           </details>

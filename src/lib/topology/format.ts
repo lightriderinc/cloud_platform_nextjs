@@ -1,4 +1,4 @@
-import type { Metric, MetricState } from "./client";
+import type { Metric, MetricState, TopologyProvenance } from "./client";
 
 // Centralized so every view (map, ranking, detail) renders null/state the
 // same way — the whole point of the display rules is that these can't drift
@@ -37,6 +37,11 @@ export function stateLabel(state: MetricState): string {
     case "absent":
       return "Absent";
   }
+}
+
+/** "inferred" stays as-is; "vendor_confirmed" reads as "Confirmed" in the top strip. Historical snapshots (descriptor 1.0.0) still resolve to "inferred". */
+export function formatProvenance(provenance: TopologyProvenance): string {
+  return provenance === "vendor_confirmed" ? "Confirmed" : provenance;
 }
 
 /** A short, state-aware value string for a Metric — never shows a sentinel's underlying 0.5/1.0 placeholder as if it were the value. */
