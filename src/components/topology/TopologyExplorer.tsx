@@ -27,7 +27,7 @@ import {
   stateLabel,
 } from "@/lib/topology/format";
 import { useQuery } from "@tanstack/react-query";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 // Layout choice (not data): 12 chiplets rendered 3-per-row, matching
 // Cepheus's documented 3x4 modular array. Chiplet identity, membership, and
@@ -63,15 +63,15 @@ function chipletSortKey(chipletId: string): number {
 // inventing a new palette. Sentinel and absent get a dashed border — they
 // are "unknown"/"not exposed", not points on the same quality scale.
 const STATE_CLASSES: Record<MetricState, { badge: string; cell: string }> = {
-  active: { badge: "bg-green-50 text-green-700 border-green-200", cell: "bg-green-500" },
-  degraded: { badge: "bg-amber-50 text-amber-700 border-amber-200", cell: "bg-amber-400" },
+  active: { badge: "bg-green-50 text-green-700 border-green-200", cell: "bg-green-500 border-green-500 hover:bg-green-300 transition-colors" },
+  degraded: { badge: "bg-amber-50 text-amber-700 border-amber-200", cell: "bg-amber-400 border-amber-400 hover:bg-amber-300 transition-colors" },
   sentinel: {
     badge: "bg-purple-50 text-purple-700 border-purple-300 border-dashed",
-    cell: "bg-purple-100 border-dashed border-purple-400",
+    cell: "bg-purple-200 border-dashed border-purple-400 hover:bg-purple-300 transition-colors",
   },
   absent: {
     badge: "bg-gray-50 text-gray-400 border-gray-200 border-dashed",
-    cell: "bg-transparent border-dashed border-gray-300",
+    cell: "bg-transparent border-dashed border-gray-300 hover:bg-white transition-colors",
   },
 };
 
@@ -485,31 +485,31 @@ export default function TopologyExplorer({
   return (
     <div className="flex flex-col gap-4">
       {/* TOP STRIP — the answer, most important element on the page. */}
-      <div className="grid grid-cols-2 gap-4 default-radius border border-gray-100 bg-white p-4 sm:grid-cols-3 lg:grid-cols-5">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Best corridor</p>
-          <p className="mt-0.5 text-lg font-semibold text-gray-900">{topCorridor?.corridorId ?? "—"}</p>
-          <p className="text-xs text-gray-500">
+      <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="default-radius relative overflow-hidden bg-gray-50 p-4">
+          <p className="block text-sm font-semibold text-gray-300">Best corridor</p>
+          <p className="mt-2 block text-xl font-semibold">{topCorridor?.corridorId ?? "—"}</p>
+          <p className="mt-1 block text-sm text-gray-500">
             {topCorridor ? `score ${(topCorridor.score as number * 100).toFixed(2)}%` : "—"}
           </p>
         </div>
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Best coupler</p>
-          <p className="mt-0.5 text-lg font-semibold text-gray-900">
+        <div className="default-radius relative overflow-hidden bg-gray-50 p-4">
+          <p className="block text-sm font-semibold text-gray-300">Best coupler</p>
+          <p className="mt-2 block text-xl font-semibold">
             {bestCoupler?.bestLink ? `q${bestCoupler.bestLink[0]}-q${bestCoupler.bestLink[1]}` : "—"}
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="mt-1 block text-sm text-gray-500">
             {bestCoupler ? `${formatFidelityPct(bestCoupler.bestLinkFcz, 2)} fCZ` : "—"}
           </p>
         </div>
-        <div>
+        <div className="default-radius relative overflow-hidden bg-gray-50 p-4">
           {/* Rigetti's calibration age — not ours. See "Last poll" below for
               our own poller's health; the two answer different questions. */}
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Calibration</p>
-          <p className="mt-0.5 text-lg font-semibold text-gray-900">
+          <p className="block text-sm font-semibold text-gray-300">Calibration</p>
+          <p className="mt-2 block text-xl font-semibold text-gray-900">
             {envelope ? formatAgeShort(envelope.snapshotAgeSeconds) : "—"}
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="mt-1 block text-sm text-gray-500">
             {envelope ? `Rigetti's data · ${formatCalibrationShort(envelope.calibrationId)}` : "—"}
           </p>
           {envelope?.isStale && (
@@ -518,14 +518,14 @@ export default function TopologyExplorer({
             </span>
           )}
         </div>
-        <div>
+        <div className="default-radius relative overflow-hidden bg-gray-50 p-4">
           {/* Our own poller. A stopped poller looks identical to a healthy
               one via calibration age alone — this is the actual signal. */}
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Last poll</p>
-          <p className="mt-0.5 text-lg font-semibold text-gray-900">
+          <p className="block text-sm font-semibold text-gray-300">Last poll</p>
+          <p className="mt-2 block text-xl font-semibold text-gray-900">
             {lastPollAgoSeconds !== null ? formatAgoShort(lastPollAgoSeconds) : "—"}
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="mt-1 block text-sm text-gray-500">
             {nextPollEtaSeconds !== null ? formatEtaShort(nextPollEtaSeconds) : "—"}
           </p>
           {pollerUnhealthy && (
@@ -543,9 +543,9 @@ export default function TopologyExplorer({
             </span>
           )}
         </div>
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Provenance</p>
-          <p className="mt-0.5 text-lg font-semibold text-gray-900">
+        <div className="default-radius relative overflow-hidden bg-gray-50 p-4">
+          <p className="block text-sm font-semibold text-gray-300">Provenance</p>
+          <p className="mt-2 block text-xl font-semibold text-gray-900">
             {envelope ? formatProvenance(envelope.topologyProvenance) : "—"}
           </p>
         </div>
@@ -554,24 +554,24 @@ export default function TopologyExplorer({
       {/* MAP + RANKING (left) / DETAIL (right, sticky — not below the fold) */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
         <div className="flex flex-col gap-4">
-          <div className="default-radius border border-gray-100 bg-white p-4">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold text-gray-700">Processor map</h2>
+          <div className="default-radius border-2 border-gray-50 bg-white p-4">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="block text-md font-semibold text-gray-400">Processor map</h2>
               <div className="flex items-center gap-3 text-xs text-gray-500">
                 <span className="flex items-center gap-1">
-                  <span className="h-2.5 w-2.5 rounded-sm bg-green-500" />
+                  <span className="h-2.5 w-2.5 default-radius bg-green-500" />
                   Active
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="h-2.5 w-2.5 rounded-sm bg-amber-400" />
+                  <span className="h-2.5 w-2.5 default-radius bg-amber-400" />
                   Degraded
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="h-2.5 w-2.5 rounded-sm border border-dashed border-purple-400 bg-purple-100" />
+                  <span className="h-2.5 w-2.5 default-radius border border-dashed border-purple-400 bg-purple-100" />
                   Sentinel (unmeasured)
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="h-2.5 w-2.5 rounded-sm border border-dashed border-gray-300" />
+                  <span className="h-2.5 w-2.5 default-radius border border-dashed border-gray-300" />
                   Absent
                 </span>
               </div>
@@ -595,22 +595,22 @@ export default function TopologyExplorer({
                       <div
                         key={chipletId}
                         id={`chip-${chipletId}`}
-                        className="relative z-10 cursor-pointer rounded border border-gray-200 bg-white p-1.5 hover:border-gray-400"
+                        className="relative z-10 cursor-pointer default-radius border border-gray-100 bg-gray-100 p-1.5 hover:border-gray-200 transition-colors duration-300"
                         onClick={() =>
                           chipletQubits[0] && setSelection({ kind: "qubit", qubit: chipletQubits[0] })
                         }
                       >
                         <div className="mb-1 flex items-center justify-between">
-                          <span className="text-[11px] font-semibold text-gray-700">{chipletId}</span>
-                          <span className="text-[9px] text-gray-400">
+                          <span className="text-sm font-semibold text-gray-700">{chipletId}</span>
+                          <span className="text-xs text-gray-400">
                             {activeCount}/{chipletQubits.length}
                           </span>
                         </div>
-                        <div className="grid grid-cols-3 gap-0.5">
+                        <div className="grid grid-cols-3 gap-1">
                           {chipletQubits.map((q) => (
                             <div
                               key={q.qubitIndex}
-                              className={`aspect-square rounded-sm border border-gray-200 ${
+                              className={`aspect-square default-radius border ${
                                 q.presence === "absent"
                                   ? STATE_CLASSES.absent.cell
                                   : STATE_CLASSES[q.frbSimultaneous.state].cell
@@ -641,8 +641,8 @@ export default function TopologyExplorer({
             )}
           </div>
 
-          <div className="default-radius border border-gray-100 bg-white p-4">
-            <h2 className="mb-3 text-sm font-semibold text-gray-700">
+          <div className="default-radius border-2 border-gray-50 bg-white p-4">
+            <h2 className="block text-md font-semibold text-gray-400 mb-3">
               Corridor ranking — score (mean fCZ × coverage)
             </h2>
             {isLoading ? (
@@ -719,8 +719,8 @@ export default function TopologyExplorer({
         </div>
 
         {/* DETAIL PANEL — sticky, always visible, not below the fold. */}
-        <aside className="default-radius border border-gray-100 bg-white p-4 lg:sticky lg:top-4 lg:self-start">
-          <h2 className="mb-3 text-sm font-semibold text-gray-700">Detail</h2>
+        <aside className="default-radius bg-gray-50 p-4 lg:sticky lg:top-0 lg:self-start">
+          <h2 className="block text-md font-semibold text-gray-400 mb-3">Detail</h2>
           {selection ? (
             <DetailPanel selection={selection} edges={edges} onSelect={setSelection} />
           ) : (
