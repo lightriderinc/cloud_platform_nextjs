@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const BACKENDS = ["iqm-garnet", "iqm-emerald", "iqm-sirius"] as const;
+const BACKENDS = ["rigetti-cepheus", "iqm-garnet", "iqm-emerald", "iqm-sirius"] as const;
 const CYCLE_MS = 1800;
 
 export default function WelcomeCodeAnimation() {
@@ -29,7 +29,7 @@ export default function WelcomeCodeAnimation() {
         <span className="lr-dot lr-dot-red" />
         <span className="lr-dot lr-dot-amber" />
         <span className="lr-dot lr-dot-green" />
-        <span className="lr-filename">My_first_quantum_job.py</span>
+        <span className="lr-filename">my_first_quantum_job.py</span>
       </div>
 
       <pre className="lr-body">
