@@ -27,7 +27,7 @@ export const STATE_CLASSES: Record<MetricState, { badge: string; cell: string }>
 export function StateBadge({ state }: { state: MetricState }) {
   return (
     <span
-      className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium ${STATE_CLASSES[state].badge}`}
+      className={`inline-flex items-center justify-self-end rounded border px-1.5 py-0.5 text-2xs font-medium ${STATE_CLASSES[state].badge}`}
     >
       {stateLabel(state)}
     </span>
