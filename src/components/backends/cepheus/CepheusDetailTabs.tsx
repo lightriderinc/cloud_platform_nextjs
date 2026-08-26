@@ -1,8 +1,8 @@
 "use client";
 
 import { useRigettiBackends } from "@/hooks/useRigettiBackends";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import CepheusConnectionTab from "./CepheusConnectionTab";
 import CepheusDetailsPanel from "./CepheusDetailsPanel";
 import CepheusReservationTab from "./CepheusReservationTab";
@@ -28,22 +28,31 @@ export default function CepheusDetailTabs({
 }: {
   isAuthenticated: boolean;
 }) {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const paramTab = searchParams.get("tab");
-  const tab: Tab = isTab(paramTab) ? paramTab : "details";
+
+  const [tab, setTab] = useState<Tab>(() =>
+    isTab(paramTab) ? paramTab : "details",
+  );
+  const [syncedParamTab, setSyncedParamTab] = useState(paramTab);
+
+  if (paramTab !== syncedParamTab) {
+    setSyncedParamTab(paramTab);
+    if (isTab(paramTab)) {
+      setTab(paramTab);
+    }
+  }
+
   const { data: rigettiBackends = [], isLoading } = useRigettiBackends();
   const backend = rigettiBackends.find((b) => b.id === CEPHEUS_BACKEND_ID);
 
-  const handleTabChange = useCallback(
-    (nextTab: Tab) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("tab", nextTab);
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    },
-    [pathname, router, searchParams],
-  );
+  const handleTabChange = (nextTab: Tab) => {
+    setTab(nextTab);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", nextTab);
+    window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+  };
 
   return (
     <div>
