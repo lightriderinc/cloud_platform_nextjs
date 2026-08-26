@@ -6,9 +6,9 @@ import { useMemo, useState } from "react";
 
 // Brand gradient stops, low error -> high error: yellow, orange, red.
 const STOPS: [number, number, number][] = [
-  [122, 209, 81],
-  [190, 143, 57],
-  [174, 57, 82],
+  [0, 227, 243],
+  [39, 114, 186],
+  [78, 0, 130],
 ];
 
 const NO_DATA_STROKE = "#9ca3af"; // gray-400, used for the "no data" outline
@@ -173,8 +173,8 @@ export default function QubitMap({ data }: { data: QubitMapData }) {
             style={{
               width: 60,
               height: 10,
-              borderRadius: 4,
-              background: "linear-gradient(90deg, #7AD151, #BE8F39, #AE3952)",
+              borderRadius: 2,
+              background: "linear-gradient(90deg, #00E3F3, #2772BA, #4E0082)",
             }}
           />
           high error
