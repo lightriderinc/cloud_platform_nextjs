@@ -3,6 +3,7 @@
 import { computeLayout } from "@/lib/qubitLayout";
 import type { QubitMapData } from "@/types/backend";
 import { useMemo, useState } from "react";
+import { MdArrowLeft, MdArrowRight } from "react-icons/md";
 
 // Brand gradient stops, low error -> high error: yellow, orange, red.
 const STOPS: [number, number, number][] = [
@@ -167,8 +168,9 @@ export default function QubitMap({ data }: { data: QubitMapData }) {
       </div>
 
       <div className="mt-2 flex items-center justify-center gap-4 text-xs text-gray-500">
-        <span className="flex items-center gap-1.5">
-          low
+        <span className="flex items-center gap-0.5">
+          {errors.length ? `${min.toFixed(2)}%` : "low"}
+          <MdArrowRight className="text-xl" />
           <span
             style={{
               width: 60,
@@ -177,7 +179,9 @@ export default function QubitMap({ data }: { data: QubitMapData }) {
               background: "linear-gradient(90deg, #00E3F3, #2772BA, #4E0082)",
             }}
           />
-          high error
+          <MdArrowLeft className="text-xl" />
+
+          {errors.length ? `${max.toFixed(2)}% error` : "high error"}
         </span>
         <span className="flex items-center gap-1.5">
           <span
