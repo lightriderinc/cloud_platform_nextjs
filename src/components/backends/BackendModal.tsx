@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MdClose } from "react-icons/md";
 import { RiExpandDiagonalFill } from "react-icons/ri";
+import InfoBox from "../InfoBox";
 import BackendConnectSection from "./BackendConnectSection";
 import BackendStatusBadge from "./BackendStatusBadge";
 import QubitMap from "./QubitMap";
@@ -180,6 +181,12 @@ export default function BackendModal({
         {d.qubitMap && d.qubitMap.nodes.length > 0 && (
           <div className="mt-8">
             <h2 className="mb-3 text-base font-semibold">Qubit map</h2>
+            {backend.id === "rigetti.qpu.Cepheus-1-108Q" && (
+              <InfoBox>
+                The following qubit map shows a simplified representation for Rigetti Cepheus 1-108Q. <br />
+                For the most accurate information, please visit the device&apos;s Topology & Calibration page.
+              </InfoBox>
+            )}
             <QubitMap data={d.qubitMap} />
           </div>
         )}
