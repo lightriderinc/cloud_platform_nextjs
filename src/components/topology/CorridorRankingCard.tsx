@@ -9,7 +9,7 @@ function RankRow({ corridor, onSelect }: { corridor: CorridorEntry; onSelect: (s
     <button
       type="button"
       onClick={() => onSelect({ kind: "corridor", corridor })}
-      className="grid w-full grid-cols-[64px_1fr_64px_44px_120px] items-center gap-3 rounded px-1 py-1 text-left hover:bg-gray-50"
+      className="grid w-full grid-cols-[64px_1fr_64px_44px_120px] items-center gap-3 px-1 py-1 text-left hover:bg-gray-50"
     >
       <span className="text-sm font-medium text-gray-800">{corridor.corridorId}</span>
       <span className="relative h-3.5 overflow-hidden rounded bg-gray-100">
@@ -46,7 +46,7 @@ export default function CorridorRankingCard({
 }) {
   return (
     <div className="default-radius border-2 border-gray-50 bg-white p-4">
-      <h2 className="block text-md font-semibold text-gray-400 mb-3">
+      <h2 className="block text-md font-semibold text-gray-400 mb-6">
         Corridor ranking — score (mean fCZ × coverage)
       </h2>
       {isLoading ? (
@@ -56,7 +56,7 @@ export default function CorridorRankingCard({
       ) : (
         corridors && (
           <>
-            <div className="grid grid-cols-[64px_1fr_64px_44px_120px] gap-3 border-b border-gray-100 pb-1.5 text-[10px] font-medium uppercase tracking-wide text-gray-400">
+            <div className="grid grid-cols-[64px_1fr_64px_44px_120px] gap-3 border-b border-gray-100 pb-1.5 text-xs font-medium tracking-wide text-gray-700">
               <span>Corridor</span>
               <span>Score</span>
               <span className="text-right">Score %</span>

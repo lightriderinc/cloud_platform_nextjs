@@ -3,7 +3,9 @@
 import MyReservationsList from "@/components/reservations/MyReservationsList";
 import ReservationBookingModal from "@/components/reservations/ReservationBookingModal";
 import ReservationSlotPicker from "@/components/reservations/ReservationSlotPicker";
-import { RESERVED_CEPHEUS_BACKEND_CARD, type AvailableSlot } from "@/lib/quantum/reservations";
+import {
+  type AvailableSlot
+} from "@/lib/quantum/reservations";
 import { useState } from "react";
 
 // Reservation content from ReservationBackendModal, laid out as stacked
@@ -15,14 +17,16 @@ export default function CepheusReservationTab() {
 
   return (
     <div className="flex flex-col gap-8">
-      {RESERVED_CEPHEUS_BACKEND_CARD.details?.description && (
-        <p className="max-w-2xl text-sm leading-relaxed text-gray-600">
-          {RESERVED_CEPHEUS_BACKEND_CARD.details.description}
-        </p>
-      )}
+      <p className="max-w-2xl text-sm leading-relaxed text-gray-600">
+        Book a guaranteed time slot on the real Cepheus-1-108Q QPU — pay upfront
+        for exclusive access during your window, instead of best-effort
+        submission whenever the device happens to be free.
+      </p>
 
       <div>
-        <h3 className="mb-3 text-base font-semibold text-gray-800">Book a slot</h3>
+        <h3 className="mb-3 text-base font-semibold text-gray-800">
+          Book a slot
+        </h3>
         {justBooked ? (
           <div className="default-radius border border-dashed border-green-200 bg-green-50 p-6 text-center text-sm text-green-700">
             Reservation confirmed — see it under &quot;My reservations&quot;.
@@ -33,7 +37,9 @@ export default function CepheusReservationTab() {
       </div>
 
       <div>
-        <h3 className="mb-3 text-base font-semibold text-gray-800">My reservations</h3>
+        <h3 className="mb-3 text-base font-semibold text-gray-800">
+          My reservations
+        </h3>
         <MyReservationsList />
       </div>
 

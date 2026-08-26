@@ -1,5 +1,6 @@
 "use client";
 
+import ReservationBackendModal from "@/components/reservations/ReservationBackendModal";
 import { useIbmBackends } from "@/hooks/useIbmBackends";
 import { useIqmBackends } from "@/hooks/useIqmBackends";
 import { useRigettiBackends } from "@/hooks/useRigettiBackends";
@@ -15,10 +16,8 @@ import {
   type SortDirection,
 } from "@/lib/backends/sort";
 import {
-  isReservationCatalogId,
-  RESERVED_CEPHEUS_BACKEND_CARD,
+  isReservationCatalogId
 } from "@/lib/quantum/reservations";
-import ReservationBackendModal from "@/components/reservations/ReservationBackendModal";
 import type { Backend } from "@/types/backend";
 import { useEffect, useState } from "react";
 import { MdGridView, MdViewList } from "react-icons/md";
@@ -103,12 +102,7 @@ export default function BackendCatalog({
   // physical device as the real "rigetti.qpu.Cepheus-1-108Q" card above —
   // temporary, alongside it, until one of the two access models ships (see
   // the reservation-vs-on-demand branch in the modal render below).
-  const allBackends = [
-    ...iqmBackends,
-    ...rigettiBackends,
-    RESERVED_CEPHEUS_BACKEND_CARD,
-    ...ibmBackends,
-  ];
+  const allBackends = [...iqmBackends, ...rigettiBackends, ...ibmBackends];
   const providerOptions: FilterOption[] = Array.from(
     new Set(allBackends.map((b) => b.provider)),
   )
