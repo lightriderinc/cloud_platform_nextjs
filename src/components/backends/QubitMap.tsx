@@ -30,6 +30,14 @@ function errorColor(error: number, min: number, max: number): string {
     : mix(STOPS[1], STOPS[2], (t - 0.5) / 0.5);
 }
 
+function median(values: number[]): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0
+    ? sorted[mid]
+    : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
 // Renders a qubit connectivity map: nodes laid out from the graph, colored by
 // per-qubit error using the brand gradient, with a hover tooltip. Qubits the
 // API returned no calibration data for render as hollow, dashed-outline nodes
@@ -45,6 +53,7 @@ export default function QubitMap({ data }: { data: QubitMapData }) {
     .filter((e): e is number => e !== undefined);
   const min = errors.length ? Math.min(...errors) : 0;
   const max = errors.length ? Math.max(...errors) : 1;
+  const med = errors.length ? median(errors) : undefined;
 
   const dense = nodes.length > 40;
   const radius = dense ? 16 : 32;
@@ -167,18 +176,51 @@ export default function QubitMap({ data }: { data: QubitMapData }) {
         )}
       </div>
 
-      <div className="mt-2 flex items-center justify-center gap-4 text-xs text-gray-500">
+      <div className="mt-2 mb-3 flex items-center justify-center gap-4 text-xs text-gray-500">
         <span className="flex items-center gap-0.5">
           {errors.length ? `${min.toFixed(2)}%` : "low"}
           <MdArrowRight className="text-xl" />
-          <span
-            style={{
-              width: 60,
-              height: 10,
-              borderRadius: 2,
-              background: "linear-gradient(90deg, #00E3F3, #2772BA, #4E0082)",
-            }}
-          />
+          <span style={{ position: "relative", width: 60, height: 10 }}>
+            <span
+              style={{
+                display: "block",
+                width: 60,
+                height: 10,
+                borderRadius: 2,
+                background:
+                  "linear-gradient(90deg, #00E3F3, #2772BA, #4E0082)",
+              }}
+            />
+            {med !== undefined && (
+              <>
+                <span
+                  title={`median: ${med.toFixed(2)}%`}
+                  style={{
+                    position: "absolute",
+                    top: -2,
+                    left: `${max > min ? ((med - min) / (max - min)) * 100 : 50}%`,
+                    transform: "translateX(-50%)",
+                    width: 2,
+                    height: 14,
+                    background: "#111827",
+                  }}
+                />
+                <span
+                  style={{
+                    position: "absolute",
+                    top: 14,
+                    left: `${max > min ? ((med - min) / (max - min)) * 100 : 50}%`,
+                    transform: "translateX(-50%)",
+                    whiteSpace: "nowrap",
+                    fontSize: 10,
+                    color: "#111827",
+                  }}
+                >
+                  Median {med.toFixed(2)}%
+                </span>
+              </>
+            )}
+          </span>
           <MdArrowLeft className="text-xl" />
 
           {errors.length ? `${max.toFixed(2)}% error` : "high error"}
