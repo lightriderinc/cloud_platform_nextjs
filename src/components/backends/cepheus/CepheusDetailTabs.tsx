@@ -1,6 +1,7 @@
 "use client";
 
 import { useRigettiBackends } from "@/hooks/useRigettiBackends";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import CepheusConnectionTab from "./CepheusConnectionTab";
 import CepheusDetailsPanel from "./CepheusDetailsPanel";
@@ -18,12 +19,20 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "reservation", label: "Reservation" },
 ];
 
+function isTab(value: string | null): value is Tab {
+  return !!value && TABS.some((t) => t.id === value);
+}
+
 export default function CepheusDetailTabs({
   isAuthenticated,
 }: {
   isAuthenticated: boolean;
 }) {
-  const [tab, setTab] = useState<Tab>("details");
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab");
+  const [tab, setTab] = useState<Tab>(
+    isTab(initialTab) ? initialTab : "details",
+  );
   const { data: rigettiBackends = [], isLoading } = useRigettiBackends();
   const backend = rigettiBackends.find((b) => b.id === CEPHEUS_BACKEND_ID);
 

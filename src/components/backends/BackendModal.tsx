@@ -184,7 +184,14 @@ export default function BackendModal({
             {backend.id === "rigetti.qpu.Cepheus-1-108Q" && (
               <InfoBox>
                 The following qubit map shows a simplified representation for Rigetti Cepheus 1-108Q. <br />
-                For the most accurate information, please visit the device&apos;s Topology & Calibration page.
+                For the most accurate information, please visit the device&apos;s{" "}
+                <Link
+                  href="/backends/rigetti-cepheus-1-108q?tab=topology"
+                  className="underline hover:text-[var(--brand-primary)]"
+                >
+                  Topology & Calibration page
+                </Link>
+                .
               </InfoBox>
             )}
             <QubitMap data={d.qubitMap} />
