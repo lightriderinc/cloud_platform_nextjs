@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
 import { MdCheck, MdContentCopy, MdOpenInNew } from "react-icons/md";
+import InfoBox from "../InfoBox";
 
 const COLAB_NOTEBOOKS_BASE_URL =
   "https://colab.research.google.com/github/lightriderinc/cloud_platform_nextjs/blob/main/docs/notebooks";
@@ -38,7 +39,8 @@ const COLAB_NOTEBOOK_BY_BACKEND: Record<string, string> = {
 
 function colabUrl(backendId: string | null): string {
   const notebook =
-    (backendId && COLAB_NOTEBOOK_BY_BACKEND[backendId]) || "quantum-quickstart.ipynb";
+    (backendId && COLAB_NOTEBOOK_BY_BACKEND[backendId]) ||
+    "quantum-quickstart.ipynb";
   return `${COLAB_NOTEBOOKS_BASE_URL}/${notebook}`;
 }
 
@@ -174,6 +176,22 @@ export default function BackendConnectSection({
       <p className="text-sm text-gray-600">
         Submit jobs to this backend using your Light Rider API key.
       </p>
+      {backend.id === "rigetti.qpu.Cepheus-1-108Q" && (
+        <InfoBox>
+          It is recommended to book a reservation for Rigetti Cepheus 1-108Q
+          before submitting jobs. <br />
+          Unreserved jobs are processed only when the device is free, with no
+          guaranteed timeline for results.<br />
+          To view free slots and book a reservation, visit the{" "}
+          <Link
+            href="/backends/rigetti-cepheus-1-108q?tab=reservation"
+            className="underline text-blue-700 hover:text-[var(--brand-primary)]"
+          >
+            reservation page
+          </Link>
+          .
+        </InfoBox>
+      )}
 
       {!hasApiKey ? (
         <div className="default-radius bg-gray-50 p-4">

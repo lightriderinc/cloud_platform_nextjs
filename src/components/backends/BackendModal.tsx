@@ -132,7 +132,7 @@ export default function BackendModal({
           <MdClose />
         </button>
 
-        <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 pr-12">
+        <div className="mb-6 flex flex-wrap items-end gap-x-6 gap-y-2 pr-12">
           <h1 className="text-2xl font-semibold">{name}</h1>
           <BackendStatusBadge status={status} />
           {/* Only the real Cepheus-1-108Q device (not its mock or the
@@ -184,10 +184,10 @@ export default function BackendModal({
             {backend.id === "rigetti.qpu.Cepheus-1-108Q" && (
               <InfoBox>
                 The following qubit map shows a simplified representation for Rigetti Cepheus 1-108Q. <br />
-                For the most accurate information, please visit the device&apos;s{" "}
+                For accurate and more detailed information, please visit the device&apos;s{" "}
                 <Link
                   href="/backends/rigetti-cepheus-1-108q?tab=topology"
-                  className="underline hover:text-[var(--brand-primary)]"
+                  className="underline text-blue-700 hover:text-[var(--brand-primary)]"
                 >
                   Topology & Calibration page
                 </Link>
