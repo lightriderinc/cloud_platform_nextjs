@@ -87,7 +87,7 @@ export default function CorridorRankingCard({
             {corridors.unranked.length > 0 && (
               <div className="mt-4 rounded border border-dashed border-purple-300 bg-purple-50/40 p-3">
                 <p className="mb-2 text-xs font-medium text-purple-700">
-                  Uncharacterized corridors — excluded from ranking, not the bottom of it
+                  Uncharacterized corridors excluded from ranking
                 </p>
                 {corridors.unranked.map((c) => (
                   <button

@@ -76,11 +76,11 @@ export default function CepheusDetailsPanel({ backend }: { backend: Backend }) {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
         {specs.map((spec) => (
-          <div key={spec.label}>
-            <p className="text-xs text-gray-500">{spec.label}</p>
-            <p className="mt-1 text-sm text-gray-900">{spec.value}</p>
+          <div key={spec.label} className="flex flex-col p-4 bg-gray-50">
+            <p className="block text-sm font-semibold text-gray-300">{spec.label}</p>
+            <p className="mt-2 block text-xl font-semibold">{spec.value}</p>
           </div>
         ))}
       </div>

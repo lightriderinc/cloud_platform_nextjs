@@ -3,9 +3,7 @@
 import MyReservationsList from "@/components/reservations/MyReservationsList";
 import ReservationBookingModal from "@/components/reservations/ReservationBookingModal";
 import ReservationSlotPicker from "@/components/reservations/ReservationSlotPicker";
-import {
-  type AvailableSlot
-} from "@/lib/quantum/reservations";
+import { type AvailableSlot } from "@/lib/quantum/reservations";
 import { useState } from "react";
 
 // Reservation content from ReservationBackendModal, laid out as stacked
@@ -24,7 +22,14 @@ export default function CepheusReservationTab() {
       </p>
 
       <div>
-        <h3 className="mb-3 text-base font-semibold text-gray-800">
+        <h3 className="mb-4 text-xl font-bold text-gray-600">
+          My reservations
+        </h3>
+        <MyReservationsList />
+      </div>
+
+      <div>
+        <h3 className="mb-4 text-xl font-bold text-gray-600">
           Book a slot
         </h3>
         {justBooked ? (
@@ -34,13 +39,6 @@ export default function CepheusReservationTab() {
         ) : (
           <ReservationSlotPicker onPick={setPickedSlot} />
         )}
-      </div>
-
-      <div>
-        <h3 className="mb-3 text-base font-semibold text-gray-800">
-          My reservations
-        </h3>
-        <MyReservationsList />
       </div>
 
       {pickedSlot && (
