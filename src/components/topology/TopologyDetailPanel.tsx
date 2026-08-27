@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { EdgeEntry, Metric } from "@/lib/topology/client";
 import {
   formatDurationNs,
@@ -26,6 +27,15 @@ function MetricRow({
       <span className="text-xs text-gray-400">
         {metric.error === null ? "no error reported" : `± ${metric.error.toFixed(4)}`}
       </span>
+    </div>
+  );
+}
+
+function SummaryRow({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-0.5 border-b border-gray-100 py-2 text-sm last:border-0">
+      <span className="font-medium text-gray-700">{label}</span>
+      <span className="text-gray-900">{value}</span>
     </div>
   );
 }
@@ -122,20 +132,22 @@ function DetailPanelContent({
         <span className="text-base font-semibold text-gray-900">Corridor {c.corridorId}</span>
         {isUnranked && <StateBadge state="sentinel" />}
       </div>
-      <div className="grid grid-cols-[1fr_auto] gap-y-1 text-sm">
-        <span className="text-gray-500">Coverage</span>
-        <span className="text-gray-900">
-          {c.validLinks}/{c.expectedLinks} links ({(c.coverage * 100).toFixed(0)}%)
-        </span>
-        <span className="text-gray-500">Mean CZ fidelity</span>
-        <span className="text-gray-900">{formatFidelityPct(c.meanFcz)}</span>
-        <span className="text-gray-500">Best link fCZ (marker only)</span>
-        <span className="text-gray-900">
-          {formatFidelityPct(c.bestLinkFcz)}
-          {c.bestLink ? ` (q${c.bestLink[0]}–q${c.bestLink[1]})` : ""}
-        </span>
-        <span className="text-gray-500">Score (mean fCZ × coverage)</span>
-        <span className="text-gray-900">{formatScore(c.score)}</span>
+      <div>
+        <SummaryRow
+          label="Coverage"
+          value={`${c.validLinks}/${c.expectedLinks} links (${(c.coverage * 100).toFixed(0)}%)`}
+        />
+        <SummaryRow label="Mean CZ fidelity" value={formatFidelityPct(c.meanFcz)} />
+        <SummaryRow
+          label="Best link fCZ (marker only)"
+          value={
+            <>
+              {formatFidelityPct(c.bestLinkFcz)}
+              {c.bestLink ? ` (q${c.bestLink[0]}–q${c.bestLink[1]})` : ""}
+            </>
+          }
+        />
+        <SummaryRow label="Score (mean fCZ × coverage)" value={formatScore(c.score)} />
       </div>
       {c.sentinelLinks > 0 && (
         <p className="mt-2 text-xs text-purple-700">

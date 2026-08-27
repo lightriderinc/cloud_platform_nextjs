@@ -144,7 +144,7 @@ export default function ProcessorMapCard({
                 <span>{formatFidelityPct(1 - errorStats.max / 100, 2)}</span>
               </>
             ) : (
-              <span className="h-2.5 w-2.5 default-radius bg-green-500" />
+              <span className="h-2.5 w-2.5 default-radius bg-[#2772BA]" />
             )}
           </span>
           <span className="flex items-center gap-1">
