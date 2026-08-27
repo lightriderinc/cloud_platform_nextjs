@@ -18,7 +18,6 @@ export default function ProcessorMapCard({
   allCorridors,
   chipletIds,
   qubitsByChiplet,
-  isLoading,
   scoreRange,
   onSelect,
   onTooltip,
@@ -26,7 +25,6 @@ export default function ProcessorMapCard({
   allCorridors: CorridorEntry[];
   chipletIds: string[];
   qubitsByChiplet: Map<string, QubitEntry[]>;
-  isLoading: boolean;
   scoreRange: { lo: number; hi: number };
   onSelect: (s: Selection) => void;
   onTooltip: Dispatch<SetStateAction<TooltipState | null>>;
@@ -164,94 +162,88 @@ export default function ProcessorMapCard({
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="flex h-48 items-center justify-center text-sm text-gray-400">
-          Loading topology…
-        </div>
-      ) : (
-        <div className="relative mx-auto max-w-md" ref={mapWrapRef}>
-          <svg ref={svgRef} className="absolute inset-0 h-full w-full overflow-visible" style={{ pointerEvents: "none" }} />
-          <div
-            className="relative grid gap-4 p-3"
-            style={{ gridTemplateColumns: `repeat(${CHIPLET_GRID_COLS}, 1fr)` }}
-          >
-            {chipletIds.map((chipletId) => {
-              const chipletQubits = qubitsByChiplet.get(chipletId) ?? [];
-              const activeCount = chipletQubits.filter((q) => q.presence !== "absent").length;
-              return (
-                <div
-                  key={chipletId}
-                  id={`chip-${chipletId}`}
-                  className="relative z-10 cursor-pointer default-radius border border-gray-100 bg-gray-100 p-1.5 hover:border-gray-200 transition-colors duration-300"
-                  onClick={() =>
-                    chipletQubits[0] && onSelect({ kind: "qubit", qubit: chipletQubits[0] })
-                  }
-                >
-                  <div className="mb-1 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-gray-700">{chipletId}</span>
-                    <span className="text-xs text-gray-400">
-                      {activeCount}/{chipletQubits.length}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-1">
-                    {chipletQubits.map((q) => {
-                      const errorPct =
-                        q.presence !== "absent" &&
-                        q.frbSimultaneous.state === "active" &&
-                        q.frbSimultaneous.value !== null
-                          ? (1 - q.frbSimultaneous.value) * 100
-                          : null;
-                      const gradientColor =
-                        errorPct !== null && errorStats
-                          ? toCss(
-                              errorRateRgb(errorPct, errorStats.min, errorStats.max),
-                              hoveredQubit === q.qubitIndex,
-                            )
-                          : null;
-                      return (
-                        <div
-                          key={q.qubitIndex}
-                          className={`aspect-square default-radius border ${
-                            gradientColor
-                              ? "transition-colors duration-150"
-                              : q.presence === "absent"
-                                ? STATE_CLASSES.absent.cell
-                                : STATE_CLASSES[q.frbSimultaneous.state].cell
-                          }`}
-                          style={
-                            gradientColor
-                              ? { backgroundColor: gradientColor, borderColor: gradientColor }
-                              : undefined
-                          }
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSelect({ kind: "qubit", qubit: q });
-                          }}
-                          onMouseEnter={(e) => {
-                            setHoveredQubit(q.qubitIndex);
-                            const html =
-                              q.presence === "absent"
-                                ? `<b>q${q.qubitIndex} — ABSENT</b>Not exposed in the ISA.`
-                                : `<b>q${q.qubitIndex} - fRB (simultaneous): ${formatMetricValue(q.frbSimultaneous, formatFidelityPct)}`;
-                            onTooltip({ html, x: e.clientX + 12, y: e.clientY + 12 });
-                          }}
-                          onMouseMove={(e) =>
-                            onTooltip((t) => (t ? { ...t, x: e.clientX + 12, y: e.clientY + 12 } : t))
-                          }
-                          onMouseLeave={() => {
-                            setHoveredQubit(null);
-                            onTooltip(null);
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
+      <div className="relative mx-auto max-w-md" ref={mapWrapRef}>
+        <svg ref={svgRef} className="absolute inset-0 h-full w-full overflow-visible" style={{ pointerEvents: "none" }} />
+        <div
+          className="relative grid gap-4 p-3"
+          style={{ gridTemplateColumns: `repeat(${CHIPLET_GRID_COLS}, 1fr)` }}
+        >
+          {chipletIds.map((chipletId) => {
+            const chipletQubits = qubitsByChiplet.get(chipletId) ?? [];
+            const activeCount = chipletQubits.filter((q) => q.presence !== "absent").length;
+            return (
+              <div
+                key={chipletId}
+                id={`chip-${chipletId}`}
+                className="relative z-10 cursor-pointer default-radius border border-gray-100 bg-gray-100 p-1.5 hover:border-gray-200 transition-colors duration-300"
+                onClick={() =>
+                  chipletQubits[0] && onSelect({ kind: "qubit", qubit: chipletQubits[0] })
+                }
+              >
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="text-sm font-semibold text-gray-700">{chipletId}</span>
+                  <span className="text-xs text-gray-400">
+                    {activeCount}/{chipletQubits.length}
+                  </span>
                 </div>
-              );
-            })}
-          </div>
+                <div className="grid grid-cols-3 gap-1">
+                  {chipletQubits.map((q) => {
+                    const errorPct =
+                      q.presence !== "absent" &&
+                      q.frbSimultaneous.state === "active" &&
+                      q.frbSimultaneous.value !== null
+                        ? (1 - q.frbSimultaneous.value) * 100
+                        : null;
+                    const gradientColor =
+                      errorPct !== null && errorStats
+                        ? toCss(
+                            errorRateRgb(errorPct, errorStats.min, errorStats.max),
+                            hoveredQubit === q.qubitIndex,
+                          )
+                        : null;
+                    return (
+                      <div
+                        key={q.qubitIndex}
+                        className={`aspect-square default-radius border ${
+                          gradientColor
+                            ? "transition-colors duration-150"
+                            : q.presence === "absent"
+                              ? STATE_CLASSES.absent.cell
+                              : STATE_CLASSES[q.frbSimultaneous.state].cell
+                        }`}
+                        style={
+                          gradientColor
+                            ? { backgroundColor: gradientColor, borderColor: gradientColor }
+                            : undefined
+                        }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelect({ kind: "qubit", qubit: q });
+                        }}
+                        onMouseEnter={(e) => {
+                          setHoveredQubit(q.qubitIndex);
+                          const html =
+                            q.presence === "absent"
+                              ? `<b>q${q.qubitIndex} — ABSENT</b>Not exposed in the ISA.`
+                              : `<b>q${q.qubitIndex} - fRB (simultaneous): ${formatMetricValue(q.frbSimultaneous, formatFidelityPct)}`;
+                          onTooltip({ html, x: e.clientX + 12, y: e.clientY + 12 });
+                        }}
+                        onMouseMove={(e) =>
+                          onTooltip((t) => (t ? { ...t, x: e.clientX + 12, y: e.clientY + 12 } : t))
+                        }
+                        onMouseLeave={() => {
+                          setHoveredQubit(null);
+                          onTooltip(null);
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
-      )}
+      </div>
     </div>
   );
 }

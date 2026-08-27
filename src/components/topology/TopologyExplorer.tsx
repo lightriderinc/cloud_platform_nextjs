@@ -15,6 +15,7 @@ import { useMemo, useState } from "react";
 import CorridorRankingCard from "./CorridorRankingCard";
 import ProcessorMapCard from "./ProcessorMapCard";
 import TopologyDetailPanel from "./TopologyDetailPanel";
+import TopologyExplorerSkeleton from "./TopologyExplorerSkeleton";
 import TopologyScoringExplainer from "./TopologyScoringExplainer";
 import TopologyStatCards from "./TopologyStatCards";
 import TopologyTooltip from "./TopologyTooltip";
@@ -148,6 +149,10 @@ export default function TopologyExplorer({
     return <p className="text-sm text-red-500">Failed to load topology data. Try again later.</p>;
   }
 
+  if (isLoading) {
+    return <TopologyExplorerSkeleton />;
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <TopologyStatCards
@@ -167,7 +172,6 @@ export default function TopologyExplorer({
             allCorridors={allCorridors}
             chipletIds={chipletIds}
             qubitsByChiplet={qubitsByChiplet}
-            isLoading={isLoading}
             scoreRange={scoreRange}
             onSelect={setSelection}
             onTooltip={setTooltip}
@@ -175,7 +179,6 @@ export default function TopologyExplorer({
 
           <CorridorRankingCard
             corridors={corridors}
-            isLoading={isLoading}
             scoreRange={scoreRange}
             onSelect={setSelection}
           />

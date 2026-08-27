@@ -50,12 +50,10 @@ function RankRow({
 
 export default function CorridorRankingCard({
   corridors,
-  isLoading,
   scoreRange,
   onSelect,
 }: {
   corridors: CorridorsData | undefined;
-  isLoading: boolean;
   scoreRange: { lo: number; hi: number };
   onSelect: (s: Selection) => void;
 }) {
@@ -64,52 +62,46 @@ export default function CorridorRankingCard({
       <h2 className="block text-md font-semibold text-gray-400 mb-6">
         Corridor ranking — score (mean fCZ × coverage)
       </h2>
-      {isLoading ? (
-        <div className="flex h-32 items-center justify-center text-sm text-gray-400">
-          Loading corridors…
-        </div>
-      ) : (
-        corridors && (
-          <>
-            <div className="grid grid-cols-[64px_1fr_64px_44px_120px] gap-3 border-b border-gray-100 pb-1.5 text-xs font-medium tracking-wide text-gray-700">
-              <span>Corridor</span>
-              <span>Score</span>
-              <span className="text-right">Score %</span>
-              <span className="text-right">Cov.</span>
-              <span className="text-right">Best link</span>
-            </div>
-            <div className="flex flex-col divide-y divide-gray-50">
-              {corridors.ranked.map((c) => (
-                <RankRow key={c.corridorId} corridor={c} scoreRange={scoreRange} onSelect={onSelect} />
+      {corridors && (
+        <>
+          <div className="grid grid-cols-[64px_1fr_64px_44px_120px] gap-3 border-b border-gray-100 pb-1.5 text-xs font-medium tracking-wide text-gray-700">
+            <span>Corridor</span>
+            <span>Score</span>
+            <span className="text-right">Score %</span>
+            <span className="text-right">Cov.</span>
+            <span className="text-right">Best link</span>
+          </div>
+          <div className="flex flex-col divide-y divide-gray-50">
+            {corridors.ranked.map((c) => (
+              <RankRow key={c.corridorId} corridor={c} scoreRange={scoreRange} onSelect={onSelect} />
+            ))}
+          </div>
+
+          {corridors.unranked.length > 0 && (
+            <div className="mt-4 rounded border border-dashed border-purple-300 bg-purple-50/40 p-3">
+              <p className="mb-2 text-xs font-medium text-purple-700">
+                Uncharacterized corridors excluded from ranking
+              </p>
+              {corridors.unranked.map((c) => (
+                <button
+                  key={c.corridorId}
+                  type="button"
+                  onClick={() => onSelect({ kind: "corridor", corridor: c })}
+                  className="flex w-full items-center justify-between gap-3 rounded px-1 py-1 text-left hover:bg-purple-50"
+                >
+                  <span className="text-sm font-medium text-gray-800">{c.corridorId}</span>
+                  <span className="text-xs text-gray-500">not measured</span>
+                  <span className="text-xs text-gray-500">
+                    {c.validLinks}/{c.expectedLinks}
+                  </span>
+                  <span className="text-xs text-purple-700">
+                    {c.sentinelLinks} link(s) sentinel — unmeasured, not blocked
+                  </span>
+                </button>
               ))}
             </div>
-
-            {corridors.unranked.length > 0 && (
-              <div className="mt-4 rounded border border-dashed border-purple-300 bg-purple-50/40 p-3">
-                <p className="mb-2 text-xs font-medium text-purple-700">
-                  Uncharacterized corridors excluded from ranking
-                </p>
-                {corridors.unranked.map((c) => (
-                  <button
-                    key={c.corridorId}
-                    type="button"
-                    onClick={() => onSelect({ kind: "corridor", corridor: c })}
-                    className="flex w-full items-center justify-between gap-3 rounded px-1 py-1 text-left hover:bg-purple-50"
-                  >
-                    <span className="text-sm font-medium text-gray-800">{c.corridorId}</span>
-                    <span className="text-xs text-gray-500">not measured</span>
-                    <span className="text-xs text-gray-500">
-                      {c.validLinks}/{c.expectedLinks}
-                    </span>
-                    <span className="text-xs text-purple-700">
-                      {c.sentinelLinks} link(s) sentinel — unmeasured, not blocked
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </>
-        )
+          )}
+        </>
       )}
     </div>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import TopologyExplorerSkeleton from "@/components/topology/TopologyExplorerSkeleton";
 import { useRigettiBackends } from "@/hooks/useRigettiBackends";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -80,6 +81,8 @@ export default function CepheusDetailTabs({
           <CepheusDetailsPanelSkeleton />
         ) : tab === "connection" ? (
           <CepheusConnectionTabSkeleton />
+        ) : tab === "topology" ? (
+          <TopologyExplorerSkeleton />
         ) : (
           <div className="h-48 animate-pulse default-radius bg-gray-100" />
         )
