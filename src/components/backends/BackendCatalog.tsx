@@ -66,7 +66,7 @@ export default function BackendCatalog({
   const [selected, setSelected] = useState<Backend | null>(null);
   const [view, setView] = useState<View>("cards");
   const [sortKey, setSortKey] = useState<BackendSortKey>("qubits");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [filters, setFilters] =
     useState<BackendFilterState>(createEmptyFilters);
 
