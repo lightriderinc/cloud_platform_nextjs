@@ -2,7 +2,7 @@
 
 import type { CorridorEntry, QubitEntry } from "@/lib/topology/client";
 import { formatFidelityPct, formatMetricValue, formatScore } from "@/lib/topology/format";
-import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { STATE_CLASSES } from "./stateStyles";
 import type { Selection, TooltipState } from "./types";
 
@@ -21,6 +21,36 @@ function fczColor(value: number, lo: number, hi: number): string {
   const to = [22, 163, 74];
   const rgb = from.map((f, i) => Math.round(f + (to[i] - f) * t));
   return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+}
+
+// Same brand gradient stops as the backend modal's QubitMap, low error -> high error.
+const ERROR_STOPS: [number, number, number][] = [
+  [0, 227, 243],
+  [39, 114, 186],
+  [78, 0, 130],
+];
+
+function mixRgb(
+  a: [number, number, number],
+  b: [number, number, number],
+  t: number,
+): [number, number, number] {
+  return [0, 1, 2].map((i) => Math.round(a[i] + (b[i] - a[i]) * t)) as [number, number, number];
+}
+
+function errorRateRgb(errorPct: number, min: number, max: number): [number, number, number] {
+  const t = max > min ? Math.max(0, Math.min(1, (errorPct - min) / (max - min))) : 0.5;
+  return t < 0.5
+    ? mixRgb(ERROR_STOPS[0], ERROR_STOPS[1], t / 0.5)
+    : mixRgb(ERROR_STOPS[1], ERROR_STOPS[2], (t - 0.5) / 0.5);
+}
+
+// Hover swaps to a brighter tint of the same color rather than a fixed hover
+// class, since the base color varies per qubit's own error rate.
+function toCss([r, g, b]: [number, number, number], brighten = false): string {
+  if (!brighten) return `rgb(${r}, ${g}, ${b})`;
+  const lift = (v: number) => Math.round(v + (255 - v) * 0.35);
+  return `rgb(${lift(r)}, ${lift(g)}, ${lift(b)})`;
 }
 
 export default function ProcessorMapCard({
@@ -42,6 +72,22 @@ export default function ProcessorMapCard({
 }) {
   const mapWrapRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const [hoveredQubit, setHoveredQubit] = useState<number | null>(null);
+
+  // Error rate (100 - fidelity%) across active qubits only — the population
+  // the gradient actually colors. Degraded/sentinel/absent keep their fixed
+  // swatches, so they're excluded from this range.
+  const errorStats = useMemo(() => {
+    const values = Array.from(qubitsByChiplet.values())
+      .flat()
+      .filter(
+        (q) =>
+          q.presence !== "absent" && q.frbSimultaneous.state === "active" && q.frbSimultaneous.value !== null,
+      )
+      .map((q) => (1 - (q.frbSimultaneous.value as number)) * 100);
+    if (values.length === 0) return null;
+    return { min: Math.min(...values), max: Math.max(...values) };
+  }, [qubitsByChiplet]);
 
   function drawCorridors() {
     const svg = svgRef.current;
@@ -121,10 +167,26 @@ export default function ProcessorMapCard({
     <div className="default-radius border-2 border-gray-50 bg-white p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h2 className="block text-md font-semibold text-gray-400">Processor map</h2>
-        <div className="flex items-center gap-3 text-xs text-gray-500">
-          <span className="flex items-center gap-1">
-            <span className="h-2.5 w-2.5 default-radius bg-green-500" />
-            Active
+        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
+          <span className="flex items-center gap-1.5">
+            Active (fRB measured)
+            {errorStats ? (
+              <>
+                <span>{formatFidelityPct(1 - errorStats.min / 100, 2)}</span>
+                <span
+                  style={{
+                    display: "block",
+                    width: 44,
+                    height: 8,
+                    borderRadius: 2,
+                    background: "linear-gradient(90deg, #00E3F3, #2772BA, #4E0082)",
+                  }}
+                />
+                <span>{formatFidelityPct(1 - errorStats.max / 100, 2)}</span>
+              </>
+            ) : (
+              <span className="h-2.5 w-2.5 default-radius bg-green-500" />
+            )}
           </span>
           <span className="flex items-center gap-1">
             <span className="h-2.5 w-2.5 default-radius bg-amber-400" />
@@ -171,31 +233,57 @@ export default function ProcessorMapCard({
                     </span>
                   </div>
                   <div className="grid grid-cols-3 gap-1">
-                    {chipletQubits.map((q) => (
-                      <div
-                        key={q.qubitIndex}
-                        className={`aspect-square default-radius border ${
-                          q.presence === "absent"
-                            ? STATE_CLASSES.absent.cell
-                            : STATE_CLASSES[q.frbSimultaneous.state].cell
-                        }`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelect({ kind: "qubit", qubit: q });
-                        }}
-                        onMouseEnter={(e) => {
-                          const html =
-                            q.presence === "absent"
-                              ? `<b>q${q.qubitIndex} — ABSENT</b>Not exposed in the ISA.`
-                              : `<b>q${q.qubitIndex}</b>fRB (simultaneous): ${formatMetricValue(q.frbSimultaneous, formatFidelityPct)}`;
-                          onTooltip({ html, x: e.clientX + 12, y: e.clientY + 12 });
-                        }}
-                        onMouseMove={(e) =>
-                          onTooltip((t) => (t ? { ...t, x: e.clientX + 12, y: e.clientY + 12 } : t))
-                        }
-                        onMouseLeave={() => onTooltip(null)}
-                      />
-                    ))}
+                    {chipletQubits.map((q) => {
+                      const errorPct =
+                        q.presence !== "absent" &&
+                        q.frbSimultaneous.state === "active" &&
+                        q.frbSimultaneous.value !== null
+                          ? (1 - q.frbSimultaneous.value) * 100
+                          : null;
+                      const gradientColor =
+                        errorPct !== null && errorStats
+                          ? toCss(
+                              errorRateRgb(errorPct, errorStats.min, errorStats.max),
+                              hoveredQubit === q.qubitIndex,
+                            )
+                          : null;
+                      return (
+                        <div
+                          key={q.qubitIndex}
+                          className={`aspect-square default-radius border ${
+                            gradientColor
+                              ? "transition-colors duration-150"
+                              : q.presence === "absent"
+                                ? STATE_CLASSES.absent.cell
+                                : STATE_CLASSES[q.frbSimultaneous.state].cell
+                          }`}
+                          style={
+                            gradientColor
+                              ? { backgroundColor: gradientColor, borderColor: gradientColor }
+                              : undefined
+                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelect({ kind: "qubit", qubit: q });
+                          }}
+                          onMouseEnter={(e) => {
+                            setHoveredQubit(q.qubitIndex);
+                            const html =
+                              q.presence === "absent"
+                                ? `<b>q${q.qubitIndex} — ABSENT</b>Not exposed in the ISA.`
+                                : `<b>q${q.qubitIndex} - fRB (simultaneous): ${formatMetricValue(q.frbSimultaneous, formatFidelityPct)}`;
+                            onTooltip({ html, x: e.clientX + 12, y: e.clientY + 12 });
+                          }}
+                          onMouseMove={(e) =>
+                            onTooltip((t) => (t ? { ...t, x: e.clientX + 12, y: e.clientY + 12 } : t))
+                          }
+                          onMouseLeave={() => {
+                            setHoveredQubit(null);
+                            onTooltip(null);
+                          }}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
               );
