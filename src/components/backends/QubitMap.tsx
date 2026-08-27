@@ -7,8 +7,8 @@ import { MdArrowLeft, MdArrowRight } from "react-icons/md";
 
 // Brand gradient stops, low error -> high error: yellow, orange, red.
 const STOPS: [number, number, number][] = [
-  [0, 227, 243],
-  [39, 114, 186],
+  [0, 228, 148],
+  [39, 114, 139],
   [78, 0, 130],
 ];
 
@@ -188,7 +188,7 @@ export default function QubitMap({ data }: { data: QubitMapData }) {
                 height: 10,
                 borderRadius: 2,
                 background:
-                  "linear-gradient(90deg, #00E3F3, #2772BA, #4E0082)",
+                  "linear-gradient(90deg, #00E494, #27728B, #4E0082)",
               }}
             />
             {med !== undefined && (

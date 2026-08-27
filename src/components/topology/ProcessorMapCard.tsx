@@ -1,8 +1,20 @@
 "use client";
 
 import type { CorridorEntry, QubitEntry } from "@/lib/topology/client";
-import { formatFidelityPct, formatMetricValue, formatScore } from "@/lib/topology/format";
-import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import {
+  formatFidelityPct,
+  formatMetricValue,
+  formatScore,
+} from "@/lib/topology/format";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
+import { MdArrowLeft, MdArrowRight } from "react-icons/md";
 import { errorRateRgb, scoreColor, toCss } from "./errorGradient";
 import { STATE_CLASSES } from "./stateStyles";
 import type { Selection, TooltipState } from "./types";
@@ -41,7 +53,9 @@ export default function ProcessorMapCard({
       .flat()
       .filter(
         (q) =>
-          q.presence !== "absent" && q.frbSimultaneous.state === "active" && q.frbSimultaneous.value !== null,
+          q.presence !== "absent" &&
+          q.frbSimultaneous.state === "active" &&
+          q.frbSimultaneous.value !== null,
       )
       .map((q) => (1 - (q.frbSimultaneous.value as number)) * 100);
     if (values.length === 0) return null;
@@ -75,7 +89,10 @@ export default function ProcessorMapCard({
       const pullX = (ra.width / 2 - 2) * (dx / len);
       const pullY = (ra.height / 2 - 2) * (dy / len);
 
-      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      const line = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "line",
+      );
       line.setAttribute("x1", String(ax + pullX));
       line.setAttribute("y1", String(ay + pullY));
       line.setAttribute("x2", String(bx - pullX));
@@ -87,24 +104,38 @@ export default function ProcessorMapCard({
       line.setAttribute("stroke-linecap", "round");
       line.setAttribute(
         "stroke",
-        corridor.score === null ? "#a78bfa" : scoreColor(corridor.score, scoreRange),
+        corridor.score === null
+          ? "#a78bfa"
+          : scoreColor(corridor.score, scoreRange),
       );
       if (corridor.score !== null && corridor.coverage < 1) {
         line.setAttribute("stroke-dasharray", "5 3");
       }
       line.style.cursor = "pointer";
       line.setAttribute("pointer-events", "stroke");
-      line.addEventListener("click", () => onSelect({ kind: "corridor", corridor }));
+      line.addEventListener("click", () =>
+        onSelect({ kind: "corridor", corridor }),
+      );
       line.addEventListener("mouseenter", (evt) => {
         const html =
           corridor.score === null
             ? `<b>${corridor.corridorId} — uncharacterized</b>${corridor.sentinelLinks}/${corridor.expectedLinks} links sentinel.`
             : `<b>${corridor.corridorId}</b>score ${formatScore(corridor.score, 3)} · mean fCZ ${formatFidelityPct(corridor.meanFcz, 2)} · ${corridor.validLinks}/${corridor.expectedLinks}`;
-        onTooltip({ html, x: (evt as MouseEvent).clientX + 12, y: (evt as MouseEvent).clientY + 12 });
+        onTooltip({
+          html,
+          x: (evt as MouseEvent).clientX + 12,
+          y: (evt as MouseEvent).clientY + 12,
+        });
       });
       line.addEventListener("mousemove", (evt) => {
         onTooltip((t) =>
-          t ? { ...t, x: (evt as MouseEvent).clientX + 12, y: (evt as MouseEvent).clientY + 12 } : t,
+          t
+            ? {
+                ...t,
+                x: (evt as MouseEvent).clientX + 12,
+                y: (evt as MouseEvent).clientY + 12,
+              }
+            : t,
         );
       });
       line.addEventListener("mouseleave", () => onTooltip(null));
@@ -125,22 +156,27 @@ export default function ProcessorMapCard({
   return (
     <div className="default-radius border-2 border-gray-50 bg-white p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="block text-md font-semibold text-gray-400">Processor map</h2>
+        <h2 className="block text-md font-semibold text-gray-400">
+          Processor map
+        </h2>
         <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1">
             Active (fRB measured)
             {errorStats ? (
               <>
                 <span>{formatFidelityPct(1 - errorStats.min / 100, 2)}</span>
+                <MdArrowRight className="text-xl" />
                 <span
                   style={{
                     display: "block",
                     width: 44,
                     height: 8,
                     borderRadius: 2,
-                    background: "linear-gradient(90deg, #00E3F3, #2772BA, #4E0082)",
+                    background:
+                      "linear-gradient(90deg, #00E494, #27728B, #4E0082)",
                   }}
                 />
+                <MdArrowLeft className="text-xl" />
                 <span>{formatFidelityPct(1 - errorStats.max / 100, 2)}</span>
               </>
             ) : (
@@ -163,25 +199,34 @@ export default function ProcessorMapCard({
       </div>
 
       <div className="relative mx-auto max-w-md" ref={mapWrapRef}>
-        <svg ref={svgRef} className="absolute inset-0 h-full w-full overflow-visible" style={{ pointerEvents: "none" }} />
+        <svg
+          ref={svgRef}
+          className="absolute inset-0 h-full w-full overflow-visible"
+          style={{ pointerEvents: "none" }}
+        />
         <div
           className="relative grid gap-4 p-3"
           style={{ gridTemplateColumns: `repeat(${CHIPLET_GRID_COLS}, 1fr)` }}
         >
           {chipletIds.map((chipletId) => {
             const chipletQubits = qubitsByChiplet.get(chipletId) ?? [];
-            const activeCount = chipletQubits.filter((q) => q.presence !== "absent").length;
+            const activeCount = chipletQubits.filter(
+              (q) => q.presence !== "absent",
+            ).length;
             return (
               <div
                 key={chipletId}
                 id={`chip-${chipletId}`}
                 className="relative z-10 cursor-pointer default-radius border border-gray-100 bg-gray-100 p-1.5 hover:border-gray-200 transition-colors duration-300"
                 onClick={() =>
-                  chipletQubits[0] && onSelect({ kind: "qubit", qubit: chipletQubits[0] })
+                  chipletQubits[0] &&
+                  onSelect({ kind: "qubit", qubit: chipletQubits[0] })
                 }
               >
                 <div className="mb-1 flex items-center justify-between">
-                  <span className="text-sm font-semibold text-gray-700">{chipletId}</span>
+                  <span className="text-sm font-semibold text-gray-700">
+                    {chipletId}
+                  </span>
                   <span className="text-xs text-gray-400">
                     {activeCount}/{chipletQubits.length}
                   </span>
@@ -197,7 +242,11 @@ export default function ProcessorMapCard({
                     const gradientColor =
                       errorPct !== null && errorStats
                         ? toCss(
-                            errorRateRgb(errorPct, errorStats.min, errorStats.max),
+                            errorRateRgb(
+                              errorPct,
+                              errorStats.min,
+                              errorStats.max,
+                            ),
                             hoveredQubit === q.qubitIndex,
                           )
                         : null;
@@ -213,7 +262,10 @@ export default function ProcessorMapCard({
                         }`}
                         style={
                           gradientColor
-                            ? { backgroundColor: gradientColor, borderColor: gradientColor }
+                            ? {
+                                backgroundColor: gradientColor,
+                                borderColor: gradientColor,
+                              }
                             : undefined
                         }
                         onClick={(e) => {
@@ -226,10 +278,18 @@ export default function ProcessorMapCard({
                             q.presence === "absent"
                               ? `<b>q${q.qubitIndex} — ABSENT</b>Not exposed in the ISA.`
                               : `<b>q${q.qubitIndex} - fRB (simultaneous): ${formatMetricValue(q.frbSimultaneous, formatFidelityPct)}`;
-                          onTooltip({ html, x: e.clientX + 12, y: e.clientY + 12 });
+                          onTooltip({
+                            html,
+                            x: e.clientX + 12,
+                            y: e.clientY + 12,
+                          });
                         }}
                         onMouseMove={(e) =>
-                          onTooltip((t) => (t ? { ...t, x: e.clientX + 12, y: e.clientY + 12 } : t))
+                          onTooltip((t) =>
+                            t
+                              ? { ...t, x: e.clientX + 12, y: e.clientY + 12 }
+                              : t,
+                          )
                         }
                         onMouseLeave={() => {
                           setHoveredQubit(null);
