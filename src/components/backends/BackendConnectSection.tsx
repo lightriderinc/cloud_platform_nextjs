@@ -4,12 +4,17 @@ import { handleSignIn } from "@/app/actions/auth";
 import BackendConnectSectionSkeleton from "@/components/backends/BackendConnectSectionSkeleton";
 import LRButton from "@/components/ui/LRButton";
 import { getQuantumBackendId } from "@/lib/quantum/backends";
+import { fetchMyReservations } from "@/lib/quantum/reservations";
 import type { Backend } from "@/types/backend";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MdCheck, MdContentCopy, MdOpenInNew } from "react-icons/md";
 import InfoBox from "../InfoBox";
+
+/** rigetti-cepheus is only submittable during a reserved window. */
+const RESERVED_ONLY_BACKEND_ID = "rigetti.qpu.Cepheus-1-108Q";
 
 const COLAB_NOTEBOOKS_BASE_URL =
   "https://colab.research.google.com/github/lightriderinc/cloud_platform_nextjs/blob/main/docs/notebooks";
@@ -90,14 +95,29 @@ export default function BackendConnectSection({
   isAuthenticated: boolean;
   onSubmitJob?: () => void;
 }) {
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
+  const [now] = useState(() => Date.now());
   const quantumBackendId = getQuantumBackendId(backend.id);
+  const isReservedOnlyBackend = backend.id === RESERVED_ONLY_BACKEND_ID;
 
   const { data: hasApiKey, isLoading } = useQuery({
     queryKey: ["settings", "has-api-key"],
     queryFn: fetchHasApiKey,
     enabled: isAuthenticated && backend.type === "QPU" && !!quantumBackendId,
   });
+
+  const { data: reservations } = useQuery({
+    queryKey: ["reservations", "mine"],
+    queryFn: fetchMyReservations,
+    enabled: isAuthenticated && isReservedOnlyBackend,
+  });
+
+  const hasActiveReservation = (reservations ?? []).some(
+    (r) =>
+      new Date(r.startTime).getTime() <= now &&
+      now <= new Date(r.endTime).getTime(),
+  );
 
   if (!isAuthenticated) {
     return (
@@ -177,12 +197,11 @@ export default function BackendConnectSection({
       <p className="text-sm text-gray-600">
         Submit jobs to this backend using your Light Rider API key.
       </p>
-      {backend.id === "rigetti.qpu.Cepheus-1-108Q" && (
+      {isReservedOnlyBackend && (
         <InfoBox>
-          It is recommended to book a reservation for Rigetti Cepheus 1-108Q
-          before submitting jobs. <br />
-          Unreserved jobs are processed only when the device is free, with no
-          guaranteed timeline for results.<br />
+          Submitting jobs to Rigetti Cepheus 1-108Q is only possible in reserved
+          time slots.
+          <br />
           To view free slots and book a reservation, visit the{" "}
           <Link
             href="/backends/rigetti-cepheus-1-108q?tab=reservation"
@@ -228,21 +247,36 @@ export default function BackendConnectSection({
               {copied ? "Copied" : "Copy code"}
             </button>
           </div>
-          <div className="flex flex-row gap-3">
-            <a
-              href={colabUrl(quantumBackendId)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex w-fit items-center gap-1.5 default-radius border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
-            >
-              Google Colab quickstart <MdOpenInNew className="text-base" />
-            </a>
-            {onSubmitJob && (
-              <LRButton variant="primary" onClick={onSubmitJob}>
-                Submit a sample circuit
+          {isReservedOnlyBackend && !hasActiveReservation ? (
+            <div className="flex flex-row">
+              <LRButton
+                variant="primary"
+                onClick={() =>
+                  router.push(
+                    "/backends/rigetti-cepheus-1-108q?tab=reservation",
+                  )
+                }
+              >
+                Book a reservation
               </LRButton>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="flex flex-row gap-3">
+              <a
+                href={colabUrl(quantumBackendId)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-fit items-center gap-1.5 default-radius border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+              >
+                Google Colab quickstart <MdOpenInNew className="text-base" />
+              </a>
+              {onSubmitJob && (
+                <LRButton variant="primary" onClick={onSubmitJob}>
+                  Submit a sample circuit
+                </LRButton>
+              )}
+            </div>
+          )}
         </>
       )}
     </div>
