@@ -32,8 +32,12 @@ export function formatUsd(cents: number): string {
  * for an actual dollar figure). Compact notation (10K, 10M, …) since credit
  * counts can run into the billions at this unit size.
  */
-export function formatCredits(cents: number): string {
+export function formatCreditsCompact(cents: number): string {
   return new Intl.NumberFormat(undefined, { notation: "compact" }).format(cents);
+}
+
+export function formatCredits(cents: number): string {
+  return cents.toLocaleString();
 }
 
 /**

@@ -1,12 +1,13 @@
 "use client";
 
 import BackendStatusBadge from "@/components/backends/BackendStatusBadge";
-import type { AvailableSlot } from "@/lib/quantum/reservations";
+import type { AvailableSlot, ReservationDuration } from "@/lib/quantum/reservations";
 import type { Backend } from "@/types/backend";
 import { useEffect, useState } from "react";
 import { MdClose } from "react-icons/md";
 import MyReservationsList from "./MyReservationsList";
 import ReservationBookingModal from "./ReservationBookingModal";
+import ReservationDurationSelector from "./ReservationDurationSelector";
 import ReservationSlotPicker from "./ReservationSlotPicker";
 
 type Tab = "book" | "mine";
@@ -25,6 +26,7 @@ export default function ReservationBackendModal({
   onClose: () => void;
 }) {
   const [tab, setTab] = useState<Tab>("book");
+  const [duration, setDuration] = useState<ReservationDuration>(15);
   const [pickedSlot, setPickedSlot] = useState<AvailableSlot | null>(null);
   const [justBooked, setJustBooked] = useState(false);
 
@@ -90,7 +92,10 @@ export default function ReservationBackendModal({
               Reservation confirmed — see it under &quot;My reservations&quot;.
             </div>
           ) : (
-            <ReservationSlotPicker onPick={setPickedSlot} />
+            <div className="flex flex-col gap-4">
+              <ReservationDurationSelector duration={duration} onDurationChange={setDuration} />
+              <ReservationSlotPicker duration={duration} onPick={setPickedSlot} />
+            </div>
           ))}
         {tab === "mine" && <MyReservationsList />}
       </div>

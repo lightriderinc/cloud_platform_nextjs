@@ -1,6 +1,5 @@
 "use client";
 
-import { formatCreditsWithUsd } from "@/components/billing/CreditsSummary";
 import {
   fetchAvailableSlots,
   getLocalTimezoneLabel,
@@ -12,12 +11,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { MdChevronLeft, MdChevronRight, MdSchedule } from "react-icons/md";
 import ReservationSlotPickerSkeleton from "./ReservationSlotPickerSkeleton";
-
-const DURATIONS: { value: ReservationDuration; label: string }[] = [
-  { value: 15, label: "15 min" },
-  { value: 30, label: "30 min" },
-  { value: 60, label: "60 min" },
-];
 
 const VISIBLE_DAYS = 3;
 const ROW_MINUTES = 15;
@@ -102,11 +95,12 @@ function formatSlotTooltip(slot: AvailableSlot, tzLabel: string): string {
  * fully-booked day should render as a fully-grey column, not be skipped.
  */
 export default function ReservationSlotPicker({
+  duration,
   onPick,
 }: {
+  duration: ReservationDuration;
   onPick: (slot: AvailableSlot) => void;
 }) {
-  const [duration, setDuration] = useState<ReservationDuration>(15);
   const [initialRangeStart] = useState(() => new Date().toISOString());
   const [history, setHistory] = useState<string[]>([initialRangeStart]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -164,8 +158,6 @@ export default function ReservationSlotPicker({
   const nowRow = Math.floor((initialNow.getHours() * 60 + initialNow.getMinutes()) / ROW_MINUTES);
   const tzLabel = getLocalTimezoneLabel(initialNow);
   const tzCaption = getTimezoneCaption(initialNow);
-  const priceLabel = slots && slots.length > 0 ? formatCreditsWithUsd(slots[0].creditsPrice) : null;
-  const durationLabel = DURATIONS.find((d) => d.value === duration)?.label;
 
   if (isLoading) {
     return <ReservationSlotPickerSkeleton />;
@@ -173,34 +165,6 @@ export default function ReservationSlotPicker({
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <label className="mb-2 block text-sm font-medium text-gray-700">Duration</label>
-        <div className="flex gap-2">
-          {DURATIONS.map((d) => (
-            <button
-              key={d.value}
-              type="button"
-              onClick={() => setDuration(d.value)}
-              className={`default-radius border px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer ${
-                duration === d.value
-                  ? "border-[var(--brand-primary)] bg-[var(--brand-primary)] text-white"
-                  : "border-gray-300 text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              {d.label}
-            </button>
-          ))}
-        </div>
-        <p className="mt-3 text-xs text-gray-500">
-          Rigetti books in 15-minute blocks — 30/60 min windows are consecutive blocks.
-        </p>
-        {priceLabel && (
-          <p className="mt-1 text-sm font-medium text-gray-700">
-            {durationLabel} — {priceLabel} per slot
-          </p>
-        )}
-      </div>
-
       {/* Prominent, not fine print — a misread hour here books real money
           against a slot that can't be cancelled. Placed at the top of the
           calendar area, echoing Rigetti's own "Timezone <name>" header. */}
