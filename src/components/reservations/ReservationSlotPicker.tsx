@@ -199,7 +199,7 @@ export default function ReservationSlotPicker({
       {/* Prominent, not fine print — a misread hour here books real money
           against a slot that can't be cancelled. Placed at the top of the
           calendar area, echoing Rigetti's own "Timezone <name>" header. */}
-      <div className="flex items-center gap-2 default-radius border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-800">
+      <div className="flex items-center gap-2 default-radius border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-600">
         <MdSchedule className="shrink-0 text-base" />
         {tzCaption}
       </div>
@@ -231,10 +231,10 @@ export default function ReservationSlotPicker({
           layout — colored with the platform's own accent, not Rigetti's teal. */}
       <div className="flex items-center gap-4 text-xs text-gray-600">
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-sm bg-[var(--brand-primary)]" /> Available
+          <span className="h-3 w-3 default-radius bg-blue-400" /> Available
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-sm bg-gray-200" /> Unavailable
+          <span className="h-3 w-3 default-radius bg-gray-200" /> Unavailable
         </span>
       </div>
 
@@ -250,17 +250,17 @@ export default function ReservationSlotPicker({
       ) : (
         <div
           ref={scrollRef}
-          className="max-h-72 overflow-auto default-radius border border-gray-200"
+          className="max-h-72 overflow-auto default-radius border-2 border-gray-50"
         >
           <div
             className="grid"
             style={{ gridTemplateColumns: `56px repeat(${VISIBLE_DAYS}, minmax(64px, 1fr))` }}
           >
-            <div className="sticky top-0 z-10 border-b border-gray-200 bg-white" />
+            <div className="sticky top-0 z-10 border-b border-gray-50 bg-white" />
             {visibleDays.map((day) => (
               <div
                 key={day.toISOString()}
-                className="sticky top-0 z-10 border-b border-l border-gray-200 bg-white px-1 py-1.5 text-center text-xs font-medium text-gray-700"
+                className="sticky top-0 z-10 border-b border-l-2 border-gray-50 bg-white px-1 py-1.5 text-center text-xs font-medium text-gray-700"
               >
                 {dayLabel(day)}
               </div>
@@ -290,9 +290,9 @@ export default function ReservationSlotPicker({
                         className={[
                           "border border-white transition-colors",
                           slot
-                            ? "cursor-pointer bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)]"
+                            ? "cursor-pointer bg-blue-400 hover:bg-blue-300"
                             : "cursor-not-allowed bg-gray-200",
-                          isNowMarker ? "border-t-2 border-t-red-500" : "",
+                          isNowMarker ? "border-t-3 border-t-red-500" : "",
                         ].join(" ")}
                         style={{ height: ROW_HEIGHT_PX }}
                       />

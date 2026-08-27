@@ -95,7 +95,7 @@ export default function MyReservationsList() {
       <div className="flex flex-col gap-6">
         {upcoming.length > 0 && (
           <div>
-            <h4 className="mb-2 text-sm font-medium text-gray-700">Upcoming</h4>
+            <h4 className="mb-2 text-sm font-medium text-gray-700">Upcoming reservations</h4>
             <div className="flex flex-col gap-2">
               {upcoming.map((r) => (
                 <ReservationRow
@@ -109,7 +109,7 @@ export default function MyReservationsList() {
         )}
         {past.length > 0 && (
           <div>
-            <h4 className="mb-2 text-sm font-medium text-gray-700">Past</h4>
+            <h4 className="mb-2 text-sm font-medium text-gray-700">Previous reservations</h4>
             <div className="flex flex-col gap-2">
               {past.map((r) => (
                 <ReservationRow
