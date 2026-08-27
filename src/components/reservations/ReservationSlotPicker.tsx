@@ -11,6 +11,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { MdChevronLeft, MdChevronRight, MdSchedule } from "react-icons/md";
+import ReservationSlotPickerSkeleton from "./ReservationSlotPickerSkeleton";
 
 const DURATIONS: { value: ReservationDuration; label: string }[] = [
   { value: 15, label: "15 min" },
@@ -166,6 +167,10 @@ export default function ReservationSlotPicker({
   const priceLabel = slots && slots.length > 0 ? formatCreditsWithUsd(slots[0].creditsPrice) : null;
   const durationLabel = DURATIONS.find((d) => d.value === duration)?.label;
 
+  if (isLoading) {
+    return <ReservationSlotPickerSkeleton />;
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -238,14 +243,7 @@ export default function ReservationSlotPicker({
         </span>
       </div>
 
-      {isLoading ? (
-        <div className="relative flex h-72 items-center justify-center default-radius bg-gray-100">
-          <div className="flex flex-col items-center gap-2">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-[var(--brand-primary)]" />
-            <p className="text-xs text-gray-500">Loading availability…</p>
-          </div>
-        </div>
-      ) : isError ? (
+      {isError ? (
         <p className="text-sm text-red-500">Failed to load available slots. Try again later.</p>
       ) : (
         <div

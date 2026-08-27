@@ -9,6 +9,7 @@ import CepheusConnectionTabSkeleton from "./CepheusConnectionTabSkeleton";
 import CepheusDetailsPanel from "./CepheusDetailsPanel";
 import CepheusDetailsPanelSkeleton from "./CepheusDetailsPanelSkeleton";
 import CepheusReservationTab from "./CepheusReservationTab";
+import CepheusReservationTabSkeleton from "./CepheusReservationTabSkeleton";
 import CepheusTopologyTab from "./CepheusTopologyTab";
 
 const CEPHEUS_BACKEND_ID = "rigetti.qpu.Cepheus-1-108Q";
@@ -84,7 +85,7 @@ export default function CepheusDetailTabs({
         ) : tab === "topology" ? (
           <TopologyExplorerSkeleton />
         ) : (
-          <div className="h-48 animate-pulse default-radius bg-gray-100" />
+          <CepheusReservationTabSkeleton />
         )
       ) : !backend ? (
         <p className="text-sm text-gray-500">
