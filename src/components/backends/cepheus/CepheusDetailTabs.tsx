@@ -94,14 +94,18 @@ export default function CepheusDetailTabs({
       ) : (
         <>
           {tab === "details" && <CepheusDetailsPanel backend={backend} />}
-          {tab === "topology" && <CepheusTopologyTab />}
+          {tab === "topology" && (
+            <CepheusTopologyTab isAuthenticated={isAuthenticated} />
+          )}
           {tab === "connection" && (
             <CepheusConnectionTab
               backend={backend}
               isAuthenticated={isAuthenticated}
             />
           )}
-          {tab === "reservation" && <CepheusReservationTab />}
+          {tab === "reservation" && (
+            <CepheusReservationTab isAuthenticated={isAuthenticated} />
+          )}
         </>
       )}
     </div>

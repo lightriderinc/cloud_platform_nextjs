@@ -1,5 +1,6 @@
 "use client";
 
+import { handleSignIn } from "@/app/actions/auth";
 import ChooseSlotModal from "@/components/reservations/ChooseSlotModal";
 import MyReservationsList from "@/components/reservations/MyReservationsList";
 import ReservationBookingModal from "@/components/reservations/ReservationBookingModal";
@@ -15,13 +16,32 @@ import { useState } from "react";
 // Reservation content from ReservationBackendModal, laid out as stacked
 // sections instead of the modal's nested book/mine tabs — a full page has
 // the room to show both at once.
-export default function CepheusReservationTab() {
+export default function CepheusReservationTab({
+  isAuthenticated,
+}: {
+  isAuthenticated: boolean;
+}) {
   const [duration, setDuration] = useState<ReservationDuration>(15);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickedSlot, setPickedSlot] = useState<AvailableSlot | null>(null);
   const [justBooked, setJustBooked] = useState(false);
 
   const { priceLabel } = useSlotPricePreviewCredits(duration);
+
+  if (!isAuthenticated) {
+    return (
+      <p className="mt-3 text-sm text-gray-600">
+        <button
+          type="button"
+          onClick={() => handleSignIn()}
+          className="brand-link cursor-pointer"
+        >
+          Log in
+        </button>{" "}
+        to access reservations.
+      </p>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8">
