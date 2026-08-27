@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import CepheusConnectionTab from "./CepheusConnectionTab";
 import CepheusDetailsPanel from "./CepheusDetailsPanel";
+import CepheusDetailsPanelSkeleton from "./CepheusDetailsPanelSkeleton";
 import CepheusReservationTab from "./CepheusReservationTab";
 import CepheusTopologyTab from "./CepheusTopologyTab";
 
@@ -74,7 +75,11 @@ export default function CepheusDetailTabs({
       </div>
 
       {isLoading ? (
-        <div className="h-48 animate-pulse default-radius bg-gray-100" />
+        tab === "details" ? (
+          <CepheusDetailsPanelSkeleton />
+        ) : (
+          <div className="h-48 animate-pulse default-radius bg-gray-100" />
+        )
       ) : !backend ? (
         <p className="text-sm text-gray-500">
           Couldn&apos;t load this backend&apos;s data. Try again later.
