@@ -4,6 +4,7 @@ import { useRigettiBackends } from "@/hooks/useRigettiBackends";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import CepheusConnectionTab from "./CepheusConnectionTab";
+import CepheusConnectionTabSkeleton from "./CepheusConnectionTabSkeleton";
 import CepheusDetailsPanel from "./CepheusDetailsPanel";
 import CepheusDetailsPanelSkeleton from "./CepheusDetailsPanelSkeleton";
 import CepheusReservationTab from "./CepheusReservationTab";
@@ -77,6 +78,8 @@ export default function CepheusDetailTabs({
       {isLoading ? (
         tab === "details" ? (
           <CepheusDetailsPanelSkeleton />
+        ) : tab === "connection" ? (
+          <CepheusConnectionTabSkeleton />
         ) : (
           <div className="h-48 animate-pulse default-radius bg-gray-100" />
         )
