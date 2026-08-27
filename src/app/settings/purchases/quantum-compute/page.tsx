@@ -3,12 +3,17 @@ import InfoBox from "@/components/InfoBox";
 import BackButton from "@/components/ui/BackButton";
 
 // Current pricing metric: $0.002/shot ($2 per 1,000 shots) = 0.2 credits/shot.
-const RUNTIME_TIERS = [
+const IQM_RUNTIME_TIERS = [
   { range: "5K shots", rate: "1K credits" },
   { range: "5M shots", rate: "1M credits" },
   { range: "5B shots", rate: "1B credits" },
 ];
 
+const RIGETTI_RUNTIME_TIERS = [
+  { range: "15 minutes", rate: "112.5K credits" },
+  { range: "30 minutes", rate: "225K credits" },
+  { range: "60 minutes", rate: "450K credits" },
+];
 /*
  * NOTE: Legacy runtime pricing chart data. Temporarily commented out because
  * these rates no longer match our current metrics. Do NOT delete — this will be
@@ -58,10 +63,61 @@ export default function QuantumComputePricingPage() {
           <h2 className="mb-3 text-lg font-semibold text-gray-600">
             Runtime pricing
           </h2>
+
+          <h3 className="text-sm font-semibold text-gray-400 mb-3 mt-3">
+            IQM Runtime
+          </h3>
+
           <div className="mb-3">
             <InfoBox>
+              <span className="font-semibold text-blue-700">IQM QPUs</span>
+              <br />
               Runtime is priced at $0.002 per shot ($2 per 1,000 shots)
               submitted to a QPU — 0.2 credits per shot.
+              <br />
+              <br />
+              <span className="font-semibold text-blue-700">
+                IQM Simulators
+              </span>
+              <br />
+              Submitting jobs to simulators does not consume credits.
+            </InfoBox>
+          </div>
+
+          <div className="overflow-hidden default-radius border border-gray-100 bg-gray-50 mb-3">
+            <table className="w-full text-left text-sm">
+              <tbody>
+                {IQM_RUNTIME_TIERS.map((tier) => (
+                  <tr
+                    key={tier.range}
+                    className="border-b border-gray-100 last:border-0"
+                  >
+                    <td className="whitespace-nowrap px-4 py-3 font-medium text-gray-800">
+                      {tier.range}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                      {tier.rate}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <h3 className="text-sm font-semibold text-gray-400 mb-3 mt-5">
+            Rigetti Runtime
+          </h3>
+          <div className="mb-3">
+            <InfoBox>
+              <span className="font-semibold text-blue-700">Rigetti QPUs</span>
+              <br />
+              Runtime is priced at $1,125 per 15-minute time slot — 112,500
+              credits per 15-minutes.
+              <br />
+              <br />
+              <span className="font-semibold text-blue-700">
+                Rigetti Simulators
+              </span>
               <br />
               Submitting jobs to simulators does not consume credits.
             </InfoBox>
@@ -70,7 +126,7 @@ export default function QuantumComputePricingPage() {
           <div className="overflow-hidden default-radius border border-gray-100 bg-gray-50">
             <table className="w-full text-left text-sm">
               <tbody>
-                {RUNTIME_TIERS.map((tier) => (
+                {RIGETTI_RUNTIME_TIERS.map((tier) => (
                   <tr
                     key={tier.range}
                     className="border-b border-gray-100 last:border-0"
