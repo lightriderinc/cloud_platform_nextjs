@@ -156,7 +156,26 @@ export default function BackendConnectSection({
   }
 
   if (isLoading) {
-    return null;
+    return (
+      <div className="mt-3 flex flex-col gap-3">
+        <div className="h-4 w-72 animate-pulse rounded bg-gray-100" />
+        <div className="relative mb-6 animate-pulse default-radius bg-gray-200 p-4">
+          <div className="flex flex-col gap-4">
+            <div className="h-3 w-3/4 rounded bg-gray-100" />
+            <div className="h-3 w-1/2 rounded bg-gray-100" />
+            <div className="h-3 w-5/6 rounded bg-gray-100" />
+            <div className="h-3 w-2/3 rounded bg-gray-100" />
+            <div className="h-3 w-1/3 rounded bg-gray-100" />
+            <div className="h-3 w-4/5 rounded bg-gray-100" />
+            <div className="h-3 w-3/5 rounded bg-gray-100" />
+          </div>
+        </div>
+        <div className="flex flex-row gap-3">
+          <div className="h-9 w-48 animate-pulse rounded default-radius bg-gray-100" />
+          <div className="h-9 w-40 animate-pulse rounded default-radius bg-gray-100" />
+        </div>
+      </div>
+    );
   }
 
   const snippet = pythonSnippet(quantumBackendId);
