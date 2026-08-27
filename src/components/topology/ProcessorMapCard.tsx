@@ -13,16 +13,6 @@ import type { Selection, TooltipState } from "./types";
 // which qubits.
 const CHIPLET_GRID_COLS = 3;
 
-// Interpolates green-200 -> green-600 across the live meanFcz range actually
-// present (never a fixed guess baked in from a frozen snapshot).
-function fczColor(value: number, lo: number, hi: number): string {
-  const t = hi === lo ? 1 : Math.max(0, Math.min(1, (value - lo) / (hi - lo)));
-  const from = [187, 247, 208];
-  const to = [22, 163, 74];
-  const rgb = from.map((f, i) => Math.round(f + (to[i] - f) * t));
-  return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
-}
-
 // Same brand gradient stops as the backend modal's QubitMap, low error -> high error.
 const ERROR_STOPS: [number, number, number][] = [
   [0, 227, 243],
@@ -51,6 +41,16 @@ function toCss([r, g, b]: [number, number, number], brighten = false): string {
   if (!brighten) return `rgb(${r}, ${g}, ${b})`;
   const lift = (v: number) => Math.round(v + (255 - v) * 0.35);
   return `rgb(${lift(r)}, ${lift(g)}, ${lift(b)})`;
+}
+
+// Corridors carry mean fCZ fidelity, not fRB — converted to the same
+// error-rate domain so both use one gradient, scaled to the fCZ range
+// actually present (fczRange) rather than the qubit fRB range.
+function corridorColor(meanFcz: number, fczRange: { lo: number; hi: number }): string {
+  const errorPct = (1 - meanFcz) * 100;
+  const minErrorPct = (1 - fczRange.hi) * 100;
+  const maxErrorPct = (1 - fczRange.lo) * 100;
+  return toCss(errorRateRgb(errorPct, minErrorPct, maxErrorPct));
 }
 
 export default function ProcessorMapCard({
@@ -128,7 +128,7 @@ export default function ProcessorMapCard({
       line.setAttribute("stroke-linecap", "round");
       line.setAttribute(
         "stroke",
-        corridor.meanFcz === null ? "#a78bfa" : fczColor(corridor.meanFcz, fczRange.lo, fczRange.hi),
+        corridor.meanFcz === null ? "#a78bfa" : corridorColor(corridor.meanFcz, fczRange),
       );
       if (corridor.score !== null && corridor.coverage < 1) {
         line.setAttribute("stroke-dasharray", "5 3");
