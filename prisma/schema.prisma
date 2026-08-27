@@ -161,3 +161,85 @@ model ProcessedStripeEvent {
   type      String
   createdAt DateTime @default(now())
 }
+
+// ---------------------------------------------------------------------------
+// Legal acceptance tracking
+//
+// Records, per Logto user, every acceptance of a versioned legal document
+// (Privacy Policy / Terms of Use) — at registration and on every update.
+// Keyed on the Logto `sub` (logtoUserId), NOT on Customer.id, because legal
+// acceptance applies to every authenticated user, not only billing customers.
+// These tables live in the same Supabase Postgres as the billing models above.
+// ---------------------------------------------------------------------------
+
+enum LegalDocType {
+  PRIVACY
+  TERMS
+}
+
+enum LegalAcceptanceContext {
+  REGISTRATION // recorded at account creation (Logto User.Created webhook)
+  REPROMPT     // recorded when a user accepts an update via the in-app gate
+  BACKFILL     // recorded by the one-time seed for users predating this feature
+}
+
+enum LegalNotificationChannel {
+  EMAIL
+  IN_APP
+}
+
+// One row per published version of a legal document. "Effective" = highest
+// version whose effectiveAt <= now(); "announced" = a version whose effectiveAt
+// is still in the future (the pre-announcement window).
+model LegalDocument {
+  id          String       @id @default(cuid())
+  docType     LegalDocType
+  version     Int
+  publishedAt DateTime     @default(now())
+  effectiveAt DateTime
+  summary     String? // short "what changed", shown in banner/modal/email
+  contentUrl  String? // Supabase Storage path of the archived rendered text
+  contentHash String? // sha-256 of the archived text — proves what was accepted
+  createdAt   DateTime     @default(now())
+
+  acceptances   LegalAcceptance[]
+  notifications LegalNotification[]
+
+  @@unique([docType, version])
+  @@index([docType, effectiveAt])
+}
+
+// Append-only audit ledger. Never updated or deleted.
+model LegalAcceptance {
+  id              String                 @id @default(cuid())
+  logtoUserId     String // Logto `sub` claim — the anchor identity
+  docType         LegalDocType
+  documentId      String
+  document        LegalDocument          @relation(fields: [documentId], references: [id])
+  documentVersion Int
+  context         LegalAcceptanceContext
+  ip              String?
+  userAgent       String?
+  acceptedAt      DateTime               @default(now())
+  createdAt       DateTime               @default(now())
+
+  // Idempotency: one acceptance per (user, document, context), so a retried
+  // registration webhook or a double-clicked accept button can't duplicate.
+  @@unique([logtoUserId, documentId, context])
+  @@index([logtoUserId, docType])
+  @@index([documentId])
+}
+
+// Dedupe guard for outbound notices, so the daily cron never emails the same
+// user about the same document version twice.
+model LegalNotification {
+  id          String                   @id @default(cuid())
+  logtoUserId String
+  documentId  String
+  document    LegalDocument            @relation(fields: [documentId], references: [id])
+  channel     LegalNotificationChannel
+  sentAt      DateTime                 @default(now())
+
+  @@unique([logtoUserId, documentId, channel])
+  @@index([documentId])
+}
