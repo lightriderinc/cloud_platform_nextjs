@@ -122,8 +122,11 @@ export default function TopologyExplorer({
     [corridors],
   );
 
-  const fczRange = useMemo(() => {
-    const values = allCorridors.map((c) => c.meanFcz).filter((v): v is number => v !== null);
+  // Drives corridor color (map lines + ranking bars) — keyed to score, the
+  // same number shown as "Score %" in the ranking table, so color always
+  // matches what's displayed.
+  const scoreRange = useMemo(() => {
+    const values = allCorridors.map((c) => c.score).filter((v): v is number => v !== null);
     if (values.length === 0) return { lo: 0, hi: 1 };
     return { lo: Math.min(...values), hi: Math.max(...values) };
   }, [allCorridors]);
@@ -165,12 +168,17 @@ export default function TopologyExplorer({
             chipletIds={chipletIds}
             qubitsByChiplet={qubitsByChiplet}
             isLoading={isLoading}
-            fczRange={fczRange}
+            scoreRange={scoreRange}
             onSelect={setSelection}
             onTooltip={setTooltip}
           />
 
-          <CorridorRankingCard corridors={corridors} isLoading={isLoading} onSelect={setSelection} />
+          <CorridorRankingCard
+            corridors={corridors}
+            isLoading={isLoading}
+            scoreRange={scoreRange}
+            onSelect={setSelection}
+          />
 
           <TopologyScoringExplainer />
         </div>

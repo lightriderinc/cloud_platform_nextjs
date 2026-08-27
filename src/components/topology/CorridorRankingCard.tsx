@@ -1,8 +1,17 @@
 import type { CorridorEntry, CorridorsData } from "@/lib/topology/client";
 import { formatFidelityPct } from "@/lib/topology/format";
+import { scoreColor } from "./errorGradient";
 import type { Selection } from "./types";
 
-function RankRow({ corridor, onSelect }: { corridor: CorridorEntry; onSelect: (s: Selection) => void }) {
+function RankRow({
+  corridor,
+  scoreRange,
+  onSelect,
+}: {
+  corridor: CorridorEntry;
+  scoreRange: { lo: number; hi: number };
+  onSelect: (s: Selection) => void;
+}) {
   const barPct = corridor.score === null ? 0 : Math.max(1, corridor.score * 100);
   const tickPct = corridor.bestLinkFcz === null ? null : corridor.bestLinkFcz * 100;
   return (
@@ -14,8 +23,12 @@ function RankRow({ corridor, onSelect }: { corridor: CorridorEntry; onSelect: (s
       <span className="text-sm font-medium text-gray-800">{corridor.corridorId}</span>
       <span className="relative h-3.5 overflow-hidden rounded bg-gray-100">
         <span
-          className="absolute inset-y-0 left-0 rounded bg-green-500"
-          style={{ width: `${barPct}%` }}
+          className="absolute inset-y-0 left-0 rounded"
+          style={{
+            width: `${barPct}%`,
+            backgroundColor:
+              corridor.score === null ? undefined : scoreColor(corridor.score, scoreRange),
+          }}
         />
         {tickPct !== null && (
           <span className="absolute inset-y-0 w-0.5 bg-gray-700" style={{ left: `${tickPct}%` }} />
@@ -38,10 +51,12 @@ function RankRow({ corridor, onSelect }: { corridor: CorridorEntry; onSelect: (s
 export default function CorridorRankingCard({
   corridors,
   isLoading,
+  scoreRange,
   onSelect,
 }: {
   corridors: CorridorsData | undefined;
   isLoading: boolean;
+  scoreRange: { lo: number; hi: number };
   onSelect: (s: Selection) => void;
 }) {
   return (
@@ -65,7 +80,7 @@ export default function CorridorRankingCard({
             </div>
             <div className="flex flex-col divide-y divide-gray-50">
               {corridors.ranked.map((c) => (
-                <RankRow key={c.corridorId} corridor={c} onSelect={onSelect} />
+                <RankRow key={c.corridorId} corridor={c} scoreRange={scoreRange} onSelect={onSelect} />
               ))}
             </div>
 

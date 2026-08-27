@@ -3,6 +3,7 @@
 import type { CorridorEntry, QubitEntry } from "@/lib/topology/client";
 import { formatFidelityPct, formatMetricValue, formatScore } from "@/lib/topology/format";
 import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { errorRateRgb, scoreColor, toCss } from "./errorGradient";
 import { STATE_CLASSES } from "./stateStyles";
 import type { Selection, TooltipState } from "./types";
 
@@ -13,52 +14,12 @@ import type { Selection, TooltipState } from "./types";
 // which qubits.
 const CHIPLET_GRID_COLS = 3;
 
-// Same brand gradient stops as the backend modal's QubitMap, low error -> high error.
-const ERROR_STOPS: [number, number, number][] = [
-  [0, 227, 243],
-  [39, 114, 186],
-  [78, 0, 130],
-];
-
-function mixRgb(
-  a: [number, number, number],
-  b: [number, number, number],
-  t: number,
-): [number, number, number] {
-  return [0, 1, 2].map((i) => Math.round(a[i] + (b[i] - a[i]) * t)) as [number, number, number];
-}
-
-function errorRateRgb(errorPct: number, min: number, max: number): [number, number, number] {
-  const t = max > min ? Math.max(0, Math.min(1, (errorPct - min) / (max - min))) : 0.5;
-  return t < 0.5
-    ? mixRgb(ERROR_STOPS[0], ERROR_STOPS[1], t / 0.5)
-    : mixRgb(ERROR_STOPS[1], ERROR_STOPS[2], (t - 0.5) / 0.5);
-}
-
-// Hover swaps to a brighter tint of the same color rather than a fixed hover
-// class, since the base color varies per qubit's own error rate.
-function toCss([r, g, b]: [number, number, number], brighten = false): string {
-  if (!brighten) return `rgb(${r}, ${g}, ${b})`;
-  const lift = (v: number) => Math.round(v + (255 - v) * 0.35);
-  return `rgb(${lift(r)}, ${lift(g)}, ${lift(b)})`;
-}
-
-// Corridors carry mean fCZ fidelity, not fRB — converted to the same
-// error-rate domain so both use one gradient, scaled to the fCZ range
-// actually present (fczRange) rather than the qubit fRB range.
-function corridorColor(meanFcz: number, fczRange: { lo: number; hi: number }): string {
-  const errorPct = (1 - meanFcz) * 100;
-  const minErrorPct = (1 - fczRange.hi) * 100;
-  const maxErrorPct = (1 - fczRange.lo) * 100;
-  return toCss(errorRateRgb(errorPct, minErrorPct, maxErrorPct));
-}
-
 export default function ProcessorMapCard({
   allCorridors,
   chipletIds,
   qubitsByChiplet,
   isLoading,
-  fczRange,
+  scoreRange,
   onSelect,
   onTooltip,
 }: {
@@ -66,7 +27,7 @@ export default function ProcessorMapCard({
   chipletIds: string[];
   qubitsByChiplet: Map<string, QubitEntry[]>;
   isLoading: boolean;
-  fczRange: { lo: number; hi: number };
+  scoreRange: { lo: number; hi: number };
   onSelect: (s: Selection) => void;
   onTooltip: Dispatch<SetStateAction<TooltipState | null>>;
 }) {
@@ -128,7 +89,7 @@ export default function ProcessorMapCard({
       line.setAttribute("stroke-linecap", "round");
       line.setAttribute(
         "stroke",
-        corridor.meanFcz === null ? "#a78bfa" : corridorColor(corridor.meanFcz, fczRange),
+        corridor.score === null ? "#a78bfa" : scoreColor(corridor.score, scoreRange),
       );
       if (corridor.score !== null && corridor.coverage < 1) {
         line.setAttribute("stroke-dasharray", "5 3");
