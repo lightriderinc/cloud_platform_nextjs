@@ -16,9 +16,8 @@ export default function CepheusReservationTab() {
   return (
     <div className="flex flex-col gap-8">
       <p className="max-w-2xl text-sm leading-relaxed text-gray-600">
-        Book a guaranteed time slot on the real Cepheus-1-108Q QPU — pay upfront
-        for exclusive access during your window, instead of best-effort
-        submission whenever the device happens to be free.
+        Book a guaranteed time slot on Rigetti Cepheus-1-108Q QPU for exclusive
+        access during your window.
       </p>
 
       <div>
@@ -29,9 +28,7 @@ export default function CepheusReservationTab() {
       </div>
 
       <div>
-        <h3 className="mb-4 text-xl font-bold text-gray-600">
-          Book a slot
-        </h3>
+        <h3 className="mb-4 text-xl font-bold text-gray-600">Book a slot</h3>
         {justBooked ? (
           <div className="default-radius border border-dashed border-green-200 bg-green-50 p-6 text-center text-sm text-green-700">
             Reservation confirmed — see it under &quot;My reservations&quot;.

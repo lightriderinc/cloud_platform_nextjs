@@ -1,6 +1,5 @@
 "use client";
 
-import { formatCreditsWithUsd } from "@/components/billing/CreditsSummary";
 import BackendSubmitModal from "@/components/quantum/BackendSubmitModal";
 import LRButton from "@/components/ui/LRButton";
 import { fetchMyReservations, type Reservation } from "@/lib/quantum/reservations";
@@ -34,7 +33,7 @@ function ReservationRow({
     new Date(reservation.startTime).getTime() <= now && now <= new Date(reservation.endTime).getTime();
 
   return (
-    <div className="flex items-center justify-between gap-3 default-radius border border-gray-100 px-4 py-3 text-sm">
+    <div className="flex items-center justify-between gap-3 default-radius border border-gray-50 bg-gray-50 px-4 py-3 text-sm">
       <div>
         <p className="flex items-center gap-2 font-medium text-gray-800">
           {formatWindow(reservation.startTime, reservation.endTime)}
@@ -47,7 +46,6 @@ function ReservationRow({
         <p className="text-gray-500">{reservation.deviceInstance}</p>
       </div>
       <div className="flex shrink-0 items-center gap-3">
-        <p className="font-medium text-gray-700">{formatCreditsWithUsd(reservation.chargedCredits)}</p>
         {isActive && (
           <LRButton variant="primary" onClick={onSubmitJob}>
             Submit a job

@@ -174,7 +174,7 @@ export default function ReservationSlotPicker({
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-gray-700">Duration</label>
+        <label className="mb-2 block text-sm font-medium text-gray-700">Duration</label>
         <div className="flex gap-2">
           {DURATIONS.map((d) => (
             <button
@@ -191,8 +191,8 @@ export default function ReservationSlotPicker({
             </button>
           ))}
         </div>
-        <p className="mt-1.5 text-xs text-gray-500">
-          Rigetti books in 15-minute blocks — 30/60 min windows are consecutive blocks, priced accordingly.
+        <p className="mt-3 text-xs text-gray-500">
+          Rigetti books in 15-minute blocks — 30/60 min windows are consecutive blocks.
         </p>
         {priceLabel && (
           <p className="mt-1 text-sm font-medium text-gray-700">
