@@ -1,7 +1,8 @@
 "use client";
 
+import PresetSelector from "@/components/ui/PresetSelector";
 import { useEffect, useMemo, useState } from "react";
-import ChipletPicker, { CHIPLET_IDS, type ChipletCellState } from "./ChipletPicker";
+import ChipletVisualPicker from "./ChipletVisualPicker";
 import LiveRunCard from "./LiveRunCard";
 import { addRecentRun, loadRecentRuns, type RecentRun } from "./recentRuns";
 import type {
@@ -17,44 +18,12 @@ import WithdrawResultPanel from "./WithdrawResultPanel";
 
 type Mode = "pool" | "live";
 
+const BIT_COUNT_PRESETS = [16, 32, 64, 128, 256];
+
 async function apiJson<T>(url: string, init?: RequestInit): Promise<{ ok: boolean; body: T }> {
   const res = await fetch(url, init);
   const body = (await res.json().catch(() => ({}))) as T;
   return { ok: res.ok, body };
-}
-
-function poolCellState(pools: EntropyPoolsResponse | null): Record<string, ChipletCellState> {
-  if (!pools) return {};
-  const out: Record<string, ChipletCellState> = {};
-  for (const p of pools.pools) {
-    out[p.chiplet_id] =
-      p.bits_available > 0
-        ? { selectable: true, primaryLabel: `${p.bits_available.toLocaleString()} bits`, tone: "positive" }
-        : { selectable: false, primaryLabel: "Depleted", tone: "muted" };
-  }
-  return out;
-}
-
-function candidateCellState(candidates: CandidatesResponse | null): Record<string, ChipletCellState> {
-  // Every chiplet is selectable in live mode regardless of quality -- a
-  // live run can target any chiplet. Candidate scoring is shown as a
-  // secondary hint only, so every one of the 12 gets an entry even if the
-  // scoring service didn't return one for it.
-  const out: Record<string, ChipletCellState> = {};
-  for (const cid of CHIPLET_IDS) {
-    const entry = candidates?.map[cid];
-    if (!entry) {
-      out[cid] = { selectable: true, primaryLabel: "Not scored", tone: "neutral" };
-      continue;
-    }
-    const tone = entry.tier === "recommended" || entry.tier === "good" ? "positive" : entry.tier === "unsuitable" ? "muted" : "neutral";
-    out[cid] = {
-      selectable: true,
-      primaryLabel: entry.tier ? entry.tier.charAt(0).toUpperCase() + entry.tier.slice(1) : "Available",
-      tone,
-    };
-  }
-  return out;
 }
 
 export default function QEntropyExperiment({ experimentDef }: { experimentDef: ExperimentDef }) {
@@ -119,10 +88,6 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
     };
   }, [mode, experimentDef.id]);
 
-  const cellState = useMemo(
-    () => (mode === "pool" ? poolCellState(pools) : candidateCellState(candidates)),
-    [mode, pools, candidates],
-  );
   const poolByChiplet = useMemo(
     () => Object.fromEntries((pools?.pools ?? []).map((p) => [p.chiplet_id, p])) as Record<string, EntropyPoolEntry>,
     [pools],
@@ -273,8 +238,10 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
 
       <div>
         <h4 className="mb-2 text-sm font-semibold text-gray-700">Chiplets</h4>
-        <ChipletPicker
-          cellState={cellState}
+        <ChipletVisualPicker
+          selectMode={mode}
+          pools={pools}
+          candidates={candidates}
           selected={selectedChiplets}
           onToggle={toggleChiplet}
           loading={mode === "pool" ? !pools : !candidates}
@@ -283,16 +250,14 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
 
       <div className="grid max-w-md grid-cols-1 gap-4 sm:grid-cols-2">
         {mode === "pool" ? (
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium text-gray-700">Bits per chiplet</span>
-            <input
-              type="number"
-              min={1}
-              className="default-radius w-full border border-gray-200 px-3 py-2 text-sm"
-              value={bitCount}
-              onChange={(e) => setBitCount(Math.max(1, Math.round(Number(e.target.value) || 0)))}
-            />
-          </label>
+          <PresetSelector
+            label="Bits per chiplet"
+            presets={BIT_COUNT_PRESETS}
+            value={bitCount}
+            onChange={setBitCount}
+            min={1}
+            max={1_000_000}
+          />
         ) : (
           <label className="block">
             <span className="mb-1 block text-sm font-medium text-gray-700">

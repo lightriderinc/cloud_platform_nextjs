@@ -1,6 +1,7 @@
 "use client";
 
 import ChipletStreamCard from "./ChipletStreamCard";
+import { DetailRow } from "./DetailRow";
 import type { EntropyPoolEntry, WithdrawResponse } from "./types";
 
 // rigetti-proxy's cross_chiplet_correlation() returns a pairwise phi-
@@ -57,6 +58,8 @@ export default function WithdrawResultPanel({
 
   return (
     <div className="flex flex-col gap-4">
+      <h2 className="block text-md font-semibold text-gray-400">Withdrawal result</h2>
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {result.chiplets.map((stream) => (
           <ChipletStreamCard key={stream.withdrawal_id ?? stream.chiplet_id} stream={stream} poolSnapshot={poolByChiplet[stream.chiplet_id]} />
@@ -71,27 +74,29 @@ export default function WithdrawResultPanel({
       )}
 
       {result.correlation && (
-        <div
-          className={`default-radius border p-4 text-sm ${
-            notableCorrelation ? "border-amber-200 bg-amber-50" : "border-gray-100 bg-gray-50"
-          }`}
-        >
-          <div className={`font-medium ${notableCorrelation ? "text-amber-900" : "text-gray-700"}`}>
-            Cross-chiplet correlation{notableCorrelation ? " — notable" : ""}
-          </div>
-          <div className={`mt-1 ${notableCorrelation ? "text-amber-800" : "text-gray-600"}`}>
-            {result.correlation.note}
-          </div>
-          <div className="mt-2 flex flex-wrap gap-3 text-xs">
-            {result.correlation.pairwise.map((p, i) => (
-              <span key={i} className="font-mono text-gray-600">
-                {p.chiplet_a}×{p.chiplet_b}: {p.correlation.toFixed(4)}
+        <div className="default-radius bg-gray-50 p-4">
+          <div className="mb-1 flex items-center gap-2">
+            <span className="text-base font-semibold text-gray-900">Cross-chiplet correlation</span>
+            {notableCorrelation && (
+              <span className="inline-flex items-center rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-2xs font-medium text-amber-700">
+                Notable
               </span>
-            ))}
+            )}
           </div>
-          <div className="mt-2 text-xs text-gray-500">
-            Max |correlation|: {result.correlation.max_abs_correlation.toFixed(4)}
-          </div>
+          <p className="mb-2 text-xs text-gray-500">{result.correlation.note}</p>
+          <DetailRow
+            label="Pairwise correlation"
+            value={
+              <span className="flex flex-wrap justify-end gap-x-3 font-mono text-xs">
+                {result.correlation.pairwise.map((p, i) => (
+                  <span key={i}>
+                    {p.chiplet_a}×{p.chiplet_b}: {p.correlation.toFixed(4)}
+                  </span>
+                ))}
+              </span>
+            }
+          />
+          <DetailRow label="Max |correlation|" value={result.correlation.max_abs_correlation.toFixed(4)} />
         </div>
       )}
     </div>
