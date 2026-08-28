@@ -1,3 +1,43 @@
+# [2.1.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v2.0.1...v2.1.0) (2026-08-28)
+
+
+### Bug Fixes
+
+* added back button to second layer nav pages ([c339338](https://github.com/lightriderinc/cloud_platform_nextjs/commit/c339338d59dfdf50b8de476c26ce2c0ab64fe103))
+* added endpoint field to logto.ts to sattisfy sdk and custom logto-management ([2b28b19](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2b28b19ff809f59ba750dfeeedf38b5a3580f263))
+* added fallback to base URL to avoid typescript fail ([7a01048](https://github.com/lightriderinc/cloud_platform_nextjs/commit/7a01048d5626c9893457ddd92572ec97e0e113cf))
+* added median to error rate legend in backend cards ([d6388fe](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d6388fe549b65afb2aacd23c025aafefe5a8d203))
+* added OG image ([a3c5c62](https://github.com/lightriderinc/cloud_platform_nextjs/commit/a3c5c6242db619425ebc81c3f11130ad6cba99c7))
+* added reservation page skeleton load ([9899126](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9899126749dfff164b33ff304ff30283bbe0a30c))
+* added skeleton loading to topology page ([6c5e642](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6c5e642a160211889dff7df8d92dd1d03dda95d4))
+* backend connect skeleton load update ([e6c410e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e6c410ecda25b1a484dc6b01057147123ae1302d))
+* backends catalog sort updated ([aefab10](https://github.com/lightriderinc/cloud_platform_nextjs/commit/aefab10cc8a0a2f5f7ffb0575abccca5fbb49782))
+* base url in logto account ([302b28a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/302b28ae1f9da287a9672036b8a3b3a8b0a2feb7))
+* book a slot card added ([83d623c](https://github.com/lightriderinc/cloud_platform_nextjs/commit/83d623c582749b404bf65059a3d774ad0628e91d))
+* Changed base URL. Again. ([ea70015](https://github.com/lightriderinc/cloud_platform_nextjs/commit/ea700153e3a4406e421ab70f01be9870da9cfe71))
+* Changed process.env call to as string ([8b9eacd](https://github.com/lightriderinc/cloud_platform_nextjs/commit/8b9eacdf2120af9c8c65729794a9a49d02484c87))
+* corridor ranking colors mapped ([56e829b](https://github.com/lightriderinc/cloud_platform_nextjs/commit/56e829b784c700fda5bbd6c73526456cf5563d63))
+* display account info ([83e0f95](https://github.com/lightriderinc/cloud_platform_nextjs/commit/83e0f9505d619e9ce00359ab25156e2621f04ca7))
+* jobs empty state updated ([c1bf5c8](https://github.com/lightriderinc/cloud_platform_nextjs/commit/c1bf5c8c8e402d17a3e30a119cdc386d5ad04a84))
+* non authorized tabs ([f07fc0d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/f07fc0d259a2018b7f3ff1117dfd768db86454d6))
+* processor map qubit colors reflect fRB ([a7e179a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/a7e179ad7959931c25835b3d22eb33e4f2dcbbc8))
+* rigetti backend tab links ([3c372e0](https://github.com/lightriderinc/cloud_platform_nextjs/commit/3c372e05521867c2b1b025f745af366787c16520))
+* runtime pricing updated ([fafa163](https://github.com/lightriderinc/cloud_platform_nextjs/commit/fafa163c616efab92710f909d34c7341020e9f03))
+* skeleton load for backend connect section ([9e5e067](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9e5e0671fda2c89417306f2054a7e6d3b3b8e4f0))
+* submitting jobs only available when active reservation for rigetti ([864fb72](https://github.com/lightriderinc/cloud_platform_nextjs/commit/864fb72ebcc20f3d13f391a399442f59f5bba5f3))
+* tab switching speed fixed ([2bf3924](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2bf3924233d4d52e52f543eaa96361aa4f2aa05a))
+* tab urls and redirect ([48050e0](https://github.com/lightriderinc/cloud_platform_nextjs/commit/48050e0da6785381880971a867258c2e509f8566))
+* updated calendar colors ([650eeee](https://github.com/lightriderinc/cloud_platform_nextjs/commit/650eeee294c4a3063f77a6516f45dc7aa4c52e23))
+* updated legal pages ([9f760f6](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9f760f676d1fe8e8c735f3d1ccf0656409546e32))
+* updated reservation page skeleton load ([2b525be](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2b525bebff66b49f06fd20acdab3bf82a6eeaf4a))
+* updated sdk docs links ([6ca3022](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6ca302212f8f714fadb0832b2b9f70e82ae1293c))
+
+
+### Features
+
+* added dashboard reservation section for active/upcoming reservations ([c4eb610](https://github.com/lightriderinc/cloud_platform_nextjs/commit/c4eb61051f702d98ff173b22ee7b26668d5684e2))
+* Cepheus dedicated page ([3d6fa0e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/3d6fa0ee8adf2329e317eeafd40dcd088c3d420a))
+
 ## [2.0.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v2.0.0...v2.0.1) (2026-08-10)
 
 
