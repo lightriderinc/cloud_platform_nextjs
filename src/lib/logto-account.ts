@@ -1,4 +1,13 @@
-const BASE = process.env.LOGTO_ENDPOINT!.replace(/\/$/, '');
+// Lazy, not eager: computed on each call rather than once at module load.
+// A top-level `const BASE = process.env.LOGTO_ENDPOINT!.replace(...)` throws
+// "Cannot read properties of undefined (reading 'replace')" the instant this
+// module is imported anywhere LOGTO_ENDPOINT isn't set — which is exactly
+// what happened during `next build`'s "collect page data" step in CI (no
+// secrets in that environment), crashing the entire build instead of only
+// failing requests that actually reach the Account API.
+function accountApiBase(): string {
+  return process.env.LOGTO_ENDPOINT!.replace(/\/$/, '');
+}
 
 type JsonError = { message?: string };
 
@@ -93,7 +102,7 @@ export function normalizeSocialIdentities(
  * Docs: https://docs.logto.io/end-user-flows/account-settings/by-account-api
  */
 export async function getMyProfile(accessToken: string): Promise<MyAccount | null> {
-  const res = await fetch(`${BASE}/api/my-account`, {
+  const res = await fetch(`${accountApiBase()}/api/my-account`, {
     headers: { Authorization: `Bearer ${accessToken}` },
     cache: 'no-store',
   });
@@ -102,7 +111,7 @@ export async function getMyProfile(accessToken: string): Promise<MyAccount | nul
 }
 
 export async function updateBirthdate(accessToken: string, birthdate: string): Promise<void> {
-  const res = await fetch(`${BASE}/api/my-account/profile`, {
+  const res = await fetch(`${accountApiBase()}/api/my-account/profile`, {
     method: 'PATCH',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -114,7 +123,7 @@ export async function updateBirthdate(accessToken: string, birthdate: string): P
 }
 
 export async function updateName(accessToken: string, name: string): Promise<void> {
-  const res = await fetch(`${BASE}/api/my-account`, {
+  const res = await fetch(`${accountApiBase()}/api/my-account`, {
     method: 'PATCH',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -126,7 +135,7 @@ export async function updateName(accessToken: string, name: string): Promise<voi
 }
 
 export async function updateAvatar(accessToken: string, avatarUrl: string | null): Promise<void> {
-  const res = await fetch(`${BASE}/api/my-account`, {
+  const res = await fetch(`${accountApiBase()}/api/my-account`, {
     method: 'PATCH',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -138,7 +147,7 @@ export async function updateAvatar(accessToken: string, avatarUrl: string | null
 }
 
 export async function verifyPassword(accessToken: string, password: string): Promise<string> {
-  const res = await fetch(`${BASE}/api/verifications/password`, {
+  const res = await fetch(`${accountApiBase()}/api/verifications/password`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -156,7 +165,7 @@ export async function updatePassword(
   verificationRecordId: string,
   newPassword: string
 ): Promise<void> {
-  const res = await fetch(`${BASE}/api/my-account/password`, {
+  const res = await fetch(`${accountApiBase()}/api/my-account/password`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -169,7 +178,7 @@ export async function updatePassword(
 }
 
 export async function sendEmailCode(accessToken: string, email: string): Promise<string> {
-  const res = await fetch(`${BASE}/api/verifications/verification-code`, {
+  const res = await fetch(`${accountApiBase()}/api/verifications/verification-code`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -188,7 +197,7 @@ export async function verifyEmailCode(
   code: string,
   verificationRecordId: string
 ): Promise<string> {
-  const res = await fetch(`${BASE}/api/verifications/verification-code/verify`, {
+  const res = await fetch(`${accountApiBase()}/api/verifications/verification-code/verify`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -211,7 +220,7 @@ export async function updatePrimaryEmail(
   newEmailVerificationRecordId: string,
   newEmail: string
 ): Promise<void> {
-  const res = await fetch(`${BASE}/api/my-account/primary-email`, {
+  const res = await fetch(`${accountApiBase()}/api/my-account/primary-email`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -249,7 +258,7 @@ export type MfaVerification = {
 
 /** List the current user's bound MFA factors. Returns [] when none or forbidden. */
 export async function getMfaVerifications(accessToken: string): Promise<MfaVerification[]> {
-  const res = await fetch(`${BASE}/api/my-account/mfa-verifications`, {
+  const res = await fetch(`${accountApiBase()}/api/my-account/mfa-verifications`, {
     headers: { Authorization: `Bearer ${accessToken}` },
     cache: 'no-store',
   });
@@ -259,7 +268,7 @@ export async function getMfaVerifications(accessToken: string): Promise<MfaVerif
 
 /** Generate a new TOTP secret (base32) to render as a QR code / manual key. */
 export async function generateTotpSecret(accessToken: string): Promise<string> {
-  const res = await fetch(`${BASE}/api/my-account/mfa-verifications/totp-secret/generate`, {
+  const res = await fetch(`${accountApiBase()}/api/my-account/mfa-verifications/totp-secret/generate`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -283,7 +292,7 @@ export async function bindTotp(
   secret: string,
   code: string
 ): Promise<void> {
-  const res = await fetch(`${BASE}/api/my-account/mfa-verifications/totp`, {
+  const res = await fetch(`${accountApiBase()}/api/my-account/mfa-verifications/totp`, {
     method: 'PUT',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -301,7 +310,7 @@ export async function deleteMfaVerification(
   verificationRecordId: string,
   mfaVerificationId: string
 ): Promise<void> {
-  const res = await fetch(`${BASE}/api/my-account/mfa-verifications/${mfaVerificationId}`, {
+  const res = await fetch(`${accountApiBase()}/api/my-account/mfa-verifications/${mfaVerificationId}`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${accessToken}`,
