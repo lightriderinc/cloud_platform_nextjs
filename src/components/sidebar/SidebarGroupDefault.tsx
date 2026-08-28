@@ -42,6 +42,13 @@ export default function SidebarGroupDefault({
       </SidebarNavGroup> */}
 
       <SidebarNavGroup label="Explore">
+        {/* <SidebarNavItem
+          name="Services"
+          href="/services"
+          icon={FaCode}
+          onNavigate={onNavigate}
+          tourId="sidebar-services"
+        /> */}
         <SidebarNavItem
           name="Applications"
           href="/applications"
@@ -56,6 +63,13 @@ export default function SidebarGroupDefault({
           onNavigate={onNavigate}
           tourId="sidebar-backends"
         />
+        {/* <SidebarNavItem
+          name="Topology"
+          href="/backends/topology"
+          icon={MdHub}
+          onNavigate={onNavigate}
+          tourId="sidebar-topology"
+        /> */}
       </SidebarNavGroup>
 
       <SidebarNavGroup label="Resources">

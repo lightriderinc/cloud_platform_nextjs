@@ -1,13 +1,20 @@
 "use client";
 
 import { handleSignIn } from "@/app/actions/auth";
+import BackendConnectSectionSkeleton from "@/components/backends/BackendConnectSectionSkeleton";
 import LRButton from "@/components/ui/LRButton";
 import { getQuantumBackendId } from "@/lib/quantum/backends";
+import { fetchMyReservations } from "@/lib/quantum/reservations";
 import type { Backend } from "@/types/backend";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MdCheck, MdContentCopy, MdOpenInNew } from "react-icons/md";
+import InfoBox from "../InfoBox";
+
+/** rigetti-cepheus is only submittable during a reserved window. */
+const RESERVED_ONLY_BACKEND_ID = "rigetti.qpu.Cepheus-1-108Q";
 
 const COLAB_NOTEBOOKS_BASE_URL =
   "https://colab.research.google.com/github/lightriderinc/cloud_platform_nextjs/blob/main/docs/notebooks";
@@ -15,10 +22,25 @@ const COLAB_NOTEBOOKS_BASE_URL =
 // Real backends get their own notebook (backend hardcoded in the submit
 // cell); mock backends — and anything unrecognized — fall through to the
 // shared base notebook, which still defaults to iqm-garnet-mock.
+// rigetti-cepheus-mock is the one mock exception: unlike the IQM mocks, it's
+// not reachable via the base notebook's own backend list, so it gets its own
+// file the same way the real IQM backends do. rigetti-cepheus (real
+// Cepheus-1-108Q) got the same treatment once its own notebook existed —
+// until this entry, the real card silently fell through to the generic
+// notebook instead of a 404, which is why the gap went unnoticed.
+//
+// NOTE: colabUrl() below points at github.com/.../blob/main/docs/notebooks —
+// Colab loads notebooks straight from `main`. quantum-quickstart-rigetti-
+// cepheus.ipynb lands on develop-merge-main first, so this link 404s in
+// Colab until that branch merges to main. Do not change the URL prefix to
+// point at this branch instead — main is the correct target for customers;
+// this is just a sequencing gap until the merge happens.
 const COLAB_NOTEBOOK_BY_BACKEND: Record<string, string> = {
   "iqm-garnet": "quantum-quickstart-iqm-garnet.ipynb",
   "iqm-emerald": "quantum-quickstart-iqm-emerald.ipynb",
   "iqm-sirius": "quantum-quickstart-iqm-sirius.ipynb",
+  "rigetti-cepheus-mock": "quantum-quickstart-rigetti-mock.ipynb",
+  "rigetti-cepheus": "quantum-quickstart-rigetti-cepheus.ipynb",
 };
 
 function colabUrl(backendId: string | null): string {
@@ -72,14 +94,29 @@ export default function BackendConnectSection({
   isAuthenticated: boolean;
   onSubmitJob?: () => void;
 }) {
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
+  const [now] = useState(() => Date.now());
   const quantumBackendId = getQuantumBackendId(backend.id);
+  const isReservedOnlyBackend = backend.id === RESERVED_ONLY_BACKEND_ID;
 
   const { data: hasApiKey, isLoading } = useQuery({
     queryKey: ["settings", "has-api-key"],
     queryFn: fetchHasApiKey,
     enabled: isAuthenticated && backend.type === "QPU" && !!quantumBackendId,
   });
+
+  const { data: reservations } = useQuery({
+    queryKey: ["reservations", "mine"],
+    queryFn: fetchMyReservations,
+    enabled: isAuthenticated && isReservedOnlyBackend,
+  });
+
+  const hasActiveReservation = (reservations ?? []).some(
+    (r) =>
+      new Date(r.startTime).getTime() <= now &&
+      now <= new Date(r.endTime).getTime(),
+  );
 
   if (!isAuthenticated) {
     return (
@@ -102,7 +139,7 @@ export default function BackendConnectSection({
         <p className="mt-3 mb-6 text-sm text-gray-600">
           Simulators run without an API key — see the{" "}
           <a
-            href="https://docs.lightriderinc.com/sdk/getting-started.html"
+            href="https://docs.lightriderinc.com/platform/sdk/getting-started.html"
             target="_blank"
             rel="noopener noreferrer"
             className="brand-link"
@@ -139,7 +176,7 @@ export default function BackendConnectSection({
   }
 
   if (isLoading) {
-    return null;
+    return <BackendConnectSectionSkeleton />;
   }
 
   const snippet = pythonSnippet(quantumBackendId);
@@ -159,6 +196,21 @@ export default function BackendConnectSection({
       <p className="text-sm text-gray-600">
         Submit jobs to this backend using your Light Rider API key.
       </p>
+      {isReservedOnlyBackend && (
+        <InfoBox>
+          Submitting jobs to Rigetti Cepheus 1-108Q is only possible in reserved
+          time slots.
+          <br />
+          To view free slots and book a reservation, visit the{" "}
+          <Link
+            href="/backends/rigetti-cepheus-1-108q?tab=reservation"
+            className="underline text-blue-700 hover:text-[var(--brand-primary)]"
+          >
+            reservation page
+          </Link>
+          .
+        </InfoBox>
+      )}
 
       {!hasApiKey ? (
         <div className="default-radius bg-gray-50 p-4">
@@ -203,10 +255,23 @@ export default function BackendConnectSection({
             >
               Google Colab quickstart <MdOpenInNew className="text-base" />
             </a>
-            {onSubmitJob && (
-              <LRButton variant="primary" onClick={onSubmitJob}>
-                Submit a sample circuit
+            {isReservedOnlyBackend && !hasActiveReservation ? (
+              <LRButton
+                variant="primary"
+                onClick={() =>
+                  router.push(
+                    "/backends/rigetti-cepheus-1-108q?tab=reservation",
+                  )
+                }
+              >
+                Book a reservation
               </LRButton>
+            ) : (
+              onSubmitJob && (
+                <LRButton variant="primary" onClick={onSubmitJob}>
+                  Submit a sample circuit
+                </LRButton>
+              )
             )}
           </div>
         </>

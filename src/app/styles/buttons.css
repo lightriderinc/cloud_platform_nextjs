@@ -1,0 +1,24 @@
+.card-hover-primary {
+  &:hover {
+    border: 1px solid #f87c56;
+  }
+  transition: border 150ms ease-out;
+}
+
+.btn-outline-brand {
+  border: 2px solid #f87c56;
+  color: var(--brand-primary);
+
+  &:hover {
+    background-color: rgba(248, 124, 86, 0.07);
+  }
+}
+
+.brand-link {
+  color: var(--brand-primary) !important;
+
+  &:hover {
+    color: #f25143 !important;
+    text-decoration: underline !important;
+  }
+}

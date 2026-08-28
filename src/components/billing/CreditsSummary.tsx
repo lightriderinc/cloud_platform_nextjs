@@ -32,8 +32,24 @@ export function formatUsd(cents: number): string {
  * for an actual dollar figure). Compact notation (10K, 10M, …) since credit
  * counts can run into the billions at this unit size.
  */
-export function formatCredits(cents: number): string {
+export function formatCreditsCompact(cents: number): string {
   return new Intl.NumberFormat(undefined, { notation: "compact" }).format(cents);
+}
+
+export function formatCredits(cents: number): string {
+  return cents.toLocaleString();
+}
+
+/**
+ * "N credits ($X.XX)" — the full (non-compact) credit count alongside its
+ * dollar equivalent, for a specific price a customer is about to pay.
+ * formatCredits' compact notation (10K, 10M, …) is right for a running
+ * balance, but hides the real order of magnitude on a one-off price — at
+ * RESERVATION_MARKUP_MULTIPLIER=1.25, a 60-minute reservation is 450,000
+ * credits ($4,500), and "450K credits" alone is too easy to misread.
+ */
+export function formatCreditsWithUsd(cents: number): string {
+  return `${cents.toLocaleString()} credits ($${formatUsd(cents)})`;
 }
 
 export function ProgressBar({ fraction }: { fraction: number }) {

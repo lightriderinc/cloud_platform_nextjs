@@ -1,18 +1,11 @@
 export const logtoConfig = {
-  endpoint: 'https://auth.lightriderinc.com',
-  // Logto's Management API cannot be reached through a custom domain — the
-  // token endpoint and all Management API calls must go through the
-  // tenant's default *.logto.app domain, even though sign-in flows use the
-  // custom domain above. See src/lib/logto/management.ts.
-  managementEndpoint: 'https://bhi5jd.logto.app',
-  appId: 'a3qx8dcty8mhb8bqgvll5',
-  appSecret: process.env.LOGTO_APP_SECRET,
-  baseUrl: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',// Change to your own base URL
-  // Cast to string (same idiom as LOGTO_PRO_ROLE_ID elsewhere): proxy.ts's
-  // CookieStorage requires a definite encryptionKey since this app doesn't
-  // provide a custom sessionWrapper — must be set in every real environment.
-  cookieSecret: process.env.LOGTO_COOKIE_SECRET as string, // 32+ character random string
+  managementEndpoint: process.env.LOGTO_MANAGEMENT_ENDPOINT as string, // Change to your own management endpoint
+  endpoint: process.env.LOGTO_ENDPOINT as string, // Change to your own endpoint
+  appId: process.env.LOGTO_APP_ID as string, // Change to your own app ID
+  appSecret: process.env.LOGTO_APP_SECRET as string, // Change to your own app secret
+  baseUrl: process.env.NEXT_BASE_URL || 'http://localhost:3000', // Change to your own base URL
+  cookieSecret: process.env.LOGTO_COOKIE_SECRET as string, // Auto-generated 32 digit secret
   cookieSecure: process.env.NODE_ENV === 'production',
-  proRoleID: "d4px0fafm78qfb574wgfm",
+  proRoleID: process.env.LOGTO_PRO_ROLE_ID as string, // Change to your own role ID
   scopes: ['email', 'profile', 'roles', 'identities'],
 };

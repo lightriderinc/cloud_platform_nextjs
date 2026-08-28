@@ -1,18 +1,21 @@
 "use client";
 
 import BackendSubmitModal from "@/components/quantum/BackendSubmitModal";
-import { getQuantumBackendId } from "@/lib/quantum/backends";
-import type { Backend } from "@/types/backend";
-import { useEffect, useState } from "react";
-import { MdClose } from "react-icons/md";
-import BackendConnectSection from "./BackendConnectSection";
-import BackendStatusBadge from "./BackendStatusBadge";
-import QubitMap from "./QubitMap";
 import {
   availabilityTextClass,
   formatAvailability,
   formatQueue,
 } from "@/lib/backends/availability";
+import { getQuantumBackendId } from "@/lib/quantum/backends";
+import type { Backend } from "@/types/backend";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { MdClose } from "react-icons/md";
+import { RiExpandDiagonalFill } from "react-icons/ri";
+import InfoBox from "../InfoBox";
+import BackendConnectSection from "./BackendConnectSection";
+import BackendStatusBadge from "./BackendStatusBadge";
+import QubitMap from "./QubitMap";
 
 type Spec = { label: string; value: React.ReactNode };
 
@@ -39,8 +42,16 @@ export default function BackendModal({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
 
-  const { name, status, queueDepth, type, qubits, provider, pricing, availability } =
-    backend;
+  const {
+    name,
+    status,
+    queueDepth,
+    type,
+    qubits,
+    provider,
+    pricing,
+    availability,
+  } = backend;
   const quantumBackendId = getQuantumBackendId(backend.id);
   const d = backend.details ?? {};
 
@@ -53,7 +64,10 @@ export default function BackendModal({
       { label: "Type", value: type },
       { label: "Qubits", value: qubits },
       { label: "Provider", value: provider },
-      { label: "Queue", value: queueDepth !== null ? formatQueue(queueDepth) : null },
+      {
+        label: "Queue",
+        value: queueDepth !== null ? formatQueue(queueDepth) : null,
+      },
       {
         label: "Availability",
         value: availabilityLabel ? (
@@ -73,17 +87,29 @@ export default function BackendModal({
               ? "Available"
               : "Unavailable",
       },
-      { label: "Max. shots per circuit", value: d.maxShotsPerCircuit?.toLocaleString() },
+      {
+        label: "Max. shots per circuit",
+        value: d.maxShotsPerCircuit?.toLocaleString(),
+      },
       { label: "Max. circuits", value: d.maxCircuits },
-      { label: "Median 1-qubit gate fidelity", value: pct(d.medianOneQubitFidelity) },
-      { label: "Median 2-qubit gate fidelity", value: pct(d.medianTwoQubitFidelity) },
+      {
+        label: "Median 1-qubit gate fidelity",
+        value: pct(d.medianOneQubitFidelity),
+      },
+      {
+        label: "Median 2-qubit gate fidelity",
+        value: pct(d.medianTwoQubitFidelity),
+      },
       { label: "Median readout fidelity", value: pct(d.medianReadoutFidelity) },
       { label: "Median T1", value: us(d.medianT1Us) },
       { label: "Median T2 (Ramsey)", value: us(d.medianT2RamseyUs) },
       { label: "Median T2 (echo)", value: us(d.medianT2EchoUs) },
       { label: "Native gates", value: d.nativeGates?.join(", ") },
     ] as Spec[]
-  ).filter((spec) => spec.value !== undefined && spec.value !== null && spec.value !== "");
+  ).filter(
+    (spec) =>
+      spec.value !== undefined && spec.value !== null && spec.value !== "",
+  );
 
   return (
     <div
@@ -106,14 +132,30 @@ export default function BackendModal({
           <MdClose />
         </button>
 
-        <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 pr-12">
+        <div className="mb-6 flex flex-wrap items-end gap-x-6 gap-y-2 pr-12">
           <h1 className="text-2xl font-semibold">{name}</h1>
           <BackendStatusBadge status={status} />
+          {/* Only the real Cepheus-1-108Q device (not its mock or the
+              reservation card) has topology/calibration data — LR-TECH-001
+              Phase 6. */}
+          {backend.id === "rigetti.qpu.Cepheus-1-108Q" && (
+            <Link
+              href={`/backends/rigetti-cepheus-1-108q`}
+              className="font-medium text-gray-500 inline-flex items-center hover:text-[var(--brand-primary)]"
+            >
+              <span className="inline-flex items-center gap-2 cursor-pointer">
+                <span className="text-sm font-medium">View full details</span>
+                <RiExpandDiagonalFill />
+              </span>
+            </Link>
+          )}
         </div>
 
         <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           {d.description && (
-            <p className="max-w-2xl text-sm leading-relaxed text-gray-600">{d.description}</p>
+            <p className="max-w-2xl text-sm leading-relaxed text-gray-600">
+              {d.description}
+            </p>
           )}
           {pricing && (
             <div className="flex shrink-0 flex-col gap-1 text-sm">
@@ -139,6 +181,19 @@ export default function BackendModal({
         {d.qubitMap && d.qubitMap.nodes.length > 0 && (
           <div className="mt-8">
             <h2 className="mb-3 text-base font-semibold">Qubit map</h2>
+            {backend.id === "rigetti.qpu.Cepheus-1-108Q" && (
+              <InfoBox>
+                The following qubit map shows a simplified representation for Rigetti Cepheus 1-108Q. <br />
+                For accurate and more detailed information, please visit the device&apos;s{" "}
+                <Link
+                  href="/backends/rigetti-cepheus-1-108q?tab=topology"
+                  className="underline text-blue-700 hover:text-[var(--brand-primary)]"
+                >
+                  Topology & Calibration page
+                </Link>
+                .
+              </InfoBox>
+            )}
             <QubitMap data={d.qubitMap} />
           </div>
         )}
@@ -150,7 +205,9 @@ export default function BackendModal({
           <BackendConnectSection
             backend={backend}
             isAuthenticated={isAuthenticated}
-            onSubmitJob={quantumBackendId ? () => setShowSubmit(true) : undefined}
+            onSubmitJob={
+              quantumBackendId ? () => setShowSubmit(true) : undefined
+            }
           />
         </details>
       </div>

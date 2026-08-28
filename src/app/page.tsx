@@ -3,6 +3,7 @@ import LowCreditsBanner from "@/components/billing/LowCreditsBanner";
 import DashboardDemoCircuit from "@/components/dashboard/DashboardDemoCircuit";
 import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntropy";
 import DashboardLatestJobs from "@/components/dashboard/DashboardLatestJobs";
+import DashboardReservations from "@/components/dashboard/DashboardReservations";
 import WelcomePage from "@/components/WelcomePage";
 import { getSession } from "@/lib/auth/session";
 import Image from "next/image";
@@ -58,6 +59,9 @@ export default async function Home() {
               <CreditsSummary historyLink />
             </div>
           </div>
+
+          <DashboardReservations />
+
           <div className="mb-8">
             <div className="flex flex-row justify-between">
               <h2 className="text-xl font-bold text-gray-600">Latest jobs</h2>
@@ -75,6 +79,7 @@ export default async function Home() {
               <DashboardLatestJobs />
             </div>
           </div>
+
           <div>
             <h2 className="mb-4 text-xl font-bold text-gray-600">
               Getting started

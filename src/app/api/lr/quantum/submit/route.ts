@@ -20,6 +20,14 @@ import { NextResponse } from "next/server";
  * free signup credit grant happens (see getOrCreateCustomer).
  */
 export async function POST(req: Request) {
+  // Captured before the proxy call (not read via Prisma's createdAt
+  // @default(now()) at insert time, which happens after awaiting it) — a
+  // synchronous backend (Rigetti mock, IQM mock) can fully finish before that
+  // insert ever runs, which made our own createdAt structurally always land
+  // after the proxy's own finishedAt, so every runtime calculation that pairs
+  // this row's createdAt with the proxy's finishedAt came out negative.
+  const submitStartedAt = new Date();
+
   const customer = await resolveCustomerFromRequest(req, { createIfMissing: true });
   if (!customer) {
     return NextResponse.json(
@@ -86,7 +94,29 @@ export async function POST(req: Request) {
     return null;
   });
 
-  if (!proxyRes || !proxyRes.ok) {
+  if (!proxyRes) {
+    return NextResponse.json(
+      { error: "Job submission service is currently unreachable. Try again later." },
+      { status: 502 },
+    );
+  }
+
+  if (!proxyRes.ok) {
+    // Rigetti's availability gating: qpu-proxy rejects a submission outright
+    // (503) when the device has no capacity, rather than queuing it. As of
+    // 2026-08-12 the body is a free-text `detail` string, e.g.
+    // 'no capacity available (next_available_at=2026-08-12T18:00:00Z)' — not
+    // a structured field. Parsed defensively; ask qpu-proxy to switch to
+    // {"status":"busy","next_available_at":"..."} instead of expanding this
+    // regex further if the wording changes.
+    if (proxyRes.status === 503) {
+      const errBody: Record<string, unknown> = await proxyRes.json().catch(() => ({}));
+      const detail = typeof errBody.detail === "string" ? errBody.detail : "";
+      const match = detail.match(/next_available_at=([^)]+)\)/);
+      if (match) {
+        return NextResponse.json({ error: "busy", nextAvailableAt: match[1] }, { status: 503 });
+      }
+    }
     return NextResponse.json(
       { error: "Job submission service is currently unreachable. Try again later." },
       { status: 502 },
@@ -111,6 +141,7 @@ export async function POST(req: Request) {
           shots: shots ?? 1,
           status: typeof data.status === "string" ? data.status : "PENDING",
           costCents,
+          createdAt: submitStartedAt,
         },
       }),
     );

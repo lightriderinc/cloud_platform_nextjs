@@ -22,11 +22,8 @@ export default function WelcomePage() {
                 </h2>
                 <p>
                   Run circuits on quantum processors and simulators from{" "}
-                  <span className="font-medium">IQM</span> and{" "}
-                  <span className="font-medium">Rigetti</span>{" "}
-                  <span className="text-gray-400 font-medium text-2xs">
-                    (Coming soon)
-                  </span>
+                  <span className="font-medium">Rigetti</span> and{" "}
+                  <span className="font-medium">IQM</span>{" "}
                   .
                 </p>
               </div>
@@ -67,7 +64,7 @@ export default function WelcomePage() {
                 description="View available QPUs and simulators."
               />
               <WelcomePageCard
-                href="https://docs.lightriderinc.com/sdk/getting-started.html"
+                href="https://docs.lightriderinc.com/platform/sdk/getting-started.html"
                 title="SDK documentation"
                 icon={FaFileCode}
                 external

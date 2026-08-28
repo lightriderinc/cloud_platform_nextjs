@@ -1,5 +1,6 @@
 "use client";
 
+import ReservationBackendModal from "@/components/reservations/ReservationBackendModal";
 import { useIbmBackends } from "@/hooks/useIbmBackends";
 import { useIqmBackends } from "@/hooks/useIqmBackends";
 import { useRigettiBackends } from "@/hooks/useRigettiBackends";
@@ -14,6 +15,9 @@ import {
   type BackendSortKey,
   type SortDirection,
 } from "@/lib/backends/sort";
+import {
+  isReservationCatalogId
+} from "@/lib/quantum/reservations";
 import type { Backend } from "@/types/backend";
 import { useEffect, useState } from "react";
 import { MdGridView, MdViewList } from "react-icons/md";
@@ -62,7 +66,7 @@ export default function BackendCatalog({
   const [selected, setSelected] = useState<Backend | null>(null);
   const [view, setView] = useState<View>("cards");
   const [sortKey, setSortKey] = useState<BackendSortKey>("qubits");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [filters, setFilters] =
     useState<BackendFilterState>(createEmptyFilters);
 
@@ -94,6 +98,10 @@ export default function BackendCatalog({
   const { data: ibmBackends = [], isLoading: ibmLoading } = useIbmBackends();
 
   const anyLoading = iqmLoading || rigettiLoading || ibmLoading;
+  // RESERVED_CEPHEUS_BACKEND_CARD is a synthetic, UI-only entry for the same
+  // physical device as the real "rigetti.qpu.Cepheus-1-108Q" card above —
+  // temporary, alongside it, until one of the two access models ships (see
+  // the reservation-vs-on-demand branch in the modal render below).
   const allBackends = [...iqmBackends, ...rigettiBackends, ...ibmBackends];
   const providerOptions: FilterOption[] = Array.from(
     new Set(allBackends.map((b) => b.provider)),
@@ -234,13 +242,19 @@ export default function BackendCatalog({
       {/* Render the freshest copy of the selection so the modal upgrades in
           place when a provider's heavy details (qubit map, fidelities) finish
           loading after the card was clicked. */}
-      {selected && (
-        <BackendModal
-          backend={allBackends.find((b) => b.id === selected.id) ?? selected}
-          onClose={() => setSelected(null)}
-          isAuthenticated={isAuthenticated}
-        />
-      )}
+      {selected &&
+        (isReservationCatalogId(selected.id) ? (
+          <ReservationBackendModal
+            backend={allBackends.find((b) => b.id === selected.id) ?? selected}
+            onClose={() => setSelected(null)}
+          />
+        ) : (
+          <BackendModal
+            backend={allBackends.find((b) => b.id === selected.id) ?? selected}
+            onClose={() => setSelected(null)}
+            isAuthenticated={isAuthenticated}
+          />
+        ))}
     </>
   );
 }

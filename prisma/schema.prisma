@@ -35,6 +35,7 @@ model Customer {
   usageEvents     ApiUsageEvent[]
   apiKey          ApiKey?
   quantumJobs     QuantumJobSubmission[]
+  reservations    Reservation[]
 }
 
 // Mirrors a Stripe Subscription (used by both User Pricing plans and API
@@ -116,6 +117,28 @@ model QuantumJobSubmission {
   finishedAt DateTime? // backfilled opportunistically from iqm-proxy's finishedAt whenever GET jobs/[id] is called — null until then, even for already-completed jobs nobody has reopened since this field was added
 }
 
+// Records a customer's paid, exclusive-access booking of a Rigetti QPU time
+// slot. Same reasoning as QuantumJobSubmission: this app always calls
+// qpu-proxy with one shared QUANTUM_PROXY_SERVICE_KEY, so qpu-proxy's own
+// "current user" scoping on GET /reservations can't tell our customers apart
+// from each other — this table is the actual source of truth for "my
+// reservations", and qpu-proxy is never queried directly for the list.
+model Reservation {
+  id               String   @id @default(cuid())
+  customerId       String
+  customer         Customer @relation(fields: [customerId], references: [id])
+  reservationId    String   @unique // qpu-proxy's reservation_id
+  qcsReservationId String   // Rigetti QCS's own reservation id — kept for support/debugging, not used for lookups
+  deviceInstance   String   // e.g. "Cepheus-1-108Q"
+  startTime        DateTime
+  endTime          DateTime
+  priceCents       Int      // Rigetti's raw cost, from the confirmed booking response (not the pre-booking quote)
+  markupMultiplier Float    // RESERVATION_MARKUP_MULTIPLIER snapshotted at booking time, so a later env change can't retroactively change what a past booking appears to have cost
+  chargedCredits   Int      // what was actually deducted = round(priceCents * markupMultiplier)
+  notes            String?
+  createdAt        DateTime @default(now())
+}
+
 // Captures submissions from the Enterprise & Government "Get Custom
 // Pricing" / "Contact Sales" form. No Stripe object backs this directly —
 // enterprise deals are closed via Stripe Invoicing/ACH or a marketplace
@@ -137,4 +160,86 @@ model ProcessedStripeEvent {
   id        String   @id // Stripe event id, e.g. evt_123
   type      String
   createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Legal acceptance tracking
+//
+// Records, per Logto user, every acceptance of a versioned legal document
+// (Privacy Policy / Terms of Use) — at registration and on every update.
+// Keyed on the Logto `sub` (logtoUserId), NOT on Customer.id, because legal
+// acceptance applies to every authenticated user, not only billing customers.
+// These tables live in the same Supabase Postgres as the billing models above.
+// ---------------------------------------------------------------------------
+
+enum LegalDocType {
+  PRIVACY
+  TERMS
+}
+
+enum LegalAcceptanceContext {
+  REGISTRATION // recorded at account creation (Logto User.Created webhook)
+  REPROMPT     // recorded when a user accepts an update via the in-app gate
+  BACKFILL     // recorded by the one-time seed for users predating this feature
+}
+
+enum LegalNotificationChannel {
+  EMAIL
+  IN_APP
+}
+
+// One row per published version of a legal document. "Effective" = highest
+// version whose effectiveAt <= now(); "announced" = a version whose effectiveAt
+// is still in the future (the pre-announcement window).
+model LegalDocument {
+  id          String       @id @default(cuid())
+  docType     LegalDocType
+  version     Int
+  publishedAt DateTime     @default(now())
+  effectiveAt DateTime
+  summary     String? // short "what changed", shown in banner/modal/email
+  contentUrl  String? // Supabase Storage path of the archived rendered text
+  contentHash String? // sha-256 of the archived text — proves what was accepted
+  createdAt   DateTime     @default(now())
+
+  acceptances   LegalAcceptance[]
+  notifications LegalNotification[]
+
+  @@unique([docType, version])
+  @@index([docType, effectiveAt])
+}
+
+// Append-only audit ledger. Never updated or deleted.
+model LegalAcceptance {
+  id              String                 @id @default(cuid())
+  logtoUserId     String // Logto `sub` claim — the anchor identity
+  docType         LegalDocType
+  documentId      String
+  document        LegalDocument          @relation(fields: [documentId], references: [id])
+  documentVersion Int
+  context         LegalAcceptanceContext
+  ip              String?
+  userAgent       String?
+  acceptedAt      DateTime               @default(now())
+  createdAt       DateTime               @default(now())
+
+  // Idempotency: one acceptance per (user, document, context), so a retried
+  // registration webhook or a double-clicked accept button can't duplicate.
+  @@unique([logtoUserId, documentId, context])
+  @@index([logtoUserId, docType])
+  @@index([documentId])
+}
+
+// Dedupe guard for outbound notices, so the daily cron never emails the same
+// user about the same document version twice.
+model LegalNotification {
+  id          String                   @id @default(cuid())
+  logtoUserId String
+  documentId  String
+  document    LegalDocument            @relation(fields: [documentId], references: [id])
+  channel     LegalNotificationChannel
+  sentAt      DateTime                 @default(now())
+
+  @@unique([logtoUserId, documentId, channel])
+  @@index([documentId])
 }
