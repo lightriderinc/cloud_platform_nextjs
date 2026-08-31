@@ -160,10 +160,7 @@ export default function ChipletVisualPicker({
               actual mapping (t=0 -> cyan -> low error/high fidelity; t=1 ->
               purple -> high error/low fidelity), same direction
               ProcessorMapCard's own quality legend uses on the topology
-              page. Live mode's "Candidate quality" is a categorical tier
-              (recommended/good/unsuitable), not a continuous gradient, so
-              it correctly keeps its plain label rather than gaining a
-              swatch that would misrepresent it. */}
+              page. */}
           {selectMode === "pool" && colorMode === "quality" && (
             <span className="flex items-center gap-1">
               Hardware quality (fRB)
@@ -180,8 +177,30 @@ export default function ChipletVisualPicker({
               <span>lower fidelity</span>
             </span>
           )}
+          {/* Live mode's candidate tier is categorical (recommended/good vs.
+              unsuitable), not a continuous scale, so this is discrete
+              swatches -- deliberately no gradient here, unlike the two
+              blocks above. Colors match STATE_CLASSES exactly (bg-green-500
+              / bg-amber-400), the same classes the cells themselves use for
+              these two tiers, so the swatch is never an approximation of
+              the real cell color. The "not scored" swatch below already
+              covers both "no candidate data" and any tier value besides
+              recommended/good/unsuitable (e.g. "available" per
+              CandidateTier's type) -- that tier currently isn't visually
+              distinguished from "not scored" at all, which is worth a
+              product decision on its own if that distinction matters. */}
           {selectMode === "live" && (
-            <span className="flex items-center gap-1">Candidate quality</span>
+            <span className="flex items-center gap-1">
+              Candidate quality
+              <span className="ml-1 flex items-center gap-1">
+                <span className="h-2 w-2 default-radius bg-green-500" />
+                Recommended
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="h-2 w-2 default-radius bg-amber-400" />
+                Unsuitable
+              </span>
+            </span>
           )}
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 default-radius border border-dashed border-purple-400 bg-purple-100" />

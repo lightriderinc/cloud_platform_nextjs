@@ -19,6 +19,11 @@ import WithdrawResultPanel from "./WithdrawResultPanel";
 type Mode = "pool" | "live";
 
 const BIT_COUNT_PRESETS = [16, 32, 64, 128, 256];
+// Distinct scale from BIT_COUNT_PRESETS on purpose -- these are shot counts
+// for a hardware run, not output bit-lengths, and span the field's actual
+// 1,000-1,000,000 range with round, recognizable choices rather than
+// reusing pool mode's much smaller preset numbers.
+const SAMPLE_COUNT_PRESETS = [10_000, 100_000, 1_000_000];
 
 async function apiJson<T>(url: string, init?: RequestInit): Promise<{ ok: boolean; body: T }> {
   const res = await fetch(url, init);
@@ -261,6 +266,7 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
 
           {mode === "pool" ? (
             <PresetSelector
+              key="pool-bit-count"
               label="Bits per chiplet"
               presets={BIT_COUNT_PRESETS}
               value={bitCount}
@@ -269,24 +275,16 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
               max={1_000_000}
             />
           ) : (
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium text-gray-700">
-                Samples
-                {samplesParam?.min != null && samplesParam?.max != null && (
-                  <span className="ml-1 font-normal text-gray-400">
-                    ({samplesParam.min.toLocaleString()}–{samplesParam.max.toLocaleString()})
-                  </span>
-                )}
-              </span>
-              <input
-                type="number"
-                min={samplesParam?.min}
-                max={samplesParam?.max}
-                className="default-radius w-full border border-gray-200 bg-white px-3 py-2 text-sm"
-                value={samples}
-                onChange={(e) => setSamples(Math.round(Number(e.target.value) || 0))}
-              />
-            </label>
+            <PresetSelector
+              key="live-samples"
+              label="Samples"
+              presets={SAMPLE_COUNT_PRESETS}
+              value={samples}
+              onChange={setSamples}
+              min={samplesParam?.min ?? 1_000}
+              max={samplesParam?.max ?? 1_000_000}
+              formatPreset={(n) => n.toLocaleString()}
+            />
           )}
 
           {mode === "pool" && (
