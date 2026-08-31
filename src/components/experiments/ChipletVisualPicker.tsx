@@ -177,10 +177,16 @@ export default function ChipletVisualPicker({
         )}
       </div>
 
-      <div
-        className="grid gap-3"
-        style={{ gridTemplateColumns: `repeat(${GRID_COLS}, 1fr)` }}
-      >
+      {/* Same mx-auto max-w-md cap as ProcessorMapCard's own grid wrapper —
+          without it, the grid's 1fr columns stretch to fill this page's much
+          wider content column, ballooning every qubit cell to ~165px square
+          instead of the topology page's compact size. Same gap-4/p-3 too,
+          for identical chiplet-box density between the two pages. */}
+      <div className="relative mx-auto max-w-md">
+        <div
+          className="grid gap-4 p-3"
+          style={{ gridTemplateColumns: `repeat(${GRID_COLS}, 1fr)` }}
+        >
         {CHIPLET_IDS.map((cid) => {
           const poolEntry = poolByChiplet[cid];
           const candidateEntry = candidates?.map[cid];
@@ -275,6 +281,7 @@ export default function ChipletVisualPicker({
             />
           );
         })}
+        </div>
       </div>
 
       <TopologyTooltip tooltip={tooltip} />
