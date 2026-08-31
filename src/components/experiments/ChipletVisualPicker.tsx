@@ -23,10 +23,6 @@ const CELLS_PER_CHIPLET = 9;
 
 type ColorMode = "pool" | "quality";
 
-const chipBase = "px-3 py-1.5 default-radius text-sm font-medium border transition-colors cursor-pointer";
-const chipOn = "border-[var(--brand-primary)] bg-red-50 text-[var(--brand-primary)]";
-const chipOff = "border-gray-100 text-gray-600 hover:border-gray-300 hover:bg-gray-50";
-
 function formatBits(n: number): string {
   return n.toLocaleString();
 }
@@ -72,6 +68,15 @@ export default function ChipletVisualPicker({
     () => Object.fromEntries((pools?.pools ?? []).map((p) => [p.chiplet_id, p])),
     [pools],
   );
+  // The crash: `candidates?.map[cid]` only guards `candidates` itself being
+  // null — if candidates is a non-null object but its `map` field is absent
+  // (POST /candidates is an unvalidated passthrough to rigetti-proxy; see
+  // CandidatesResponse in types.ts), `candidates.map[cid]` throws "Cannot
+  // read properties of undefined (reading 'C1')" on the first chiplet.
+  // Resolved once here, same defensive pattern as poolByChiplet above, so
+  // every render reads from a guaranteed-safe object regardless of mode,
+  // loading state, or upstream shape.
+  const candidateByChiplet = useMemo(() => candidates?.map ?? {}, [candidates]);
   const maxBits = useMemo(() => {
     const values = Object.values(poolByChiplet)
       .map((p) => p.bits_available)
@@ -129,16 +134,19 @@ export default function ChipletVisualPicker({
 
   return (
     <div>
+      {/* Secondary metadata, visually quieter than the grid itself (smaller
+          text, muted toggle) -- the chiplet grid is the main event here, this
+          is just the key to reading it. */}
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
+        <div className="flex flex-wrap items-center gap-3 text-2xs text-gray-400">
           {selectMode === "pool" && colorMode === "pool" && (
             <span className="flex items-center gap-1">
               Pool depth
               <span
                 style={{
                   display: "block",
-                  width: 44,
-                  height: 8,
+                  width: 36,
+                  height: 6,
                   borderRadius: 2,
                   background: "linear-gradient(90deg, #00E494, #27728B, #4E0082)",
                 }}
@@ -152,26 +160,31 @@ export default function ChipletVisualPicker({
             </span>
           )}
           <span className="flex items-center gap-1">
-            <span className="h-2.5 w-2.5 default-radius border border-dashed border-purple-400 bg-purple-100" />
+            <span className="h-2 w-2 default-radius border border-dashed border-purple-400 bg-purple-100" />
             {selectMode === "pool" ? "Not yet generated" : "Not scored"}
           </span>
         </div>
 
         {selectMode === "pool" && (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-1 text-2xs text-gray-400">
+            <span className="mr-0.5">Color by</span>
             <button
               type="button"
               onClick={() => setColorMode("pool")}
-              className={`${chipBase} ${colorMode === "pool" ? chipOn : chipOff}`}
+              className={`default-radius px-1.5 py-0.5 font-medium transition-colors cursor-pointer ${
+                colorMode === "pool" ? "bg-gray-200 text-gray-700" : "hover:text-gray-600"
+              }`}
             >
-              Color: Pool depth
+              Pool depth
             </button>
             <button
               type="button"
               onClick={() => setColorMode("quality")}
-              className={`${chipBase} ${colorMode === "quality" ? chipOn : chipOff}`}
+              className={`default-radius px-1.5 py-0.5 font-medium transition-colors cursor-pointer ${
+                colorMode === "quality" ? "bg-gray-200 text-gray-700" : "hover:text-gray-600"
+              }`}
             >
-              Color: Hardware quality
+              Hardware quality
             </button>
           </div>
         )}
@@ -189,7 +202,7 @@ export default function ChipletVisualPicker({
         >
         {CHIPLET_IDS.map((cid) => {
           const poolEntry = poolByChiplet[cid];
-          const candidateEntry = candidates?.map[cid];
+          const candidateEntry = candidateByChiplet[cid];
           const isSelected = selected.includes(cid);
 
           const selectable =

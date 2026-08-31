@@ -196,117 +196,134 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
     !submitting &&
     (mode === "pool" ? bitCount > 0 : samples > 0);
 
+  const selectionHint =
+    selectedChiplets.length === 0
+      ? `Select one or more chiplets to ${mode === "pool" ? "withdraw entropy from" : "measure live"}.`
+      : `${selectedChiplets.length} chiplet${selectedChiplets.length > 1 ? "s" : ""} selected.`;
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="max-w-xs">
-        <span className="mb-1 block text-sm font-medium text-gray-700">Mode</span>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => switchMode("pool")}
-            className={`default-radius cursor-pointer border-2 px-3 py-1.5 text-sm transition-colors ${
-              mode === "pool"
-                ? "border-[var(--brand-primary)] bg-red-50 text-[var(--brand-primary)]"
-                : "border-gray-100 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
-            }`}
-          >
-            From pool (instant)
-          </button>
-          <button
-            type="button"
-            onClick={() => switchMode("live")}
-            className={`default-radius cursor-pointer border-2 px-3 py-1.5 text-sm transition-colors ${
-              mode === "live"
-                ? "border-[var(--brand-primary)] bg-red-50 text-[var(--brand-primary)]"
-                : "border-gray-100 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
-            }`}
-          >
-            Live measurement (new run)
-          </button>
-        </div>
-        {mode === "pool" ? (
-          <p className="mt-2 text-xs text-gray-500">
-            Withdraws pre-generated bits from inventory — instant, no job submission.
-          </p>
-        ) : (
-          <p className="mt-2 text-xs text-gray-500">
-            Submits a new hardware run. Bits come from a fresh measurement, not inventory — the device may be
-            busy, in which case your run queues and completes automatically later.
-          </p>
-        )}
-      </div>
+      {/* Selection (left, primary) + configure/submit (right, sticky so the
+          action is never below the fold) -- stacks on narrow viewports. */}
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+        <div className="min-w-0 flex-1">
+          {/* Segmented control, not two equal-weight buttons -- pool is the
+              common case, live the exception, and a one-line hint replaces
+              what used to be a full paragraph per mode. */}
+          <div className="mb-4">
+            <div className="mb-1.5 inline-flex default-radius border border-gray-200 p-1">
+              <button
+                type="button"
+                onClick={() => switchMode("pool")}
+                className={`default-radius cursor-pointer px-3 py-1.5 text-sm font-medium transition-colors ${
+                  mode === "pool"
+                    ? "bg-[var(--brand-primary)] text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                From pool
+              </button>
+              <button
+                type="button"
+                onClick={() => switchMode("live")}
+                className={`default-radius cursor-pointer px-3 py-1.5 text-sm font-medium transition-colors ${
+                  mode === "live"
+                    ? "bg-[var(--brand-primary)] text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                Live measurement
+              </button>
+            </div>
+            <p className="text-xs text-gray-500">
+              {mode === "pool"
+                ? "Instant — withdraws pre-generated bits from inventory."
+                : "Submits a new hardware run; queues automatically if the device is busy."}
+            </p>
+          </div>
 
-      <div>
-        <h4 className="mb-2 text-sm font-semibold text-gray-700">Chiplets</h4>
-        <ChipletVisualPicker
-          selectMode={mode}
-          pools={pools}
-          candidates={candidates}
-          selected={selectedChiplets}
-          onToggle={toggleChiplet}
-          loading={mode === "pool" ? !pools : !candidates}
-        />
-      </div>
+          <p className="mb-3 text-sm text-gray-600">{selectionHint}</p>
 
-      <div className="grid max-w-md grid-cols-1 gap-4 sm:grid-cols-2">
-        {mode === "pool" ? (
-          <PresetSelector
-            label="Bits per chiplet"
-            presets={BIT_COUNT_PRESETS}
-            value={bitCount}
-            onChange={setBitCount}
-            min={1}
-            max={1_000_000}
+          <ChipletVisualPicker
+            selectMode={mode}
+            pools={pools}
+            candidates={candidates}
+            selected={selectedChiplets}
+            onToggle={toggleChiplet}
+            loading={mode === "pool" ? !pools : !candidates}
           />
-        ) : (
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium text-gray-700">
-              Samples
-              {samplesParam?.min != null && samplesParam?.max != null && (
-                <span className="ml-1 font-normal text-gray-400">
-                  ({samplesParam.min.toLocaleString()}–{samplesParam.max.toLocaleString()})
-                </span>
+        </div>
+
+        <div className="flex w-full flex-col gap-4 default-radius border border-gray-100 bg-gray-50 p-4 lg:sticky lg:top-6 lg:w-[320px] lg:shrink-0">
+          <h3 className="text-sm font-semibold text-gray-700">
+            {mode === "pool" ? "Configure withdrawal" : "Configure run"}
+          </h3>
+
+          {mode === "pool" ? (
+            <PresetSelector
+              label="Bits per chiplet"
+              presets={BIT_COUNT_PRESETS}
+              value={bitCount}
+              onChange={setBitCount}
+              min={1}
+              max={1_000_000}
+            />
+          ) : (
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium text-gray-700">
+                Samples
+                {samplesParam?.min != null && samplesParam?.max != null && (
+                  <span className="ml-1 font-normal text-gray-400">
+                    ({samplesParam.min.toLocaleString()}–{samplesParam.max.toLocaleString()})
+                  </span>
+                )}
+              </span>
+              <input
+                type="number"
+                min={samplesParam?.min}
+                max={samplesParam?.max}
+                className="default-radius w-full border border-gray-200 bg-white px-3 py-2 text-sm"
+                value={samples}
+                onChange={(e) => setSamples(Math.round(Number(e.target.value) || 0))}
+              />
+            </label>
+          )}
+
+          {mode === "pool" && (
+            <label
+              className={`flex items-center gap-2 text-sm ${
+                selectedChiplets.length < 2 ? "text-gray-300" : "text-gray-700"
+              }`}
+              title="Combines the selected chiplets' bits into a single XOR'd stream instead of one stream per chiplet."
+            >
+              <input
+                type="checkbox"
+                checked={combined}
+                disabled={selectedChiplets.length < 2}
+                onChange={(e) => setCombined(e.target.checked)}
+              />
+              Combine into one XOR&apos;d stream
+              {selectedChiplets.length < 2 && (
+                <span className="text-xs text-gray-300">(select 2+)</span>
               )}
-            </span>
-            <input
-              type="number"
-              min={samplesParam?.min}
-              max={samplesParam?.max}
-              className="default-radius w-full border border-gray-200 px-3 py-2 text-sm"
-              value={samples}
-              onChange={(e) => setSamples(Math.round(Number(e.target.value) || 0))}
-            />
-          </label>
-        )}
+            </label>
+          )}
 
-        {mode === "pool" && (
-          <label className={`flex items-center gap-2 self-end pb-2 text-sm ${selectedChiplets.length < 2 ? "text-gray-300" : "text-gray-700"}`}>
-            <input
-              type="checkbox"
-              checked={combined}
-              disabled={selectedChiplets.length < 2}
-              onChange={(e) => setCombined(e.target.checked)}
-            />
-            Combine into one XOR&apos;d stream
-            {selectedChiplets.length < 2 && (
-              <span className="text-xs text-gray-300">(select 2+ chiplets)</span>
-            )}
-          </label>
-        )}
+          <button
+            type="button"
+            disabled={!canSubmit}
+            onClick={mode === "pool" ? handleWithdraw : handleRunLive}
+            className="default-radius inline-flex cursor-pointer items-center justify-center border border-[var(--brand-primary)] bg-[var(--brand-primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--brand-primary-light)] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {submitting ? "Submitting…" : mode === "pool" ? "Withdraw" : "Run measurement"}
+          </button>
+          {submitError && <p className="text-sm text-red-600">{submitError}</p>}
+        </div>
       </div>
 
-      <div>
-        <button
-          type="button"
-          disabled={!canSubmit}
-          onClick={mode === "pool" ? handleWithdraw : handleRunLive}
-          className="default-radius inline-flex cursor-pointer items-center justify-center border border-[var(--brand-primary)] bg-[var(--brand-primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--brand-primary-light)] disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {submitting ? "Submitting…" : mode === "pool" ? "Withdraw" : "Run measurement"}
-        </button>
-        {submitError && <p className="mt-2 text-sm text-red-600">{submitError}</p>}
-      </div>
-
+      {/* Results -- full width, directly below the selection/configure row
+          rather than after a long scroll, now that the row above it is
+          compact enough that this is still high on the page. */}
       {mode === "pool" && withdrawResult && (
         <WithdrawResultPanel
           result={withdrawResult}
@@ -328,7 +345,9 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
 
       {mode === "live" && recentRuns.length > 0 && (
         <div>
-          <h4 className="mb-2 text-sm font-semibold text-gray-700">Recent live runs</h4>
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+            Recent live runs
+          </h4>
           <div className="flex flex-col gap-2">
             {recentRuns.slice(0, 5).map((r) => (
               <div key={r.runId} className="default-radius border border-gray-100 p-3 text-sm">

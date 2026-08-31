@@ -57,8 +57,12 @@ export interface CandidatesResponse {
   calibration_id?: string;
   snapshot_age_seconds?: number;
   topology_provenance?: string;
-  map: Record<string, CandidateEntry>;
-  ranked: string[];
+  // Optional, not guaranteed: this route is an unvalidated passthrough to
+  // rigetti-proxy (see proxyBackendExperimentsPost), so the frontend can't
+  // assume `map` is always present on a 200 response. A crash was traced to
+  // exactly this assumption in ChipletVisualPicker — see candidateByChiplet.
+  map?: Record<string, CandidateEntry>;
+  ranked?: string[];
 }
 
 // --- POST .../placement ------------------------------------------------------
