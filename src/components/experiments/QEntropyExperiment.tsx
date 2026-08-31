@@ -318,31 +318,39 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
             {submitting ? "Submitting…" : mode === "pool" ? "Withdraw" : "Run measurement"}
           </button>
           {submitError && <p className="text-sm text-red-600">{submitError}</p>}
+
+          {/* Same panel, right after the button that produced it -- not
+              appended after the whole grid. The grid can run much taller
+              than this panel, so a result rendered outside/below the row
+              sat below the fold of whatever the user had scrolled to,
+              even though the button that produced it is right here. Pool
+              and live share this exact spot (see the mode-independent
+              wrapper div above) so switching modes doesn't move where a
+              result appears. */}
+          {mode === "pool" && withdrawResult && (
+            <WithdrawResultPanel
+              result={withdrawResult}
+              poolByChiplet={resultPoolSnapshot}
+              onSelectAlternative={(cid) => {
+                setSelectedChiplets([cid]);
+                setWithdrawResult(null);
+              }}
+            />
+          )}
+
+          {mode === "live" && liveRuns.length > 0 && (
+            <div className="flex flex-col gap-3">
+              {liveRuns.map((r) => (
+                <LiveRunCard key={r.runId} runId={r.runId} chipletId={r.chipletId} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Results -- full width, directly below the selection/configure row
-          rather than after a long scroll, now that the row above it is
-          compact enough that this is still high on the page. */}
-      {mode === "pool" && withdrawResult && (
-        <WithdrawResultPanel
-          result={withdrawResult}
-          poolByChiplet={resultPoolSnapshot}
-          onSelectAlternative={(cid) => {
-            setSelectedChiplets([cid]);
-            setWithdrawResult(null);
-          }}
-        />
-      )}
-
-      {mode === "live" && liveRuns.length > 0 && (
-        <div className="flex flex-col gap-3">
-          {liveRuns.map((r) => (
-            <LiveRunCard key={r.runId} runId={r.runId} chipletId={r.chipletId} />
-          ))}
-        </div>
-      )}
-
+      {/* Recent runs is a persistent history list, not the result of the
+          click just made -- stays full width below everything, unlike the
+          just-submitted result above. Pool mode has no equivalent list. */}
       {mode === "live" && recentRuns.length > 0 && (
         <div>
           <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">

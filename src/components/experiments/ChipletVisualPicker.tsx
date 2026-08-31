@@ -154,10 +154,34 @@ export default function ChipletVisualPicker({
               <span>fewer bits</span>
             </span>
           )}
-          {((selectMode === "pool" && colorMode === "quality") || selectMode === "live") && (
+          {/* Same gradient-swatch + endpoint-labels treatment as pool depth
+              above -- was missing entirely for this mode before. Order is
+              high-to-low fidelity left-to-right, matching errorRateRgb's
+              actual mapping (t=0 -> cyan -> low error/high fidelity; t=1 ->
+              purple -> high error/low fidelity), same direction
+              ProcessorMapCard's own quality legend uses on the topology
+              page. Live mode's "Candidate quality" is a categorical tier
+              (recommended/good/unsuitable), not a continuous gradient, so
+              it correctly keeps its plain label rather than gaining a
+              swatch that would misrepresent it. */}
+          {selectMode === "pool" && colorMode === "quality" && (
             <span className="flex items-center gap-1">
-              {selectMode === "live" ? "Candidate quality" : "Hardware quality (fRB)"}
+              Hardware quality (fRB)
+              <span>higher fidelity</span>
+              <span
+                style={{
+                  display: "block",
+                  width: 36,
+                  height: 6,
+                  borderRadius: 2,
+                  background: "linear-gradient(90deg, #00E494, #27728B, #4E0082)",
+                }}
+              />
+              <span>lower fidelity</span>
             </span>
+          )}
+          {selectMode === "live" && (
+            <span className="flex items-center gap-1">Candidate quality</span>
           )}
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 default-radius border border-dashed border-purple-400 bg-purple-100" />

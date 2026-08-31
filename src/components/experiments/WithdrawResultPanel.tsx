@@ -60,7 +60,11 @@ export default function WithdrawResultPanel({
     <div className="flex flex-col gap-4">
       <h2 className="block text-md font-semibold text-gray-400">Withdrawal result</h2>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      {/* Single column, not sm:grid-cols-2 -- this now renders inside the
+          narrow configure/submit panel (see QEntropyExperiment), not full
+          page width, so a viewport-width breakpoint would force a cramped
+          2-up layout regardless of the panel's actual space. */}
+      <div className="grid grid-cols-1 gap-3">
         {result.chiplets.map((stream) => (
           <ChipletStreamCard key={stream.withdrawal_id ?? stream.chiplet_id} stream={stream} poolSnapshot={poolByChiplet[stream.chiplet_id]} />
         ))}
