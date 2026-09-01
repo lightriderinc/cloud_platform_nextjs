@@ -1,6 +1,8 @@
 "use client";
 
+import { formatCreditsWithUsd } from "@/components/billing/CreditsSummary";
 import PresetSelector from "@/components/ui/PresetSelector";
+import { entropyCostCents, entropyPricePerBitLabel } from "@/lib/entropy/pricing";
 import { useEffect, useMemo, useState } from "react";
 import ChipletVisualPicker from "./ChipletVisualPicker";
 import LiveRunCard from "./LiveRunCard";
@@ -98,6 +100,15 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
     [pools],
   );
 
+  // Pre-confirm estimate only -- bits_per_chiplet x chiplets selected. The
+  // actual charge (result.cost_cents) is computed server-side from the bits
+  // qpu-proxy confirms were actually withdrawn, which this can't see yet.
+  const withdrawTotalBits = bitCount * selectedChiplets.length;
+  const withdrawCostCents = useMemo(
+    () => entropyCostCents(withdrawTotalBits),
+    [withdrawTotalBits],
+  );
+
   function switchMode(next: Mode) {
     setMode(next);
     setSelectedChiplets([]);
@@ -117,7 +128,7 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
     setSubmitting(true);
     setSubmitError(null);
     setWithdrawResult(null);
-    const { ok, body } = await apiJson<WithdrawResponse & { error?: string; detail?: string }>(
+    const { ok, body } = await apiJson<WithdrawResponse & { error?: string; detail?: string; message?: string }>(
       "/api/lr/entropy/withdraw",
       {
         method: "POST",
@@ -127,7 +138,10 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
     );
     setSubmitting(false);
     if (!ok) {
-      setSubmitError(body.error ?? body.detail ?? "Could not withdraw entropy.");
+      // .message carries the human-readable breakdown for billing errors
+      // (e.g. insufficient_credits' "costs ~N credits ($X), but your
+      // account has...") -- .error alone would just be the bare error code.
+      setSubmitError(body.message ?? body.error ?? body.detail ?? "Could not withdraw entropy.");
       return;
     }
     setResultPoolSnapshot(poolByChiplet);
@@ -305,6 +319,18 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
                 <span className="text-xs text-gray-300">(select 2+)</span>
               )}
             </label>
+          )}
+
+          {mode === "pool" && selectedChiplets.length > 0 && (
+            <div className="flex flex-col gap-0.5 text-sm text-gray-600">
+              <p>
+                {combined
+                  ? `Combined: ${withdrawTotalBits.toLocaleString()} bits total`
+                  : `${selectedChiplets.length} chiplet${selectedChiplets.length > 1 ? "s" : ""} selected x ${bitCount.toLocaleString()} bits each = ${withdrawTotalBits.toLocaleString()} bits`}
+              </p>
+              <p>Price: {entropyPricePerBitLabel()} / bit</p>
+              <p>Total: {formatCreditsWithUsd(withdrawCostCents)}</p>
+            </div>
           )}
 
           <button

@@ -1,5 +1,7 @@
 "use client";
 
+import { formatCreditsWithUsd } from "@/components/billing/CreditsSummary";
+import { entropyPricePerBitLabel } from "@/lib/entropy/pricing";
 import ChipletStreamCard from "./ChipletStreamCard";
 import { DetailRow } from "./DetailRow";
 import type { EntropyPoolEntry, WithdrawResponse } from "./types";
@@ -56,9 +58,27 @@ export default function WithdrawResultPanel({
   const notableCorrelation =
     result.correlation != null && result.correlation.max_abs_correlation > NOTABLE_CORRELATION_THRESHOLD;
 
+  // Actual confirmed bits, not the pre-withdrawal request -- chiplets[].bits
+  // is per-chiplet uniform (one bits_per_chiplet value applies to the whole
+  // request), so the first entry's count doubles as "bits each".
+  const totalBits = result.chiplets.reduce((sum, c) => sum + c.bits, 0);
+  const bitsEach = result.chiplets[0]?.bits ?? 0;
+
   return (
     <div className="flex flex-col gap-4">
       <h2 className="block text-md font-semibold text-gray-400">Withdrawal result</h2>
+
+      {result.cost_cents != null && (
+        <div className="flex flex-col gap-0.5 text-sm text-gray-600">
+          <p>
+            {result.combined
+              ? `Combined: ${totalBits.toLocaleString()} bits total`
+              : `${result.chiplets.length} chiplet${result.chiplets.length > 1 ? "s" : ""} withdrawn x ${bitsEach.toLocaleString()} bits each = ${totalBits.toLocaleString()} bits`}
+          </p>
+          <p>Price: {entropyPricePerBitLabel()} / bit</p>
+          <p>Total: {formatCreditsWithUsd(result.cost_cents)}</p>
+        </div>
+      )}
 
       {/* Single column, not sm:grid-cols-2 -- this now renders inside the
           narrow configure/submit panel (see QEntropyExperiment), not full
