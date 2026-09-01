@@ -80,15 +80,22 @@ export default function WithdrawResultPanel({
         </div>
       )}
 
-      {/* Single column, not sm:grid-cols-2 -- this now renders inside the
-          narrow configure/submit panel (see QEntropyExperiment), not full
-          page width, so a viewport-width breakpoint would force a cramped
-          2-up layout regardless of the panel's actual space. */}
-      <div className="grid grid-cols-1 gap-3">
-        {result.chiplets.map((stream) => (
-          <ChipletStreamCard key={stream.withdrawal_id ?? stream.chiplet_id} stream={stream} poolSnapshot={poolByChiplet[stream.chiplet_id]} />
-        ))}
-      </div>
+      {/* Combined mode withdraws from multiple chiplets to produce ONE
+          XOR'd stream -- the per-chiplet cards below are that combined
+          stream's inputs, not separate results a user asked for, so they'd
+          just be confusing noise next to the one card that actually
+          answers "what did I get". Shown only when combined is false. */}
+      {!result.combined && (
+        // Single column, not sm:grid-cols-2 -- this now renders inside the
+        // narrow configure/submit panel (see QEntropyExperiment), not full
+        // page width, so a viewport-width breakpoint would force a cramped
+        // 2-up layout regardless of the panel's actual space.
+        <div className="grid grid-cols-1 gap-3">
+          {result.chiplets.map((stream) => (
+            <ChipletStreamCard key={stream.withdrawal_id ?? stream.chiplet_id} stream={stream} poolSnapshot={poolByChiplet[stream.chiplet_id]} />
+          ))}
+        </div>
+      )}
 
       {result.combined_stream && (
         <div>
