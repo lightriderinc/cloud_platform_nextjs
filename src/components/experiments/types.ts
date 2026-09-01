@@ -205,4 +205,8 @@ export interface WithdrawResponse {
   insufficient: InsufficientBits | null;
   combined_stream?: ChipletStream;
   correlation?: CrossChipletCorrelation;
+  /** Added by our own withdraw route (route.ts), not qpu-proxy -- what was
+   * actually charged for this withdrawal, from the confirmed bits withdrawn.
+   * Absent when result.insufficient is set, since nothing was charged. */
+  cost_cents?: number;
 }
