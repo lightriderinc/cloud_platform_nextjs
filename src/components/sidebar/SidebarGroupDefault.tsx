@@ -1,5 +1,5 @@
 import { IoDocumentTextSharp } from "react-icons/io5";
-import { MdApps, MdBarChart, MdDashboard, MdScience } from "react-icons/md";
+import { MdApps, MdBarChart, MdDashboard } from "react-icons/md";
 import { RiCpuFill } from "react-icons/ri";
 
 import SidebarNavGroup from "./SidebarNavGroup";
@@ -29,13 +29,13 @@ export default function SidebarGroupDefault({
           onNavigate={onNavigate}
           tourId="sidebar-jobs"
         />
-        <SidebarNavItem
+        {/* <SidebarNavItem
           name="Experiments"
           href="/experiments"
           icon={MdScience}
           onNavigate={onNavigate}
           tourId="sidebar-experiments"
-        />
+        /> */}
       </SidebarNavGroup>
 
       {/* <SidebarNavGroup label="Entropy">
@@ -70,13 +70,6 @@ export default function SidebarGroupDefault({
           onNavigate={onNavigate}
           tourId="sidebar-backends"
         />
-        {/* <SidebarNavItem
-          name="Topology"
-          href="/backends/topology"
-          icon={MdHub}
-          onNavigate={onNavigate}
-          tourId="sidebar-topology"
-        /> */}
       </SidebarNavGroup>
 
       <SidebarNavGroup label="Resources">

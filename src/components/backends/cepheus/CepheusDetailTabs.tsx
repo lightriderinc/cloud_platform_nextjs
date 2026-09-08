@@ -8,18 +8,25 @@ import CepheusConnectionTab from "./CepheusConnectionTab";
 import CepheusConnectionTabSkeleton from "./CepheusConnectionTabSkeleton";
 import CepheusDetailsPanel from "./CepheusDetailsPanel";
 import CepheusDetailsPanelSkeleton from "./CepheusDetailsPanelSkeleton";
+import CepheusExperimentsTab from "./CepheusExperimentsTab";
 import CepheusReservationTab from "./CepheusReservationTab";
 import CepheusReservationTabSkeleton from "./CepheusReservationTabSkeleton";
 import CepheusTopologyTab from "./CepheusTopologyTab";
 
 const CEPHEUS_BACKEND_ID = "rigetti.qpu.Cepheus-1-108Q";
 
-type Tab = "details" | "topology" | "connection" | "reservation";
+type Tab =
+  | "details"
+  | "topology"
+  | "connection"
+  | "experiments"
+  | "reservation";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "details", label: "Details" },
   { id: "topology", label: "Topology & Calibration" },
   { id: "connection", label: "Connection" },
+  { id: "experiments", label: "Experiments" },
   { id: "reservation", label: "Reservation" },
 ];
 
@@ -102,6 +109,9 @@ export default function CepheusDetailTabs({
               backend={backend}
               isAuthenticated={isAuthenticated}
             />
+          )}
+          {tab === "experiments" && (
+            <CepheusExperimentsTab isAuthenticated={isAuthenticated} />
           )}
           {tab === "reservation" && (
             <CepheusReservationTab isAuthenticated={isAuthenticated} />
