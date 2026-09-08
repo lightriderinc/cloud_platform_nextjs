@@ -15,7 +15,7 @@ interface PresetSelectorProps {
 }
 
 const chipBase =
-  "px-3 py-1.5 default-radius text-sm font-medium border transition-colors cursor-pointer";
+  "px-3 py-1.5 bg-white default-radius text-sm font-medium border transition-colors cursor-pointer";
 const chipOn =
   "border-[var(--brand-primary)] bg-red-50 text-[var(--brand-primary)]";
 const chipOff =
