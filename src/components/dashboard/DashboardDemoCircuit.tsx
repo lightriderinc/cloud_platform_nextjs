@@ -1,8 +1,6 @@
 "use client";
 
-import LRButton from "@/components/ui/LRButton";
 import { useState } from "react";
-import { MdArrowForward } from "react-icons/md";
 import { PiCircuitryFill } from "react-icons/pi";
 import DemoCircuitModal from "./demo/DemoCircuitModal";
 
@@ -11,36 +9,21 @@ export default function DashboardDemoCircuit() {
 
   return (
     <>
-      <div className="flex flex-col w-full gap-10 min-w-50 bg-gray-50 p-4 default-radius border border-gray-50">
-        <div className="flex flex-row gap-4">
-          <div>
-            <PiCircuitryFill className="text-2xl text-gray-400" />
-          </div>
-          <div className="flex flex-col gap-0">
-            <h2 className="text-l font-bold">Submit sample circuits</h2>
-            <p className="text-sm text-gray-600">
+      <button onClick={() => setShowModal(true)} className="flex w-64 cursor-pointer">
+        <div className="flex flex-col h-full w-full bg-gray-100 p-5 border border-gray-100 default-radius card-hover-primary gap-3">
+          <PiCircuitryFill className="text-5xl text-gray-200" />
+          <h3 className="flex items-center gap-1 text-md font-medium">
+            Submit sample circuits
+          </h3>
+          <div className="flex text-left">
+            <p className="text-sm text-gray-500">
               Submit a sample circuit to IQM Garnet simulator.
             </p>
           </div>
         </div>
+      </button>
 
-        <div className="flex justify-end">
-          <LRButton
-            type="button"
-            onClick={() => setShowModal(true)}
-            variant="primary"
-            icon={<MdArrowForward className="text-lg" />}
-            iconPosition="right"
-            className="min-w-[110px]"
-          >
-            Try it out
-          </LRButton>
-        </div>
-      </div>
-
-      {showModal && (
-        <DemoCircuitModal onClose={() => setShowModal(false)} />
-      )}
+      {showModal && <DemoCircuitModal onClose={() => setShowModal(false)} />}
     </>
   );
 }
