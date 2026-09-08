@@ -91,7 +91,7 @@ export default function ExperimentsPageClient({ isAuthenticated }: { isAuthentic
       </label>
 
       {selectedExp && (
-        <div className="default-radius border-2 border-gray-50 bg-white p-6">
+        <div className="default-radius border-2 border-gray-50 bg-white p-4">
           {EXPERIMENT_COMPONENTS[selectedExp.id]?.(selectedExp) ?? (
             <p className="text-sm text-gray-500">
               {selectedExp.label} doesn&apos;t have a dedicated UI on this page yet.
