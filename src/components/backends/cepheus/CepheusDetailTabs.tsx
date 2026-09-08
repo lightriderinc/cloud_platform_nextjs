@@ -3,7 +3,7 @@
 import TopologyExplorerSkeleton from "@/components/topology/TopologyExplorerSkeleton";
 import { useRigettiBackends } from "@/hooks/useRigettiBackends";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import CepheusConnectionTab from "./CepheusConnectionTab";
 import CepheusConnectionTabSkeleton from "./CepheusConnectionTabSkeleton";
 import CepheusDetailsPanel from "./CepheusDetailsPanel";
@@ -58,6 +58,29 @@ export default function CepheusDetailTabs({
   const { data: rigettiBackends = [], isLoading } = useRigettiBackends();
   const backend = rigettiBackends.find((b) => b.id === CEPHEUS_BACKEND_ID);
 
+  const tabListRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateScrollFades = useCallback(() => {
+    const el = tabListRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 0);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  }, []);
+
+  useEffect(() => {
+    const el = tabListRef.current;
+    if (!el) return;
+
+    updateScrollFades();
+
+    const resizeObserver = new ResizeObserver(updateScrollFades);
+    resizeObserver.observe(el);
+
+    return () => resizeObserver.disconnect();
+  }, [updateScrollFades]);
+
   const handleTabChange = (nextTab: Tab) => {
     setTab(nextTab);
     const params = new URLSearchParams(searchParams.toString());
@@ -67,13 +90,29 @@ export default function CepheusDetailTabs({
 
   return (
     <div>
-      <div className="mb-6 flex gap-1 border-b border-gray-100">
+      <div
+        ref={tabListRef}
+        onScroll={updateScrollFades}
+        className="mb-6 flex gap-1 overflow-x-auto border-b border-gray-100 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={{
+          maskImage: `linear-gradient(to right, ${
+            canScrollLeft ? "transparent, black 24px" : "black"
+          }, ${
+            canScrollRight ? "black calc(100% - 24px), transparent" : "black"
+          })`,
+          WebkitMaskImage: `linear-gradient(to right, ${
+            canScrollLeft ? "transparent, black 24px" : "black"
+          }, ${
+            canScrollRight ? "black calc(100% - 24px), transparent" : "black"
+          })`,
+        }}
+      >
         {TABS.map((t) => (
           <button
             key={t.id}
             type="button"
             onClick={() => handleTabChange(t.id)}
-            className={`px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
+            className={`shrink-0 px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
               tab === t.id
                 ? "border-b-2 border-[var(--brand-primary)] text-[var(--brand-primary)]"
                 : "text-gray-500 hover:text-gray-700"
