@@ -215,7 +215,7 @@ export default function ChipletVisualPicker({
               type="button"
               onClick={() => setColorMode("pool")}
               className={`default-radius px-1.5 py-0.5 font-medium transition-colors cursor-pointer ${
-                colorMode === "pool" ? "bg-gray-200 text-gray-700" : "hover:text-gray-600"
+                colorMode === "pool" ? "bg-gray-100 text-gray-700" : "hover:text-gray-600"
               }`}
             >
               Pool depth
@@ -224,7 +224,7 @@ export default function ChipletVisualPicker({
               type="button"
               onClick={() => setColorMode("quality")}
               className={`default-radius px-1.5 py-0.5 font-medium transition-colors cursor-pointer ${
-                colorMode === "quality" ? "bg-gray-200 text-gray-700" : "hover:text-gray-600"
+                colorMode === "quality" ? "bg-gray-100 text-gray-700" : "hover:text-gray-600"
               }`}
             >
               Hardware quality
