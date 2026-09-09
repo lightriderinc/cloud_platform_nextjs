@@ -1,4 +1,5 @@
 import { logtoConfig } from "@/app/logto";
+import { isSessionRevoked } from "@/lib/logto/backchannel-logout";
 import { getMyProfile } from "@/lib/logto-account";
 import { getAccessToken, getLogtoContext, type LogtoContext } from "@logto/next/server-actions";
 import { cache } from "react";
@@ -13,10 +14,20 @@ import { cache } from "react";
  *
  * Falls back to signed-out on failure rather than throwing, so a Logto
  * hiccup degrades to a login prompt instead of crashing the whole layout.
+ *
+ * Also rejects a session whose `sid` was revoked via back-channel logout
+ * (see @/lib/logto/backchannel-logout): signing out of another app ends the
+ * shared Logto session but never touches this app's own already-issued
+ * tokens, so without this check a stale session here would otherwise keep
+ * reading as authenticated until its token's own expiry.
  */
 export const getSession = cache(async (): Promise<LogtoContext> => {
   try {
-    return await getLogtoContext(logtoConfig, { fetchUserInfo: true });
+    const context = await getLogtoContext(logtoConfig, { fetchUserInfo: true });
+    if (context.isAuthenticated && (await isSessionRevoked(context.claims?.sid as string | undefined))) {
+      return { isAuthenticated: false };
+    }
+    return context;
   } catch {
     return { isAuthenticated: false };
   }
@@ -25,7 +36,8 @@ export const getSession = cache(async (): Promise<LogtoContext> => {
 /**
  * Resolves the current Logto session server-side. Throws if unauthenticated
  * so route handlers can fail fast with a 401 rather than silently acting on
- * behalf of no one.
+ * behalf of no one. Also throws for a `sid` revoked via back-channel logout
+ * (see getSession() above) — same reasoning applies to routes as to pages.
  *
  * Deliberately does not go through `getSession()` above: this never requests
  * `fetchUserInfo`, so it never triggers a token refresh and doesn't need the
@@ -35,6 +47,9 @@ export const getSession = cache(async (): Promise<LogtoContext> => {
 export async function requireLogtoUser() {
   const { isAuthenticated, claims } = await getLogtoContext(logtoConfig);
   if (!isAuthenticated || !claims?.sub) {
+    throw new Error("UNAUTHENTICATED");
+  }
+  if (await isSessionRevoked(claims.sid as string | undefined)) {
     throw new Error("UNAUTHENTICATED");
   }
   return { sub: claims.sub, email: claims.email as string | undefined };
