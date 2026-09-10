@@ -95,7 +95,7 @@ export default async function Home() {
               Getting started
             </h2>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-row gap-4">
             <DashboardDemoCircuit />
             <DashboardDemoEntropy />
           </div>
