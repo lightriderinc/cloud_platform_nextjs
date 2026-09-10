@@ -28,7 +28,11 @@ export const getSession = cache(async (): Promise<LogtoContext> => {
       return { isAuthenticated: false };
     }
     return context;
-  } catch {
+  } catch (err) {
+    // Logged, not swallowed silently: this fallback presents as "signed out"
+    // in the UI with no other symptom, so an unlogged failure here is
+    // effectively invisible and very expensive to diagnose.
+    console.error("[auth] session lookup failed; treating as signed out:", err);
     return { isAuthenticated: false };
   }
 });

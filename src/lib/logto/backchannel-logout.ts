@@ -60,9 +60,28 @@ export async function processBackchannelLogoutToken(logoutToken: string): Promis
   ]);
 }
 
-/** Whether `sid` (an ID token's `sid` claim) was revoked via back-channel logout. */
+/**
+ * Whether `sid` (an ID token's `sid` claim) was revoked via back-channel logout.
+ *
+ * Fails open: if the revocation table can't be read (unmigrated database,
+ * connection trouble), this reports "not revoked" and logs loudly rather than
+ * throwing. Failing closed would be far worse — the caller in
+ * @/lib/auth/session treats any thrown error as signed-out, so a single
+ * database hiccup would silently sign out every user on every page, which is
+ * exactly what happened when this table was missing on a preview deployment.
+ * The cost of failing open is bounded: a session revoked elsewhere stays live
+ * here until the database recovers.
+ */
 export async function isSessionRevoked(sid: string | undefined): Promise<boolean> {
   if (!sid) return false;
-  const revoked = await db.revokedLogtoSession.findUnique({ where: { sid } });
-  return Boolean(revoked);
+  try {
+    const revoked = await db.revokedLogtoSession.findUnique({ where: { sid } });
+    return Boolean(revoked);
+  } catch (err) {
+    console.error(
+      "[logto-backchannel-logout] revocation lookup failed; treating session as live:",
+      err,
+    );
+    return false;
+  }
 }
