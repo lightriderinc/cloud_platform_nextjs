@@ -13,11 +13,7 @@ export default function JobModeTag({ backend }: { backend?: string }) {
   if (!mode) return null;
 
   return (
-    <span
-      className={`rounded px-2.5 py-0.5 text-xs font-medium text-white ${
-        mode === "Mock run" ? "bg-zinc-500" : "bg-sky-500"
-      }`}
-    >
+    <span className="rounded bg-zinc-600 px-2.5 py-0.5 text-xs font-medium text-white">
       {mode}
     </span>
   );

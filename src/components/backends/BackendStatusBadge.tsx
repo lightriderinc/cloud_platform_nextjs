@@ -5,7 +5,7 @@ const STATUS_STYLES: Record<
   BackendStatus,
   { label: string; dot: string; text: string }
 > = {
-  online: { label: "Online", dot: "bg-green-500", text: "text-green-700" },
+  online: { label: "Online", dot: "bg-emerald-500", text: "text-emerald-700" },
   paused: { label: "Paused", dot: "bg-yellow-500", text: "text-yellow-700" },
   offline: { label: "Offline", dot: "bg-gray-400", text: "text-gray-500" },
   maintenance: {
