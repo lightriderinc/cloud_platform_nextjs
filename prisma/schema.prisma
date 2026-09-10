@@ -243,3 +243,25 @@ model LegalNotification {
   @@unique([logtoUserId, documentId, channel])
   @@index([documentId])
 }
+
+// ---------------------------------------------------------------------------
+// Logto back-channel logout
+//
+// Logto's OIDC session (the shared SSO cookie at auth.lightriderinc.com) is
+// independent of any single app's already-issued tokens: signing out of PQC
+// only revokes PQC's own refresh token, so this app's session stays "valid"
+// by its own reckoning even though the user signed out elsewhere. Logto's
+// back-channel logout webhook (POST to /api/logto/logout-webhook) is what
+// notifies us in real time that a `sid` has ended (POST to
+// /api/webhooks/logto) — we record it here so every subsequent
+// getSession()/requireLogtoUser() call can reject a cookie carrying a
+// revoked sid, without needing a live round-trip to Logto on every request.
+// ---------------------------------------------------------------------------
+
+model RevokedLogtoSession {
+  sid       String   @id // the OIDC `sid` claim from the logout token
+  revokedAt DateTime @default(now())
+  expiresAt DateTime // retention horizon for pruning; independent of the session's own actual TTL
+
+  @@index([expiresAt])
+}
