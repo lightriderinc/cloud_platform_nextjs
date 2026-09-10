@@ -1,6 +1,5 @@
 import PricingNavCard from "@/components/pricing/PricingNavCard";
 import { GiProcessor } from "react-icons/gi";
-import { PiUserFocusFill } from "react-icons/pi";
 
 const PRICING_PAGES = [
   {
@@ -47,12 +46,12 @@ export default function PricingOverviewPage() {
           description="Pay for quantum runtime by the second when your applications or workflows use quantum resources."
           icon={GiProcessor}
         />
-        <PricingNavCard
+        {/* <PricingNavCard
           href="/settings/purchases/user-plans"
           title="User Plans"
           description="Monthly platform access for teams and individuals, with credits included."
           icon={PiUserFocusFill}
-        />
+        /> */}
       </div>
     </div>
   );

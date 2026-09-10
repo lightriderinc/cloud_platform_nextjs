@@ -1,6 +1,6 @@
+import { getSession } from "@/lib/auth/session";
 import Image from "next/image";
 import Link from "next/link";
-import { getSession } from "@/lib/auth/session";
 import AuthenticationSection from "./AuthenticationSection";
 import MobileMenu from "./MobileMenu";
 
@@ -14,9 +14,9 @@ export default async function Header() {
       <div className="flex items-center gap-2">
         <Link href="/">
           <Image
-            src="/Lightrider-cloud-logo-black.svg"
+            src="/lightrider-quantum-logo-black.svg"
             alt="Lightrider logo"
-            width={230}
+            width={246}
             height={32}
           />
         </Link>

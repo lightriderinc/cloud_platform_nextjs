@@ -40,7 +40,7 @@ export default function CreditsTopUp() {
   }
 
   return (
-    <div className="default-radius border border-gray-100 bg-gray-100 p-5">
+    <div className="default-radius border border-gray-50 bg-gray-50 p-5">
       <h2 className="text-lg font-bold text-gray-800">Buy compute credits</h2>
       <p className="mb-4 text-sm text-gray-600">
         Credits are consumed at the runtime rates below as your jobs run.

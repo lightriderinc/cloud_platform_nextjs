@@ -4,6 +4,7 @@ import DashboardDemoCircuit from "@/components/dashboard/DashboardDemoCircuit";
 import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntropy";
 import DashboardLatestJobs from "@/components/dashboard/DashboardLatestJobs";
 import DashboardReservations from "@/components/dashboard/DashboardReservations";
+import DashboardUpdatesSection from "@/components/dashboard/DashboardUpdatesSection";
 import WelcomePage from "@/components/WelcomePage";
 import { getSession } from "@/lib/auth/session";
 import Image from "next/image";
@@ -51,32 +52,41 @@ export default async function Home() {
         </div>
       </div> */}
           <LowCreditsBanner />
-          <div className="mb-8">
-            <h2 className="mb-4 text-xl font-bold text-gray-600">
-              Compute credits
-            </h2>
-            <div className="xl:w-1/2">
-              <CreditsSummary historyLink />
-            </div>
-          </div>
+          <div className="flex flex-col xl:flex-row xl:gap-8">
+            <div className="flex flex-col order-2 xl:order-none xl:w-auto xl:flex-1 min-w-0">
+              <div className="mb-8">
+                <h2 className="mb-4 text-xl font-bold text-gray-600">
+                  Compute credits
+                </h2>
+                <div>
+                  <CreditsSummary historyLink />
+                </div>
+              </div>
 
-          <DashboardReservations />
+              <DashboardReservations />
 
-          <div className="mb-8">
-            <div className="flex flex-row justify-between">
-              <h2 className="text-xl font-bold text-gray-600">Latest jobs</h2>
-              <div className="mt-3 flex justify-end">
-                <Link
-                  href="/jobs"
-                  className="text-sm font-medium text-gray-700 inline-flex items-center gap-2 hover:text-[var(--brand-primary)]"
-                >
-                  View all jobs <MdArrowForward />
-                </Link>
+              <div className="mb-8">
+                <div className="flex flex-row justify-between">
+                  <h2 className="text-xl font-bold text-gray-600">
+                    Latest jobs
+                  </h2>
+                  <div className="mt-3 flex justify-end">
+                    <Link
+                      href="/jobs"
+                      className="text-sm font-medium text-gray-700 inline-flex items-center gap-2 hover:text-[var(--brand-primary)]"
+                    >
+                      View all jobs <MdArrowForward />
+                    </Link>
+                  </div>
+                </div>
+
+                <div>
+                  <DashboardLatestJobs />
+                </div>
               </div>
             </div>
-
-            <div>
-              <DashboardLatestJobs />
+            <div className="flex flex-col order-1 xl:order-none xl:w-2/5 xl:max-w-[500px] xl:flex-shrink-0 h-full">
+              <DashboardUpdatesSection />
             </div>
           </div>
 
@@ -85,7 +95,7 @@ export default async function Home() {
               Getting started
             </h2>
           </div>
-          <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex flex-row gap-4">
             <DashboardDemoCircuit />
             <DashboardDemoEntropy />
           </div>
