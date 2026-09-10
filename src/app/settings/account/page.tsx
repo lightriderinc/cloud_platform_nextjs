@@ -28,6 +28,7 @@ import { deleteAvatar, uploadAvatar } from "@/lib/supabase/avatars";
 import {
   findUserByPrimaryEmail,
   getUserAccountFacts,
+  isManagementApiConfigured,
   type LogtoUserSummary,
 } from "@/lib/logto/management";
 import { getAccessToken, signOut } from "@logto/next/server-actions";
@@ -60,7 +61,7 @@ export default async function AccountPage() {
   let hasPassword = account?.hasPassword ?? true;
   let socialIdentities = normalizeSocialIdentities(account?.identities);
 
-  if (sub) {
+  if (sub && isManagementApiConfigured()) {
     try {
       const facts = await getUserAccountFacts(sub);
       socialIdentities = normalizeSocialIdentities(facts.identities);

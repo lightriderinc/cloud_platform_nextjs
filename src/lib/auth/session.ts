@@ -29,13 +29,36 @@ export const getSession = cache(async (): Promise<LogtoContext> => {
     }
     return context;
   } catch (err) {
-    // Logged, not swallowed silently: this fallback presents as "signed out"
-    // in the UI with no other symptom, so an unlogged failure here is
-    // effectively invisible and very expensive to diagnose.
-    console.error("[auth] session lookup failed; treating as signed out:", err);
+    // Never swallowed silently — an unlogged failure here presents as "signed
+    // out" with no other symptom and is very expensive to diagnose.
+    //
+    // But a rejected token is the *expected* steady state after the session
+    // ended elsewhere: every render until the silent check replaces or clears
+    // the cookie will land here. That is a warning, not an error, so it does
+    // not spam the dev error overlay with a condition we already handle.
+    if (isStaleTokenError(err)) {
+      console.warn("[auth] stored token rejected by Logto; treating as signed out.");
+    } else {
+      console.error("[auth] session lookup failed; treating as signed out:", err);
+    }
     return { isAuthenticated: false };
   }
 });
+
+/**
+ * Whether an error from Logto means "this token is no longer good" (revoked,
+ * expired, or belonging to an ended session) as opposed to a real fault like
+ * Logto being unreachable. Both still read as signed out; they differ only in
+ * how loudly they deserve to be reported.
+ */
+function isStaleTokenError(err: unknown): boolean {
+  const message = err instanceof Error ? err.message : String(err);
+  return (
+    /invalid[_ ]token/i.test(message) ||
+    /status=401/i.test(message) ||
+    /invalid[_ ]grant/i.test(message)
+  );
+}
 
 /**
  * Resolves the current Logto session server-side. Throws if unauthenticated
