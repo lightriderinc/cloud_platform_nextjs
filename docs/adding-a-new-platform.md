@@ -100,20 +100,33 @@ Generate a cookie secret (PowerShell):
 [Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Minimum 0 -Maximum 256 }))
 ```
 
-### Set them in all three Vercel environments in one pass
+### Set them in every Vercel environment in one pass
 
 `NEXT_BASE_URL` is the one that differs per environment — this is the most
 common thing to get wrong:
 
 | Environment | `NEXT_BASE_URL` |
 | --- | --- |
-| Development (local `.env.local`) | `http://localhost:<pinned port>` |
-| Preview | your stable Vercel alias |
+| Preview (our staging) | your stable Vercel alias |
 | Production | your production domain |
+| Development, *if the project has one* | `http://localhost:<pinned port>` |
+
+Not every project here defines a Development environment — several use only
+Preview and Production, with Preview serving as staging. Pull from whichever
+environment actually exists:
 
 ```
-vercel env pull .env.local --environment=development
+vercel link                                          # first time only
+vercel env pull .env.local --environment=preview     # or =development
 ```
+
+> **Then fix `NEXT_BASE_URL` in the pulled `.env.local`.** Pulling from Preview
+> brings down the *Vercel alias* as this app's origin, so a locally-running app
+> would build `redirect_uri=https://<alias>/callback` while the browser sits on
+> localhost — signing in locally would throw you over to the deployed site.
+> Set it to `http://localhost:<pinned port>` locally. `.env.local` is gitignored,
+> so the override never ships. (`logto.ts` also falls back to the pinned local
+> port when the variable is absent, so deleting the line works too.)
 
 Cloud-only extras (do **not** copy unless the app genuinely needs them):
 `LOGTO_M2M_APP_ID`, `LOGTO_M2M_APP_SECRET`, `LOGTO_MANAGEMENT_ENDPOINT`,
@@ -134,11 +147,12 @@ implementation — Cloud's versions carry database-backed extras):
 src/app/logto.ts                          Logto config (edit the dev-port fallback)
 src/app/callback/route.ts                 OIDC redirect + login_required handling
 src/app/actions/auth.ts                   signIn / signOut server actions
-src/lib/auth/session.ts                   getSession, getSessionState, requireLogtoUser
+src/lib/auth/session.ts                   getSession, requireLogtoUser
 src/lib/auth/silent-sso.ts                Silent-check policy + loop guard
 src/app/api/auth/session/route.ts         Cheap auth-state endpoint for polling
 src/app/api/auth/silent-check/route.ts    prompt=none initiator
-src/components/auth/SessionSync.tsx       Client sync (load / focus / interval)
+src/components/auth/SessionSync.tsx       Client sync (load / return-to-tab / poll)
+src/components/auth/SignInRequired.tsx    Friendly signed-out prompt for gated pages
 src/proxy.ts                              Token refresh before RSC render
 ```
 
@@ -147,10 +161,17 @@ can be lifted into a shared package later without rewriting. **Keep them
 byte-identical across repos** — if you need app-specific behaviour, add it
 outside these files, not inside them.
 
+> If you ever add a NEW cookie here, namespace it with the Logto app id, the
+> way `silentSsoCookieName()` does. Cookies are scoped by domain and ignore the
+> port, so every platform running on localhost shares one cookie jar: a fixed
+> name means one app silently suppresses another's checks. It only breaks local
+> development (production hosts have separate jars), which is exactly where it
+> is hardest to trust what you are seeing.
+
 Then mount the sync component in `src/app/layout.tsx`:
 
 ```tsx
-const { isAuthenticated } = await getSessionState();
+const { isAuthenticated } = await getSession();
 // ...
 <SessionSync initialAuthenticated={isAuthenticated} />
 ```
@@ -174,10 +195,22 @@ const { isAuthenticated } = await getSessionState();
 - **Never an iframe.** The iframe version of this pattern depends on
   third-party cookies and is being broken across browsers industry-wide.
 
-Timings are in `src/lib/auth/silent-sso.ts`: signed-out visitors re-check at
-most once per 60s, signed-in users at most once per 10 minutes and only on page
-load (never on focus — bouncing a working user to Logto every time they alt-tab
-would be hostile).
+Timings live in `src/lib/auth/silent-sso.ts`. Only the PAGE-LOAD trigger can
+re-fire itself unattended, so it carries the strict cooldown (30s signed-out,
+10min signed-in). Returning to a tab after being away >=3s cannot spin — it
+costs a deliberate tab switch each time — so it re-checks almost immediately
+(5s floor). That asymmetry is what makes "sign in on the other platform, switch
+back, be recognised at once" work without reopening loop risk.
+
+Two Logto answers matter, and they mean opposite things:
+
+- `login_required` -> there is genuinely no session. Stay signed out, and drop
+  any stale local cookie. This is how sign-out propagates.
+- `consent_required` -> the user IS signed in; Logto grants scopes per session,
+  so an app the user did not sign in through has no grant yet. `prompt=none`
+  can never fix this (it is barred from showing UI), so the callback retries
+  exactly once WITHOUT `prompt=none`. Do not "simplify" this away — without it,
+  whichever app you did not sign in through never syncs.
 
 ---
 
@@ -194,7 +227,13 @@ src/lib/logto/backchannel-logout.ts         Logout-token verification + store
 src/app/api/webhooks/logto/route.ts         The webhook endpoint
 ```
 
-and add the revocation check to `getSession`/`getSessionState`/`requireLogtoUser`.
+and add the revocation check to `getSession`/`requireLogtoUser`.
+
+> Keep ONE code path for "am I signed in?". An earlier version had a cheap
+> cookie-only variant alongside `getSession()`; after a revocation the two
+> disagreed (cookie still decoded fine, userinfo returned 401), the polling
+> endpoint reported signed-in while the UI rendered signed-out, and cross-app
+> sign-in propagation silently stopped working.
 
 **Then actually create the table in every database the app talks to:**
 
@@ -217,9 +256,13 @@ table exists.
 - [ ] Dev port pinned in `package.json`, unique across platforms
 - [ ] All 3 redirect URIs registered
 - [ ] All 3 post sign-out redirect URIs registered
-- [ ] `NEXT_BASE_URL` set correctly in **all three** Vercel environments
+- [ ] `NEXT_BASE_URL` set correctly in **every** Vercel environment the project
+      has (Preview and Production at minimum), AND overridden to
+      `http://localhost:<pinned port>` in the local `.env.local`
 - [ ] `LOGTO_COOKIE_SECRET` generated fresh (not copied from another app)
 - [ ] `SessionSync` mounted in the root layout, layout is `async`
+- [ ] A nav entry to the account page that is reachable when signed in (the
+      secondary sidebar only appears once you are already under /settings)
 - [ ] `npm run dev` → sign in works locally
 - [ ] Sign in on another platform, open this one → signed in with no click
 - [ ] Sign out on another platform, return to this one → signed out with no click

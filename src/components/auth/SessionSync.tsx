@@ -1,5 +1,6 @@
 "use client";
 
+import { isProtectedWorkInProgress } from "@/lib/auth/protected-work";
 import {
   RETURN_CHECK_COOLDOWN_SECONDS,
   RETURN_FROM_AWAY_MIN_SECONDS,
@@ -45,8 +46,8 @@ export default function SessionSync({ initialAuthenticated }: Props) {
   const knownAuthenticated = useRef(initialAuthenticated);
   // Guards against overlapping checks (focus + interval firing together).
   const inFlight = useRef(false);
-  // When the tab was last hidden or blurred, so we can tell "came back from
-  // another app" apart from "clicked around in this tab".
+  // When the tab was last hidden, so we can tell "came back from another app"
+  // apart from "clicked around in this tab".
   const awaySince = useRef<number | null>(null);
 
   /**
@@ -61,6 +62,11 @@ export default function SessionSync({ initialAuthenticated }: Props) {
    */
   const attemptSilentCheck = useCallback(
     (cooldownSeconds: number) => {
+      // Never interrupt work that only exists in the browser. This redirect
+      // reloads the document, so firing it here would throw away a selected
+      // file or a finished scan; the session is re-checked when that work is
+      // submitted instead. See @/lib/auth/protected-work.
+      if (isProtectedWorkInProgress()) return;
       if (!isSilentSsoAllowedPath(pathname)) return;
 
       let storage: Storage;
@@ -138,6 +144,12 @@ export default function SessionSync({ initialAuthenticated }: Props) {
         : SIGNED_OUT_LOAD_COOLDOWN_SECONDS,
     });
 
+    // Only a genuine visibility change counts as being away. Window blur must
+    // NOT: a native file picker (and any other OS-level dialog) blurs the
+    // window while the tab stays visible, so counting blur as an absence made
+    // "spent more than RETURN_FROM_AWAY_MIN_SECONDS choosing a file" look like
+    // a return from another platform. That redirected the user mid-task, and
+    // an in-progress upload lives only in client state, so it was destroyed.
     const markAway = () => {
       if (awaySince.current === null) awaySince.current = Date.now();
     };
@@ -170,7 +182,9 @@ export default function SessionSync({ initialAuthenticated }: Props) {
     };
 
     document.addEventListener("visibilitychange", onVisibilityChange);
-    window.addEventListener("blur", markAway);
+    // Focus still triggers a sync, but with `awaySince` set only by the
+    // visibility path it can no longer qualify as a return from away on its
+    // own — so regaining focus refreshes state without ever redirecting.
     window.addEventListener("focus", onReturn);
 
     const interval = window.setInterval(() => {
@@ -183,7 +197,6 @@ export default function SessionSync({ initialAuthenticated }: Props) {
 
     return () => {
       document.removeEventListener("visibilitychange", onVisibilityChange);
-      window.removeEventListener("blur", markAway);
       window.removeEventListener("focus", onReturn);
       window.clearInterval(interval);
     };
