@@ -88,7 +88,7 @@ export default function BackendList({
                 <td className="whitespace-nowrap px-4 py-3">
                   {comingSoon && (
                     <span
-                      className="w-fit default-radius px-2 py-0.5 text-xs font-medium text-white"
+                      className="w-fit rounded px-2 py-0.5 text-xs font-medium text-white"
                       style={{ backgroundColor: "var(--brand-tertiary)" }}
                     >
                       Coming soon
