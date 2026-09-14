@@ -53,9 +53,18 @@ export default function PresetSelector({
   }
 
   function onCustomInput(raw: string) {
-    setCustomInput(raw);
     const parsed = parseInt(raw, 10);
-    onChange(Number.isNaN(parsed) ? 0 : parsed);
+    if (Number.isNaN(parsed)) {
+      setCustomInput(raw);
+      onChange(0);
+      return;
+    }
+    // Clamp here rather than relying on the input's max attribute -- that
+    // only affects :invalid/spinner behavior, it doesn't stop someone from
+    // typing a larger number directly.
+    const clamped = Math.min(parsed, max);
+    setCustomInput(String(clamped));
+    onChange(clamped);
   }
 
   return (
