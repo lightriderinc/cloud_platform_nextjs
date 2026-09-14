@@ -2,7 +2,10 @@
 
 import { formatCreditsWithUsd } from "@/components/billing/CreditsSummary";
 import PresetSelector from "@/components/ui/PresetSelector";
-import { entropyCostCents, entropyPricePerBitLabel } from "@/lib/entropy/pricing";
+import {
+  entropyCostCents,
+  entropyPricePerBitLabel,
+} from "@/lib/entropy/pricing";
 import { useEffect, useMemo, useState } from "react";
 import ChipletVisualPicker from "./ChipletVisualPicker";
 import LiveRunCard from "./LiveRunCard";
@@ -27,35 +30,54 @@ const BIT_COUNT_PRESETS = [16, 32, 64, 128, 256];
 // reusing pool mode's much smaller preset numbers.
 const SAMPLE_COUNT_PRESETS = [10_000, 100_000, 1_000_000];
 
-async function apiJson<T>(url: string, init?: RequestInit): Promise<{ ok: boolean; body: T }> {
+async function apiJson<T>(
+  url: string,
+  init?: RequestInit,
+): Promise<{ ok: boolean; body: T }> {
   const res = await fetch(url, init);
   const body = (await res.json().catch(() => ({}))) as T;
   return { ok: res.ok, body };
 }
 
-export default function QEntropyExperiment({ experimentDef }: { experimentDef: ExperimentDef }) {
-  const samplesParam: ExperimentParam | undefined = experimentDef.params.find((p) => p.name === "samples");
+export default function QEntropyExperiment({
+  experimentDef,
+}: {
+  experimentDef: ExperimentDef;
+}) {
+  const samplesParam: ExperimentParam | undefined = experimentDef.params.find(
+    (p) => p.name === "samples",
+  );
 
   const [mode, setMode] = useState<Mode>("pool");
   const [selectedChiplets, setSelectedChiplets] = useState<string[]>([]);
   const [combined, setCombined] = useState(false);
   const [bitCount, setBitCount] = useState(10000);
-  const [samples, setSamples] = useState<number>(Number(samplesParam?.default ?? 100000));
+  const [samples, setSamples] = useState<number>(
+    Number(samplesParam?.default ?? 100000),
+  );
 
   const [pools, setPools] = useState<EntropyPoolsResponse | null>(null);
   const [candidates, setCandidates] = useState<CandidatesResponse | null>(null);
-  const [calibrationId, setCalibrationId] = useState<string | undefined>(undefined);
+  const [calibrationId, setCalibrationId] = useState<string | undefined>(
+    undefined,
+  );
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [withdrawResult, setWithdrawResult] = useState<WithdrawResponse | null>(null);
+  const [withdrawResult, setWithdrawResult] = useState<WithdrawResponse | null>(
+    null,
+  );
   // The pool snapshot as of the moment a withdrawal was submitted -- kept
   // separate from the live `pools` state (which gets refetched and moves
   // on after a withdrawal) so the result panel's calibration/refill
   // context always reflects what the pool actually looked like for THAT
   // withdrawal, not whatever the picker shows afterward.
-  const [resultPoolSnapshot, setResultPoolSnapshot] = useState<Record<string, EntropyPoolEntry>>({});
-  const [liveRuns, setLiveRuns] = useState<Array<{ chipletId: string; runId: string }>>([]);
+  const [resultPoolSnapshot, setResultPoolSnapshot] = useState<
+    Record<string, EntropyPoolEntry>
+  >({});
+  const [liveRuns, setLiveRuns] = useState<
+    Array<{ chipletId: string; runId: string }>
+  >([]);
 
   const [recentRuns, setRecentRuns] = useState<RecentRun[]>([]);
   const [expandedRecent, setExpandedRecent] = useState<Set<string>>(new Set());
@@ -70,9 +92,11 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
   useEffect(() => {
     if (mode !== "pool") return;
     let cancelled = false;
-    apiJson<EntropyPoolsResponse>("/api/lr/entropy/pools").then(({ ok, body }) => {
-      if (!cancelled && ok) setPools(body);
-    });
+    apiJson<EntropyPoolsResponse>("/api/lr/entropy/pools").then(
+      ({ ok, body }) => {
+        if (!cancelled && ok) setPools(body);
+      },
+    );
     return () => {
       cancelled = true;
     };
@@ -81,11 +105,14 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
   useEffect(() => {
     if (mode !== "live") return;
     let cancelled = false;
-    apiJson<CandidatesResponse>(`/api/lr/experiments/${experimentDef.id}/candidates`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role: "region", selections: {} }),
-    }).then(({ ok, body }) => {
+    apiJson<CandidatesResponse>(
+      `/api/lr/experiments/${experimentDef.id}/candidates`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: "region", selections: {} }),
+      },
+    ).then(({ ok, body }) => {
       if (cancelled || !ok) return;
       setCandidates(body);
       if (body.calibration_id) setCalibrationId(body.calibration_id);
@@ -96,7 +123,10 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
   }, [mode, experimentDef.id]);
 
   const poolByChiplet = useMemo(
-    () => Object.fromEntries((pools?.pools ?? []).map((p) => [p.chiplet_id, p])) as Record<string, EntropyPoolEntry>,
+    () =>
+      Object.fromEntries(
+        (pools?.pools ?? []).map((p) => [p.chiplet_id, p]),
+      ) as Record<string, EntropyPoolEntry>,
     [pools],
   );
 
@@ -119,7 +149,9 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
   }
 
   function toggleChiplet(cid: string) {
-    setSelectedChiplets((s) => (s.includes(cid) ? s.filter((c) => c !== cid) : [...s, cid]));
+    setSelectedChiplets((s) =>
+      s.includes(cid) ? s.filter((c) => c !== cid) : [...s, cid],
+    );
     setWithdrawResult(null);
     setSubmitError(null);
   }
@@ -128,20 +160,28 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
     setSubmitting(true);
     setSubmitError(null);
     setWithdrawResult(null);
-    const { ok, body } = await apiJson<WithdrawResponse & { error?: string; detail?: string; message?: string }>(
-      "/api/lr/entropy/withdraw",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chiplet_ids: selectedChiplets, bits_per_chiplet: bitCount, combined }),
-      },
-    );
+    const { ok, body } = await apiJson<
+      WithdrawResponse & { error?: string; detail?: string; message?: string }
+    >("/api/lr/entropy/withdraw", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chiplet_ids: selectedChiplets,
+        bits_per_chiplet: bitCount,
+        combined,
+      }),
+    });
     setSubmitting(false);
     if (!ok) {
       // .message carries the human-readable breakdown for billing errors
       // (e.g. insufficient_credits' "costs ~N credits ($X), but your
       // account has...") -- .error alone would just be the bare error code.
-      setSubmitError(body.message ?? body.error ?? body.detail ?? "Could not withdraw entropy.");
+      setSubmitError(
+        body.message ??
+          body.error ??
+          body.detail ??
+          "Could not withdraw entropy.",
+      );
       return;
     }
     setResultPoolSnapshot(poolByChiplet);
@@ -150,9 +190,11 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
       // Inventory just changed -- refetch so the picker's bits_available
       // reflects the withdrawal, rather than going stale or silently
       // stuck on the pre-withdrawal numbers.
-      apiJson<EntropyPoolsResponse>("/api/lr/entropy/pools").then(({ ok: poolsOk, body: fresh }) => {
-        if (poolsOk) setPools(fresh);
-      });
+      apiJson<EntropyPoolsResponse>("/api/lr/entropy/pools").then(
+        ({ ok: poolsOk, body: fresh }) => {
+          if (poolsOk) setPools(fresh);
+        },
+      );
     }
   }
 
@@ -163,37 +205,49 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
 
     const newRuns: Array<{ chipletId: string; runId: string }> = [];
     for (const cid of selectedChiplets) {
-      const placementRes = await apiJson<{ data: PlacementData; calibration_id?: string; error?: string; detail?: string }>(
-        `/api/lr/experiments/${experimentDef.id}/placement`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ selections: { region: cid }, params: { samples }, calibration_id: calibrationId }),
-        },
-      );
+      const placementRes = await apiJson<{
+        data: PlacementData;
+        calibration_id?: string;
+        error?: string;
+        detail?: string;
+      }>(`/api/lr/experiments/${experimentDef.id}/placement`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          selections: { region: cid },
+          params: { samples },
+          calibration_id: calibrationId,
+        }),
+      });
       if (!placementRes.ok) {
-        setSubmitError(`${cid}: ${placementRes.body.error ?? placementRes.body.detail ?? "could not resolve placement."}`);
+        setSubmitError(
+          `${cid}: ${placementRes.body.error ?? placementRes.body.detail ?? "could not resolve placement."}`,
+        );
         continue;
       }
       const calId = placementRes.body.calibration_id ?? calibrationId;
       if (calId) setCalibrationId(calId);
 
-      const runRes = await apiJson<{ run_id: string; status: string; error?: string; detail?: string }>(
-        `/api/lr/experiments/${experimentDef.id}/runs`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            selections: { region: cid },
-            params: { samples },
-            calibration_id: calId,
-            placement: placementRes.body.data,
-            mode: "live",
-          }),
-        },
-      );
+      const runRes = await apiJson<{
+        run_id: string;
+        status: string;
+        error?: string;
+        detail?: string;
+      }>(`/api/lr/experiments/${experimentDef.id}/runs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          selections: { region: cid },
+          params: { samples },
+          calibration_id: calId,
+          placement: placementRes.body.data,
+          mode: "live",
+        }),
+      });
       if (!runRes.ok) {
-        setSubmitError(`${cid}: ${runRes.body.error ?? runRes.body.detail ?? "could not submit run."}`);
+        setSubmitError(
+          `${cid}: ${runRes.body.error ?? runRes.body.detail ?? "could not submit run."}`,
+        );
         continue;
       }
       newRuns.push({ chipletId: cid, runId: runRes.body.run_id });
@@ -264,19 +318,21 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
             </p>
           </div>
 
-          <p className="mb-3 text-sm text-gray-600">{selectionHint}</p>
+          <div className="border-2 border-gray-50 p-4">
+            <p className="mb-6 text-sm font-semibold text-gray-00">{selectionHint}</p>
 
-          <ChipletVisualPicker
-            selectMode={mode}
-            pools={pools}
-            candidates={candidates}
-            selected={selectedChiplets}
-            onToggle={toggleChiplet}
-            loading={mode === "pool" ? !pools : !candidates}
-          />
+            <ChipletVisualPicker
+              selectMode={mode}
+              pools={pools}
+              candidates={candidates}
+              selected={selectedChiplets}
+              onToggle={toggleChiplet}
+              loading={mode === "pool" ? !pools : !candidates}
+            />
+          </div>
         </div>
 
-        <div className="flex w-full flex-col gap-4 default-radius border border-gray-50 bg-gray-50 p-4 lg:sticky lg:top-6 lg:w-[320px] lg:shrink-0">
+        <div className="flex w-full flex-col gap-4 default-radius border border-gray-50 bg-gray-50 p-4 lg:sticky lg:top-0 lg:w-[320px] lg:shrink-0">
           <h3 className="text-lg font-bold text-gray-800">
             {mode === "pool" ? "Configure withdrawal" : "Configure run"}
           </h3>
@@ -342,7 +398,11 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
             onClick={mode === "pool" ? handleWithdraw : handleRunLive}
             className="default-radius inline-flex cursor-pointer items-center justify-center border border-[var(--brand-primary)] bg-[var(--brand-primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--brand-primary-light)] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {submitting ? "Submitting…" : mode === "pool" ? "Withdraw" : "Run measurement"}
+            {submitting
+              ? "Submitting…"
+              : mode === "pool"
+                ? "Withdraw"
+                : "Run measurement"}
           </button>
           {submitError && <p className="text-sm text-red-600">{submitError}</p>}
 
@@ -368,7 +428,11 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
           {mode === "live" && liveRuns.length > 0 && (
             <div className="flex flex-col gap-3">
               {liveRuns.map((r) => (
-                <LiveRunCard key={r.runId} runId={r.runId} chipletId={r.chipletId} />
+                <LiveRunCard
+                  key={r.runId}
+                  runId={r.runId}
+                  chipletId={r.chipletId}
+                />
               ))}
             </div>
           )}
@@ -385,15 +449,21 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
           </h4>
           <div className="flex flex-col gap-2">
             {recentRuns.slice(0, 5).map((r) => (
-              <div key={r.runId} className="default-radius border border-gray-100 p-3 text-sm">
+              <div
+                key={r.runId}
+                className="default-radius border border-gray-100 p-3 text-sm"
+              >
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-xs text-gray-500">
-                    {r.chipletId} · {r.runId} · submitted {new Date(r.submittedAt).toLocaleString()}
+                    {r.chipletId} · {r.runId} · submitted{" "}
+                    {new Date(r.submittedAt).toLocaleString()}
                   </span>
                   {!expandedRecent.has(r.runId) && (
                     <button
                       type="button"
-                      onClick={() => setExpandedRecent((s) => new Set(s).add(r.runId))}
+                      onClick={() =>
+                        setExpandedRecent((s) => new Set(s).add(r.runId))
+                      }
                       className="default-radius cursor-pointer border border-gray-200 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
                     >
                       Check status

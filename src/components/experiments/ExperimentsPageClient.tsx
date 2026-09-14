@@ -16,17 +16,25 @@ const INTERNAL_EXPERIMENT_IDS = new Set(["q_entropy_refill"]);
 // An id with no entry here still appears in the dropdown once it exists in
 // the catalog, but shows a plain "not available yet" message instead of a
 // generic form, rather than either hiding it or fabricating a UI for it.
-const EXPERIMENT_COMPONENTS: Record<string, (exp: ExperimentDef) => ReactNode> = {
-  q_entropy: (exp) => <QEntropyExperiment experimentDef={exp} />,
-};
+const EXPERIMENT_COMPONENTS: Record<string, (exp: ExperimentDef) => ReactNode> =
+  {
+    q_entropy: (exp) => <QEntropyExperiment experimentDef={exp} />,
+  };
 
-async function apiJson<T>(url: string, init?: RequestInit): Promise<{ ok: boolean; body: T }> {
+async function apiJson<T>(
+  url: string,
+  init?: RequestInit,
+): Promise<{ ok: boolean; body: T }> {
   const res = await fetch(url, init);
   const body = (await res.json().catch(() => ({}))) as T;
   return { ok: res.ok, body };
 }
 
-export default function ExperimentsPageClient({ isAuthenticated }: { isAuthenticated: boolean }) {
+export default function ExperimentsPageClient({
+  isAuthenticated,
+}: {
+  isAuthenticated: boolean;
+}) {
   const [catalog, setCatalog] = useState<ExperimentDef[] | null>(null);
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string>("");
@@ -34,13 +42,20 @@ export default function ExperimentsPageClient({ isAuthenticated }: { isAuthentic
   useEffect(() => {
     if (!isAuthenticated) return;
     let cancelled = false;
-    apiJson<ExperimentCatalogResponse & { error?: string }>("/api/lr/experiments").then(({ ok, body }) => {
+    apiJson<ExperimentCatalogResponse & { error?: string }>(
+      "/api/lr/experiments",
+    ).then(({ ok, body }) => {
       if (cancelled) return;
       if (!ok) {
-        setCatalogError(body.error ?? "Could not load the experiment catalog. Try again later.");
+        setCatalogError(
+          body.error ??
+            "Could not load the experiment catalog. Try again later.",
+        );
         return;
       }
-      const visible = (body.experiments ?? []).filter((e) => !INTERNAL_EXPERIMENT_IDS.has(e.id));
+      const visible = (body.experiments ?? []).filter(
+        (e) => !INTERNAL_EXPERIMENT_IDS.has(e.id),
+      );
       setCatalog(visible);
       if (visible.length === 1) setSelectedId(visible[0].id);
     });
@@ -49,12 +64,19 @@ export default function ExperimentsPageClient({ isAuthenticated }: { isAuthentic
     };
   }, [isAuthenticated]);
 
-  const selectedExp = useMemo(() => catalog?.find((e) => e.id === selectedId) ?? null, [catalog, selectedId]);
+  const selectedExp = useMemo(
+    () => catalog?.find((e) => e.id === selectedId) ?? null,
+    [catalog, selectedId],
+  );
 
   if (!isAuthenticated) {
     return (
       <p className="text-sm text-gray-600">
-        <button type="button" onClick={() => handleSignIn()} className="brand-link cursor-pointer">
+        <button
+          type="button"
+          onClick={() => handleSignIn()}
+          className="brand-link cursor-pointer"
+        >
           Log in
         </button>{" "}
         to run experiments on Cepheus.
@@ -67,34 +89,41 @@ export default function ExperimentsPageClient({ isAuthenticated }: { isAuthentic
   }
 
   if (!catalog) {
-    return <p className="text-sm text-gray-500">Loading available experiments…</p>;
+    return (
+      <p className="text-sm text-gray-500">Loading available experiments…</p>
+    );
   }
 
   return (
     <div className="flex flex-col gap-8">
-      <label className="block max-w-sm">
-        <span className="mb-1 block text-sm font-medium text-gray-700">Experiment</span>
-        <select
-          className="default-radius w-full border border-gray-200 px-3 py-2 text-sm"
-          value={selectedId}
-          onChange={(e) => setSelectedId(e.target.value)}
-        >
-          <option value="" disabled>
-            Select an experiment…
-          </option>
-          {catalog.map((exp) => (
-            <option key={exp.id} value={exp.id}>
-              {exp.label}
+      <div className="border-b border-gray-100 pb-4">
+        <label className="block max-w-sm">
+          <span className="mb-1 block text-md font-semibold text-gray-400">
+            Experiment
+          </span>
+          <select
+            className="default-radius w-full border border-gray-200 px-3 py-2 text-sm cursor-pointer"
+            value={selectedId}
+            onChange={(e) => setSelectedId(e.target.value)}
+          >
+            <option value="" disabled>
+              Select an experiment…
             </option>
-          ))}
-        </select>
-      </label>
+            {catalog.map((exp) => (
+              <option key={exp.id} value={exp.id}>
+                {exp.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
 
       {selectedExp && (
-        <div className="default-radius border-2 border-gray-50 bg-white p-4">
+        <div>
           {EXPERIMENT_COMPONENTS[selectedExp.id]?.(selectedExp) ?? (
             <p className="text-sm text-gray-500">
-              {selectedExp.label} doesn&apos;t have a dedicated UI on this page yet.
+              {selectedExp.label} doesn&apos;t have a dedicated UI on this page
+              yet.
             </p>
           )}
         </div>
