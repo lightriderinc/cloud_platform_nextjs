@@ -27,6 +27,8 @@ export default function ChipletBox({
   gridCols = 3,
   selected,
   disabled,
+  boxClassName,
+  boxStyle,
   onClick,
   onMouseEnter,
   onMouseMove,
@@ -40,6 +42,9 @@ export default function ChipletBox({
   /** Outer-box selection ring, for a multi-select caller (ProcessorMapCard doesn't use this — it selects individual qubits, not the whole chiplet). */
   selected?: boolean;
   disabled?: boolean;
+  /** Background/border class+style for the whole chiplet box, for a caller that colors the chiplet itself by a chiplet-level metric (e.g. pool depth) rather than per-qubit cells. Ignored while `selected`, so the selection tint stays on top. */
+  boxClassName?: string;
+  boxStyle?: CSSProperties;
   onClick?: () => void;
   onMouseEnter?: (e: MouseEvent) => void;
   onMouseMove?: (e: MouseEvent) => void;
@@ -51,10 +56,9 @@ export default function ChipletBox({
       className={`relative z-10 default-radius border p-1.5 transition-colors duration-300 ${
         selected
           ? "border-2 border-[var(--brand-primary)] bg-red-50"
-          : disabled
-            ? "border-gray-100 bg-gray-100"
-            : "cursor-pointer border-gray-100 bg-gray-100 hover:border-gray-200"
-      } ${disabled ? "cursor-not-allowed" : ""}`}
+          : (boxClassName ?? (disabled ? "border-gray-100 bg-gray-100" : "border-gray-100 bg-gray-100 hover:border-gray-200"))
+      } ${disabled ? "cursor-not-allowed" : !selected ? "cursor-pointer" : ""}`}
+      style={selected ? undefined : boxStyle}
       onClick={disabled ? undefined : onClick}
       onMouseEnter={onMouseEnter}
       onMouseMove={onMouseMove}

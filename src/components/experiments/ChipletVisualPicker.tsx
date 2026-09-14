@@ -6,8 +6,10 @@ import { STATE_CLASSES } from "@/components/topology/stateStyles";
 import TopologyTooltip from "@/components/topology/TopologyTooltip";
 import type { TooltipState } from "@/components/topology/types";
 import { DEFAULT_TOPOLOGY_BACKEND_ID, fetchQubits, type QubitEntry } from "@/lib/topology/client";
+import { formatFidelityPct } from "@/lib/topology/format";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { MdArrowLeft, MdArrowRight } from "react-icons/md";
 import type { CandidatesResponse, EntropyPoolsResponse } from "./types";
 
 // Same fixed 3x4 modular layout as the topology page's own ProcessorMapCard
@@ -132,83 +134,26 @@ export default function ChipletVisualPicker({
     setTooltip((t) => (t ? { ...t, x: e.clientX + 12, y: e.clientY + 12 } : t));
   }
 
+  const gradientSwatch = (
+    <span
+      style={{
+        display: "block",
+        width: 36,
+        height: 6,
+        borderRadius: 2,
+        background: "linear-gradient(90deg, #00E494, #27728B, #4E0082)",
+      }}
+    />
+  );
+
   return (
     <div>
       {/* Secondary metadata, visually quieter than the grid itself (smaller
           text, muted toggle) -- the chiplet grid is the main event here, this
-          is just the key to reading it. */}
+          is just the key to reading it. "Color by" on the left, the legend
+          for whichever mode is active on the right. */}
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3 text-2xs text-gray-400">
-          {selectMode === "pool" && colorMode === "pool" && (
-            <span className="flex items-center gap-1">
-              Pool depth
-              <span
-                style={{
-                  display: "block",
-                  width: 36,
-                  height: 6,
-                  borderRadius: 2,
-                  background: "linear-gradient(90deg, #00E494, #27728B, #4E0082)",
-                }}
-              />
-              <span>fewer bits</span>
-            </span>
-          )}
-          {/* Same gradient-swatch + endpoint-labels treatment as pool depth
-              above -- was missing entirely for this mode before. Order is
-              high-to-low fidelity left-to-right, matching errorRateRgb's
-              actual mapping (t=0 -> cyan -> low error/high fidelity; t=1 ->
-              purple -> high error/low fidelity), same direction
-              ProcessorMapCard's own quality legend uses on the topology
-              page. */}
-          {selectMode === "pool" && colorMode === "quality" && (
-            <span className="flex items-center gap-1">
-              Hardware quality (fRB)
-              <span>higher fidelity</span>
-              <span
-                style={{
-                  display: "block",
-                  width: 36,
-                  height: 6,
-                  borderRadius: 2,
-                  background: "linear-gradient(90deg, #00E494, #27728B, #4E0082)",
-                }}
-              />
-              <span>lower fidelity</span>
-            </span>
-          )}
-          {/* Live mode's candidate tier is categorical (recommended/good vs.
-              unsuitable), not a continuous scale, so this is discrete
-              swatches -- deliberately no gradient here, unlike the two
-              blocks above. Colors match STATE_CLASSES exactly (bg-green-500
-              / bg-amber-400), the same classes the cells themselves use for
-              these two tiers, so the swatch is never an approximation of
-              the real cell color. The "not scored" swatch below already
-              covers both "no candidate data" and any tier value besides
-              recommended/good/unsuitable (e.g. "available" per
-              CandidateTier's type) -- that tier currently isn't visually
-              distinguished from "not scored" at all, which is worth a
-              product decision on its own if that distinction matters. */}
-          {selectMode === "live" && (
-            <span className="flex items-center gap-1">
-              Candidate quality
-              <span className="ml-1 flex items-center gap-1">
-                <span className="h-2 w-2 default-radius bg-green-500" />
-                Recommended
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="h-2 w-2 default-radius bg-amber-400" />
-                Unsuitable
-              </span>
-            </span>
-          )}
-          <span className="flex items-center gap-1">
-            <span className="h-2 w-2 default-radius border border-dashed border-purple-400 bg-purple-100" />
-            {selectMode === "pool" ? "Not yet generated" : "Not scored"}
-          </span>
-        </div>
-
-        {selectMode === "pool" && (
+        {selectMode === "pool" ? (
           <div className="flex items-center gap-1 text-2xs text-gray-400">
             <span className="mr-0.5">Color by</span>
             <button
@@ -230,7 +175,80 @@ export default function ChipletVisualPicker({
               Hardware quality
             </button>
           </div>
+        ) : (
+          <span />
         )}
+
+        <div className="flex flex-wrap items-center gap-3 text-2xs text-gray-400">
+          {selectMode === "pool" && colorMode === "pool" && (
+            <span className="flex items-center gap-1">
+              Pool depth
+              {maxBits > 0 ? (
+                <>
+                  <span>{formatBits(maxBits)} bits</span>
+                  <MdArrowRight className="text-lg" />
+                  {gradientSwatch}
+                  <MdArrowLeft className="text-lg" />
+                  <span>0 bits</span>
+                </>
+              ) : (
+                <span className="h-2.5 w-2.5 default-radius bg-[#2772BA]" />
+              )}
+            </span>
+          )}
+          {/* Same gradient-swatch + endpoint-labels treatment as pool depth
+              above. Order is high-to-low fidelity left-to-right, matching
+              errorRateRgb's actual mapping (t=0 -> cyan -> low error/high
+              fidelity; t=1 -> purple -> high error/low fidelity), same
+              direction ProcessorMapCard's own quality legend uses on the
+              topology page. */}
+          {selectMode === "pool" && colorMode === "quality" && (
+            <span className="flex items-center gap-1">
+              Hardware quality (fRB)
+              {qualityErrorRange ? (
+                <>
+                  <span>{formatFidelityPct(1 - qualityErrorRange.min / 100, 2)}</span>
+                  <MdArrowRight className="text-lg" />
+                  {gradientSwatch}
+                  <MdArrowLeft className="text-lg" />
+                  <span>{formatFidelityPct(1 - qualityErrorRange.max / 100, 2)}</span>
+                </>
+              ) : (
+                <span className="h-2.5 w-2.5 default-radius bg-[#2772BA]" />
+              )}
+            </span>
+          )}
+          {/* Live mode's candidate tier is categorical (recommended/good vs.
+              unsuitable), not a continuous scale, so this is discrete
+              swatches -- deliberately no gradient here, unlike the two
+              blocks above. Colors match STATE_CLASSES exactly (bg-green-500
+              / bg-amber-400), the same classes the chiplet boxes themselves
+              use for these two tiers, so the swatch is never an
+              approximation of the real box color. The "not scored" swatch
+              below already covers both "no candidate data" and any tier
+              value besides recommended/good/unsuitable (e.g. "available"
+              per CandidateTier's type) -- that tier currently isn't
+              visually distinguished from "not scored" at all, which is
+              worth a product decision on its own if that distinction
+              matters. */}
+          {selectMode === "live" && (
+            <span className="flex items-center gap-1">
+              Candidate quality
+              <span className="ml-1 flex items-center gap-1">
+                <span className="h-2 w-2 default-radius bg-green-500" />
+                Recommended
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="h-2 w-2 default-radius bg-amber-400" />
+                Unsuitable
+              </span>
+            </span>
+          )}
+          <span className="flex items-center gap-1">
+            <span className="h-2 w-2 default-radius border border-dashed border-purple-400 bg-purple-100" />
+            {selectMode === "pool" ? "Not yet generated" : "Not scored"}
+          </span>
+        </div>
       </div>
 
       {/* Same mx-auto max-w-md cap as ProcessorMapCard's own grid wrapper —
@@ -252,41 +270,45 @@ export default function ChipletVisualPicker({
             !loading &&
             (selectMode === "live" ? true : !!poolEntry && poolEntry.bits_available > 0);
 
-          // --- color ---------------------------------------------------
-          let cellClassName: string | undefined;
-          let cellStyle: { backgroundColor: string; borderColor: string } | undefined;
+          // --- color -----------------------------------------------------
+          // Colors the chiplet box itself (pool depth / hardware quality /
+          // candidate tier are all chiplet-level metrics, not per-qubit
+          // ones) -- the qubit cells inside stay a flat neutral gray below,
+          // just to show they're there.
+          let boxClassName: string | undefined;
+          let boxStyle: { backgroundColor: string; borderColor: string } | undefined;
 
           if (selectMode === "live") {
             const tier = candidateEntry?.tier;
             if (!candidateEntry) {
-              cellClassName = STATE_CLASSES.sentinel.cell;
+              boxClassName = STATE_CLASSES.sentinel.cell;
             } else if (tier === "unsuitable") {
-              cellClassName = STATE_CLASSES.degraded.cell;
+              boxClassName = STATE_CLASSES.degraded.cell;
             } else if (tier === "recommended" || tier === "good") {
-              cellClassName = STATE_CLASSES.active.cell;
+              boxClassName = STATE_CLASSES.active.cell;
             } else {
-              cellClassName = STATE_CLASSES.sentinel.cell;
+              boxClassName = STATE_CLASSES.sentinel.cell;
             }
           } else if (colorMode === "quality") {
             const q = chipletQuality[cid];
             if (!q || q.meanErrorPct === null) {
-              cellClassName = STATE_CLASSES.sentinel.cell;
+              boxClassName = STATE_CLASSES.sentinel.cell;
             } else if (!qualityErrorRange) {
-              cellClassName = STATE_CLASSES.active.cell;
+              boxClassName = STATE_CLASSES.active.cell;
             } else {
               const rgb = errorRateRgb(q.meanErrorPct, qualityErrorRange.min, qualityErrorRange.max);
-              cellStyle = { backgroundColor: toCss(rgb), borderColor: toCss(rgb) };
+              boxStyle = { backgroundColor: toCss(rgb), borderColor: toCss(rgb) };
             }
           } else {
             // colorMode === "pool"
             if (!poolEntry || poolEntry.bits_available <= 0) {
-              cellClassName = STATE_CLASSES.sentinel.cell;
+              boxClassName = STATE_CLASSES.sentinel.cell;
             } else if (maxBits <= 0) {
-              cellClassName = STATE_CLASSES.active.cell;
+              boxClassName = STATE_CLASSES.active.cell;
             } else {
               const deficit = maxBits - poolEntry.bits_available;
               const rgb = errorRateRgb(deficit, 0, maxBits);
-              cellStyle = { backgroundColor: toCss(rgb), borderColor: toCss(rgb) };
+              boxStyle = { backgroundColor: toCss(rgb), borderColor: toCss(rgb) };
             }
           }
 
@@ -295,7 +317,7 @@ export default function ChipletVisualPicker({
           let tooltipHtml: string;
           if (selectMode === "pool") {
             if (poolEntry && poolEntry.bits_available > 0) {
-              countLabel = formatBits(poolEntry.bits_available);
+              countLabel = `${formatBits(poolEntry.bits_available)} bits`;
               tooltipHtml =
                 `<b>${cid} — ${formatBits(poolEntry.bits_available)} bits available</b>` +
                 `calibration ${poolEntry.newest_calibration_id?.slice(0, 16) ?? "unknown"}` +
@@ -316,10 +338,11 @@ export default function ChipletVisualPicker({
             }
           }
 
+          // Qubit cells are a flat, generic light gray -- the color lives on
+          // the chiplet box (boxClassName/boxStyle above), not per cell.
           const cells = Array.from({ length: CELLS_PER_CHIPLET }, (_, i) => ({
             key: i,
-            className: cellClassName,
-            style: cellStyle,
+            className: "border-gray-100 bg-gray-100 opacity-75",
           }));
 
           return (
@@ -328,6 +351,8 @@ export default function ChipletVisualPicker({
               label={cid}
               countLabel={countLabel}
               cells={cells}
+              boxClassName={boxClassName}
+              boxStyle={boxStyle}
               selected={isSelected}
               disabled={!selectable && !isSelected}
               onClick={() => selectable && onToggle(cid)}
