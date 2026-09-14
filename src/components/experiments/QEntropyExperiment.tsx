@@ -1,11 +1,18 @@
 "use client";
 
-import { formatCreditsWithUsd } from "@/components/billing/CreditsSummary";
+import {
+  type Credits,
+  fetchJson,
+  formatCreditsWithUsd,
+} from "@/components/billing/CreditsSummary";
+import LRButton from "@/components/ui/LRButton";
 import PresetSelector from "@/components/ui/PresetSelector";
 import {
   entropyCostCents,
   entropyPricePerBitLabel,
 } from "@/lib/entropy/pricing";
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import ChipletVisualPicker from "./ChipletVisualPicker";
 import LiveRunCard from "./LiveRunCard";
@@ -82,6 +89,11 @@ export default function QEntropyExperiment({
   const [recentRuns, setRecentRuns] = useState<RecentRun[]>([]);
   const [expandedRecent, setExpandedRecent] = useState<Set<string>>(new Set());
 
+  const credits = useQuery({
+    queryKey: ["billing", "credits"],
+    queryFn: () => fetchJson<Credits>("/api/billing/credits"),
+  });
+
   useEffect(() => {
     // localStorage is a browser-only external system -- read on mount,
     // via a microtask so the read/set happens as a deferred callback
@@ -138,6 +150,11 @@ export default function QEntropyExperiment({
     () => entropyCostCents(withdrawTotalBits),
     [withdrawTotalBits],
   );
+  const insufficientCredits =
+    mode === "pool" &&
+    selectedChiplets.length > 0 &&
+    credits.data !== undefined &&
+    credits.data.remainingCents < withdrawCostCents;
 
   function switchMode(next: Mode) {
     setMode(next);
@@ -267,6 +284,7 @@ export default function QEntropyExperiment({
   const canSubmit =
     selectedChiplets.length > 0 &&
     !submitting &&
+    !insufficientCredits &&
     (mode === "pool" ? bitCount > 0 : samples > 0);
 
   const selectionHint =
@@ -394,18 +412,30 @@ export default function QEntropyExperiment({
             </div>
           )}
 
-          <button
-            type="button"
-            disabled={!canSubmit}
-            onClick={mode === "pool" ? handleWithdraw : handleRunLive}
-            className="default-radius inline-flex cursor-pointer items-center justify-center border border-[var(--brand-primary)] bg-[var(--brand-primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--brand-primary-light)] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {submitting
-              ? "Submitting…"
-              : mode === "pool"
-                ? "Withdraw"
-                : "Run measurement"}
-          </button>
+          {insufficientCredits && (
+            <p className="text-sm text-red-600">Insufficient credits</p>
+          )}
+
+          {insufficientCredits ? (
+            <Link href="/settings/purchases/quantum-compute">
+              <LRButton variant="primary" className="w-full">
+                Purchase compute credits
+              </LRButton>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              disabled={!canSubmit}
+              onClick={mode === "pool" ? handleWithdraw : handleRunLive}
+              className="default-radius inline-flex cursor-pointer items-center justify-center border border-[var(--brand-primary)] bg-[var(--brand-primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--brand-primary-light)] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {submitting
+                ? "Submitting…"
+                : mode === "pool"
+                  ? "Withdraw"
+                  : "Run measurement"}
+            </button>
+          )}
           {submitError && <p className="text-sm text-red-600">{submitError}</p>}
 
           {/* Same panel, right after the button that produced it -- not
