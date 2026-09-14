@@ -359,22 +359,22 @@ export default function ChipletVisualPicker({
             if (poolEntry && poolEntry.bits_available > 0) {
               countLabel = `${formatBits(poolEntry.bits_available)} bits`;
               tooltipHtml =
-                `<b>${cid} — ${formatBits(poolEntry.bits_available)} bits available</b>` +
-                `calibration ${poolEntry.newest_calibration_id?.slice(0, 16) ?? "unknown"}` +
+                `<b>${cid} : ${formatBits(poolEntry.bits_available)} bits available</b>` +
+                ` calibration ${poolEntry.newest_calibration_id?.slice(0, 16) ?? "unknown"}` +
                 (poolEntry.last_refill_at ? ` · refilled ${new Date(poolEntry.last_refill_at).toLocaleString()}` : "");
             } else if (poolEntry) {
-              tooltipHtml = `<b>${cid} — Depleted</b>0 bits available (previously refilled${poolEntry.last_refill_at ? ` ${new Date(poolEntry.last_refill_at).toLocaleString()}` : ""}).`;
+              tooltipHtml = `<b>${cid} : Depleted</b> 0 bits available (previously refilled${poolEntry.last_refill_at ? ` ${new Date(poolEntry.last_refill_at).toLocaleString()}` : ""}).`;
             } else {
-              tooltipHtml = `<b>${cid} — Not yet generated</b>No entropy pool for this chiplet yet.`;
+              tooltipHtml = `<b>${cid} : Not yet generated</b> No entropy pool for this chiplet yet.`;
             }
             if (colorMode === "quality" && chipletQuality[cid]?.meanFrbPct != null) {
               tooltipHtml += `<br/>mean fRB (simultaneous): ${chipletQuality[cid].meanFrbPct!.toFixed(2)}%`;
             }
           } else {
             if (candidateEntry) {
-              tooltipHtml = `<b>${cid} — ${candidateEntry.tier}</b>` + (candidateEntry.score != null ? `score ${candidateEntry.score.toFixed(3)}` : "");
+              tooltipHtml = `<b>${cid} : ${candidateEntry.tier}</b>` + (candidateEntry.score != null ? `score ${candidateEntry.score.toFixed(3)}` : "");
             } else {
-              tooltipHtml = `<b>${cid}</b>Not scored yet.`;
+              tooltipHtml = `<b>${cid}</b> Not scored yet.`;
             }
           }
 

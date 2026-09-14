@@ -230,6 +230,9 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
               common case, live the exception, and a one-line hint replaces
               what used to be a full paragraph per mode. */}
           <div className="mb-4">
+            <h3 className="mb-1.5 text-sm font-semibold text-gray-700">
+              Entropy extraction mode
+            </h3>
             <div className="mb-1.5 inline-flex default-radius border border-gray-200 p-1 gap-1">
               <button
                 type="button"
@@ -256,8 +259,8 @@ export default function QEntropyExperiment({ experimentDef }: { experimentDef: E
             </div>
             <p className="text-xs text-gray-500">
               {mode === "pool"
-                ? "Instant — withdraws pre-generated bits from inventory."
-                : "Submits a new hardware run; queues automatically if the device is busy."}
+                ? "Instant. Withdraws pre-generated bits from inventory."
+                : "Submits a new hardware run. If the device is busy, it queues automatically."}
             </p>
           </div>
 
