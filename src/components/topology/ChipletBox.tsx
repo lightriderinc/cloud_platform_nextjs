@@ -55,12 +55,19 @@ export default function ChipletBox({
   onMouseMove?: (e: MouseEvent) => void;
   onMouseLeave?: () => void;
 }) {
+  // A caller-colored box (boxClassName/boxStyle) gets a thicker, 2px border
+  // in that same color so the color reads as an outline around the chiplet,
+  // not just a fill -- plain uncolored boxes (ProcessorMapCard) keep the
+  // original hairline border. Selection's own ring is already 2px.
+  const hasBoxColor = !!boxClassName || !!boxStyle;
+  const borderWidthClass = selected || hasBoxColor ? "border-2" : "border";
+
   return (
     <div
       id={id}
-      className={`relative z-10 default-radius border p-1.5 transition-colors duration-300 ${
+      className={`relative z-10 default-radius ${borderWidthClass} p-1.5 transition-colors duration-300 ${
         selected
-          ? "border-2 border-[var(--brand-primary)] bg-red-50"
+          ? "border-[var(--brand-primary)] bg-red-50"
           : (boxClassName ?? (disabled ? "border-gray-100 bg-gray-100" : "border-gray-100 bg-gray-100 hover:border-gray-200"))
       } ${disabled ? "cursor-not-allowed" : !selected ? "cursor-pointer" : ""}`}
       style={selected ? undefined : boxStyle}
