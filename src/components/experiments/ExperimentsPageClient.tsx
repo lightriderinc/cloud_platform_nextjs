@@ -2,6 +2,7 @@
 
 import { handleSignIn } from "@/app/actions/auth";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import ExperimentsPageClientSkeleton from "./ExperimentsPageClientSkeleton";
 import QEntropyExperiment from "./QEntropyExperiment";
 import type { ExperimentCatalogResponse, ExperimentDef } from "./types";
 
@@ -89,9 +90,7 @@ export default function ExperimentsPageClient({
   }
 
   if (!catalog) {
-    return (
-      <p className="text-sm text-gray-500">Loading available experiments…</p>
-    );
+    return <ExperimentsPageClientSkeleton />;
   }
 
   return (

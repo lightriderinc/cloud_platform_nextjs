@@ -9,6 +9,7 @@ import CepheusConnectionTabSkeleton from "./CepheusConnectionTabSkeleton";
 import CepheusDetailsPanel from "./CepheusDetailsPanel";
 import CepheusDetailsPanelSkeleton from "./CepheusDetailsPanelSkeleton";
 import CepheusExperimentsTab from "./CepheusExperimentsTab";
+import CepheusExperimentsTabSkeleton from "./CepheusExperimentsTabSkeleton";
 import CepheusReservationTab from "./CepheusReservationTab";
 import CepheusReservationTabSkeleton from "./CepheusReservationTabSkeleton";
 import CepheusTopologyTab from "./CepheusTopologyTab";
@@ -130,6 +131,8 @@ export default function CepheusDetailTabs({
           <CepheusConnectionTabSkeleton />
         ) : tab === "topology" ? (
           <TopologyExplorerSkeleton />
+        ) : tab === "experiments" ? (
+          <CepheusExperimentsTabSkeleton />
         ) : (
           <CepheusReservationTabSkeleton />
         )

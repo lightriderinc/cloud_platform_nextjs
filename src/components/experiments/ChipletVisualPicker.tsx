@@ -72,14 +72,12 @@ export default function ChipletVisualPicker({
   candidates,
   selected,
   onToggle,
-  loading,
 }: {
   selectMode: "pool" | "live";
   pools: EntropyPoolsResponse | null;
   candidates: CandidatesResponse | null;
   selected: string[];
   onToggle: (chipletId: string) => void;
-  loading?: boolean;
 }) {
   const [colorMode, setColorMode] = useState<ColorMode>("pool");
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
@@ -285,8 +283,7 @@ export default function ChipletVisualPicker({
           const isSelected = selected.includes(cid);
 
           const selectable =
-            !loading &&
-            (selectMode === "live" ? true : !!poolEntry && poolEntry.bits_available > 0);
+            selectMode === "live" ? true : !!poolEntry && poolEntry.bits_available > 0;
 
           // --- color -----------------------------------------------------
           // Colors the chiplet box itself (pool depth / hardware quality /

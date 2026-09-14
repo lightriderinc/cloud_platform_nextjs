@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import ChipletVisualPicker from "./ChipletVisualPicker";
 import LiveRunCard from "./LiveRunCard";
+import QEntropyExperimentSkeleton from "./QEntropyExperimentSkeleton";
 import { addRecentRun, loadRecentRuns, type RecentRun } from "./recentRuns";
 import type {
   CandidatesResponse,
@@ -305,6 +306,14 @@ export default function QEntropyExperiment({
       ? `Select one or more chiplets to ${mode === "pool" ? "withdraw entropy from" : "measure live"}`
       : `${selectedChiplets.length} chiplet${selectedChiplets.length > 1 ? "s" : ""} selected`;
 
+  // Distinct from ExperimentsPageClientSkeleton (catalog/dropdown loading,
+  // before any experiment is selected) -- this covers q_entropy's own
+  // pools/candidates fetch, which happens after this component has already
+  // mounted with a resolved experimentDef.
+  if (mode === "pool" ? !pools : !candidates) {
+    return <QEntropyExperimentSkeleton />;
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {/* Selection (left, primary) + configure/submit (right, sticky so the
@@ -358,7 +367,6 @@ export default function QEntropyExperiment({
               candidates={candidates}
               selected={selectedChiplets}
               onToggle={toggleChiplet}
-              loading={mode === "pool" ? !pools : !candidates}
             />
           </div>
         </div>
