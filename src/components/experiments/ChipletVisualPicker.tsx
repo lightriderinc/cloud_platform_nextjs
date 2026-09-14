@@ -350,7 +350,7 @@ export default function ChipletVisualPicker({
           // box needs the computed light/dark check.
           const isDarkBox = !isSelected && boxRgb !== null && relativeLuminance(boxRgb) < DARK_BG_THRESHOLD;
           const labelClassName = `text-sm font-semibold ${isDarkBox ? "text-white" : "text-gray-700"}`;
-          const countLabelClassName = `text-xs ${isDarkBox ? "text-white/80" : "text-gray-400"}`;
+          const countLabelClassName = `text-xs ${isDarkBox ? "text-white/80" : "text-gray-600"}`;
 
           // --- tooltip / count label -------------------------------------
           let countLabel: string | undefined;
@@ -385,7 +385,7 @@ export default function ChipletVisualPicker({
           // the box color underneath is still legible through them.
           const cells = Array.from({ length: CELLS_PER_CHIPLET }, (_, i) => ({
             key: i,
-            className: `border-gray-100 bg-gray-100 ${isSelected ? "opacity-100" : "opacity-75"}`,
+            className: `${isSelected ? "opacity-30 border-gray-200 bg-gray-200" : "opacity-75 border-gray-100 bg-gray-100"}`,
           }));
 
           return (
