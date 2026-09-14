@@ -150,11 +150,23 @@ export default function QEntropyExperiment({
     () => entropyCostCents(withdrawTotalBits),
     [withdrawTotalBits],
   );
+  const pricingShown = mode === "pool" && selectedChiplets.length > 0;
+  // Insufficient balance takes priority over the locked-credits case below:
+  // if even the full (bonus + purchased) balance can't cover the cost, the
+  // fix is "buy more credits", not "make a purchase at all" -- so only
+  // treat it as locked when the total would otherwise be enough.
   const insufficientCredits =
-    mode === "pool" &&
-    selectedChiplets.length > 0 &&
+    pricingShown &&
     credits.data !== undefined &&
     credits.data.remainingCents < withdrawCostCents;
+  // purchasedCents <= 0 means any remaining balance is just the signup
+  // bonus, which isn't spendable until a first purchase unlocks it -- same
+  // gate CreditsSummary uses.
+  const creditsLocked =
+    pricingShown &&
+    credits.data !== undefined &&
+    !insufficientCredits &&
+    credits.data.purchasedCents <= 0;
 
   function switchMode(next: Mode) {
     setMode(next);
@@ -284,6 +296,7 @@ export default function QEntropyExperiment({
   const canSubmit =
     selectedChiplets.length > 0 &&
     !submitting &&
+    !creditsLocked &&
     !insufficientCredits &&
     (mode === "pool" ? bitCount > 0 : samples > 0);
 
@@ -412,14 +425,21 @@ export default function QEntropyExperiment({
             </div>
           )}
 
+          {creditsLocked && (
+            <p className="text-sm text-red-600">
+              Complete your first purchase to unlock your bonus credits
+            </p>
+          )}
           {insufficientCredits && (
             <p className="text-sm text-red-600">Insufficient credits</p>
           )}
 
-          {insufficientCredits ? (
+          {creditsLocked || insufficientCredits ? (
             <Link href="/settings/purchases/quantum-compute">
               <LRButton variant="primary" className="w-full">
-                Purchase compute credits
+                {creditsLocked
+                  ? "Make your first credit purchase"
+                  : "Purchase compute credits"}
               </LRButton>
             </Link>
           ) : (
