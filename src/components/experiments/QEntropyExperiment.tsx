@@ -301,25 +301,25 @@ export default function QEntropyExperiment({
               </button>
               <button
                 type="button"
-                onClick={() => switchMode("live")}
-                className={`default-radius cursor-pointer px-3 py-1.5 text-sm font-medium transition-colors ${
-                  mode === "live"
-                    ? "bg-[var(--brand-primary)] text-white"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
+                disabled
+                title="Live measurement is coming soon."
+                className="default-radius cursor-not-allowed px-3 py-1.5 text-sm font-medium text-gray-300"
               >
                 Live measurement
+                <span className="ml-1.5 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-gray-400">
+                  Coming soon
+                </span>
               </button>
             </div>
             <p className="text-xs text-gray-500">
-              {mode === "pool"
-                ? "Instant. Withdraws pre-generated bits from inventory."
-                : "Submits a new hardware run. If the device is busy, it queues automatically."}
+              Instant. Withdraws pre-generated bits from inventory.
             </p>
           </div>
 
           <div className="border-2 border-gray-50 p-4">
-            <p className="mb-6 text-sm font-semibold text-gray-00">{selectionHint}</p>
+            <p className="mb-6 text-sm font-semibold text-gray-00">
+              {selectionHint}
+            </p>
 
             <ChipletVisualPicker
               selectMode={mode}
@@ -362,17 +362,19 @@ export default function QEntropyExperiment({
 
           {mode === "pool" && (
             <label
-              className={`flex items-center gap-2 text-sm ${
+              className={`flex items-start gap-2 text-sm ${
                 selectedChiplets.length < 2 ? "text-gray-300" : "text-gray-700"
               }`}
               title="Combines the selected chiplets' bits into a single XOR'd stream instead of one stream per chiplet."
             >
-              <input
-                type="checkbox"
-                checked={combined}
-                disabled={selectedChiplets.length < 2}
-                onChange={(e) => setCombined(e.target.checked)}
-              />
+              <div className="py-0.5">
+                <input
+                  type="checkbox"
+                  checked={combined}
+                  disabled={selectedChiplets.length < 2}
+                  onChange={(e) => setCombined(e.target.checked)}
+                />
+              </div>
               Combine into one XOR&apos;d stream
               {selectedChiplets.length < 2 && (
                 <span className="text-xs text-gray-300">(select 2+)</span>
