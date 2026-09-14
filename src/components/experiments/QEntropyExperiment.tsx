@@ -302,8 +302,8 @@ export default function QEntropyExperiment({
 
   const selectionHint =
     selectedChiplets.length === 0
-      ? `Select one or more chiplets to ${mode === "pool" ? "withdraw entropy from" : "measure live"}.`
-      : `${selectedChiplets.length} chiplet${selectedChiplets.length > 1 ? "s" : ""} selected.`;
+      ? `Select one or more chiplets to ${mode === "pool" ? "withdraw entropy from" : "measure live"}`
+      : `${selectedChiplets.length} chiplet${selectedChiplets.length > 1 ? "s" : ""} selected`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -316,7 +316,7 @@ export default function QEntropyExperiment({
               what used to be a full paragraph per mode. */}
           <div className="mb-4">
             <h3 className="mb-1.5 text-sm font-semibold text-gray-700">
-              Entropy extraction mode
+              Entropy extraction mode:
             </h3>
             <div className="mb-1.5 inline-flex default-radius border border-gray-200 p-1 gap-1">
               <button
