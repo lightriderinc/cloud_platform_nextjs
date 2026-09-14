@@ -29,6 +29,24 @@ function formatBits(n: number): string {
   return n.toLocaleString();
 }
 
+// Perceived-brightness formula (not the stricter WCAG relative luminance --
+// this only has to pick a readable side, not certify a contrast ratio).
+// Anything below the threshold is dark enough to need white text.
+function relativeLuminance([r, g, b]: [number, number, number]): number {
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+}
+const DARK_BG_THRESHOLD = 0.5;
+
+// The RGB behind each discrete STATE_CLASSES `.cell` swatch used as a box
+// color below (green-500 / amber-400 / purple-200), so the same
+// luminance-based contrast check used for the continuous pool/quality
+// gradient also covers these solid fills.
+const STATE_TEXT_RGB: Record<"active" | "degraded" | "sentinel", [number, number, number]> = {
+  active: [34, 197, 94],
+  degraded: [251, 191, 36],
+  sentinel: [233, 213, 255],
+};
+
 /**
  * The Q-ENTROPY chiplet picker, rebuilt on the topology page's own visual
  * primitives (ChipletBox, STATE_CLASSES, the fRB error gradient, and the
@@ -274,43 +292,65 @@ export default function ChipletVisualPicker({
           // Colors the chiplet box itself (pool depth / hardware quality /
           // candidate tier are all chiplet-level metrics, not per-qubit
           // ones) -- the qubit cells inside stay a flat neutral gray below,
-          // just to show they're there.
+          // just to show they're there. `boxRgb` mirrors whichever fill is
+          // chosen, purely so the label text below can pick a readable
+          // color for it -- it's never rendered itself.
           let boxClassName: string | undefined;
           let boxStyle: { backgroundColor: string; borderColor: string } | undefined;
+          let boxRgb: [number, number, number] | null = null;
 
           if (selectMode === "live") {
             const tier = candidateEntry?.tier;
             if (!candidateEntry) {
               boxClassName = STATE_CLASSES.sentinel.cell;
+              boxRgb = STATE_TEXT_RGB.sentinel;
             } else if (tier === "unsuitable") {
               boxClassName = STATE_CLASSES.degraded.cell;
+              boxRgb = STATE_TEXT_RGB.degraded;
             } else if (tier === "recommended" || tier === "good") {
               boxClassName = STATE_CLASSES.active.cell;
+              boxRgb = STATE_TEXT_RGB.active;
             } else {
               boxClassName = STATE_CLASSES.sentinel.cell;
+              boxRgb = STATE_TEXT_RGB.sentinel;
             }
           } else if (colorMode === "quality") {
             const q = chipletQuality[cid];
             if (!q || q.meanErrorPct === null) {
               boxClassName = STATE_CLASSES.sentinel.cell;
+              boxRgb = STATE_TEXT_RGB.sentinel;
             } else if (!qualityErrorRange) {
               boxClassName = STATE_CLASSES.active.cell;
+              boxRgb = STATE_TEXT_RGB.active;
             } else {
               const rgb = errorRateRgb(q.meanErrorPct, qualityErrorRange.min, qualityErrorRange.max);
               boxStyle = { backgroundColor: toCss(rgb), borderColor: toCss(rgb) };
+              boxRgb = rgb;
             }
           } else {
             // colorMode === "pool"
             if (!poolEntry || poolEntry.bits_available <= 0) {
               boxClassName = STATE_CLASSES.sentinel.cell;
+              boxRgb = STATE_TEXT_RGB.sentinel;
             } else if (maxBits <= 0) {
               boxClassName = STATE_CLASSES.active.cell;
+              boxRgb = STATE_TEXT_RGB.active;
             } else {
               const deficit = maxBits - poolEntry.bits_available;
               const rgb = errorRateRgb(deficit, 0, maxBits);
               boxStyle = { backgroundColor: toCss(rgb), borderColor: toCss(rgb) };
+              boxRgb = rgb;
             }
           }
+
+          // Selection always renders as the light `bg-red-50` fill
+          // (ChipletBox drops boxClassName/boxStyle while `selected`), so
+          // the default dark text is already readable there regardless of
+          // the underlying metric color -- only the unselected, colored
+          // box needs the computed light/dark check.
+          const isDarkBox = !isSelected && boxRgb !== null && relativeLuminance(boxRgb) < DARK_BG_THRESHOLD;
+          const labelClassName = `text-sm font-semibold ${isDarkBox ? "text-white" : "text-gray-700"}`;
+          const countLabelClassName = `text-xs ${isDarkBox ? "text-white/80" : "text-gray-400"}`;
 
           // --- tooltip / count label -------------------------------------
           let countLabel: string | undefined;
@@ -340,9 +380,12 @@ export default function ChipletVisualPicker({
 
           // Qubit cells are a flat, generic light gray -- the color lives on
           // the chiplet box (boxClassName/boxStyle above), not per cell.
+          // Full opacity once selected so the selected chiplet's grid reads
+          // crisp against the selection tint; otherwise slightly faded so
+          // the box color underneath is still legible through them.
           const cells = Array.from({ length: CELLS_PER_CHIPLET }, (_, i) => ({
             key: i,
-            className: "border-gray-100 bg-gray-100 opacity-75",
+            className: `border-gray-100 bg-gray-100 ${isSelected ? "opacity-100" : "opacity-75"}`,
           }));
 
           return (
@@ -353,6 +396,8 @@ export default function ChipletVisualPicker({
               cells={cells}
               boxClassName={boxClassName}
               boxStyle={boxStyle}
+              labelClassName={labelClassName}
+              countLabelClassName={countLabelClassName}
               selected={isSelected}
               disabled={!selectable && !isSelected}
               onClick={() => selectable && onToggle(cid)}

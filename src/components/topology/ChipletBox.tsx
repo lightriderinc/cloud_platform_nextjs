@@ -29,6 +29,8 @@ export default function ChipletBox({
   disabled,
   boxClassName,
   boxStyle,
+  labelClassName,
+  countLabelClassName,
   onClick,
   onMouseEnter,
   onMouseMove,
@@ -45,6 +47,9 @@ export default function ChipletBox({
   /** Background/border class+style for the whole chiplet box, for a caller that colors the chiplet itself by a chiplet-level metric (e.g. pool depth) rather than per-qubit cells. Ignored while `selected`, so the selection tint stays on top. */
   boxClassName?: string;
   boxStyle?: CSSProperties;
+  /** Overrides the default label/countLabel text color -- for a caller whose boxClassName/boxStyle can be dark enough that the default dark-gray text stops being readable. */
+  labelClassName?: string;
+  countLabelClassName?: string;
   onClick?: () => void;
   onMouseEnter?: (e: MouseEvent) => void;
   onMouseMove?: (e: MouseEvent) => void;
@@ -65,8 +70,10 @@ export default function ChipletBox({
       onMouseLeave={onMouseLeave}
     >
       <div className="mb-1 flex items-center justify-between">
-        <span className="text-sm font-semibold text-gray-700">{label}</span>
-        {countLabel != null && <span className="text-xs text-gray-400">{countLabel}</span>}
+        <span className={labelClassName ?? "text-sm font-semibold text-gray-700"}>{label}</span>
+        {countLabel != null && (
+          <span className={countLabelClassName ?? "text-xs text-gray-400"}>{countLabel}</span>
+        )}
       </div>
       <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${gridCols}, 1fr)` }}>
         {cells.map((cell) => (
