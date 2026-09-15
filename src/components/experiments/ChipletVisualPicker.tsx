@@ -170,7 +170,10 @@ export default function ChipletVisualPicker({
           for whichever mode is active on the right. */}
       <div className="mb-3 flex flex-col items-end flex-wrap gap-3">
         {selectMode === "pool" ? (
-          <div className="flex items-center gap-1 text-2xs text-gray-400">
+          <div
+            data-tour="q-entropy-color-by"
+            className="flex items-center gap-1 text-2xs text-gray-400"
+          >
             <span className="mr-0.5">Color by:</span>
             <button
               type="button"

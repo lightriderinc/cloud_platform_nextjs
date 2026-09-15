@@ -17,6 +17,7 @@ import { useEffect, useMemo, useState } from "react";
 import ChipletVisualPicker from "./ChipletVisualPicker";
 import LiveRunCard from "./LiveRunCard";
 import QEntropyExperimentSkeleton from "./QEntropyExperimentSkeleton";
+import QEntropyHowToSection from "./QEntropyHowToSection";
 import { addRecentRun, loadRecentRuns, type RecentRun } from "./recentRuns";
 import type {
   CandidatesResponse,
@@ -316,6 +317,7 @@ export default function QEntropyExperiment({
 
   return (
     <div className="flex flex-col gap-6">
+      <QEntropyHowToSection />
       {/* Selection (left, primary) + configure/submit (right, sticky so the
           action is never below the fold) -- stacks on narrow viewports. */}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
@@ -356,7 +358,10 @@ export default function QEntropyExperiment({
             </p>
           </div>
 
-          <div className="border-2 border-gray-50 p-4">
+          <div
+            data-tour="q-entropy-picker"
+            className="border-2 border-gray-50 p-4"
+          >
             <p className="mb-6 text-sm font-semibold text-gray-00">
               {selectionHint}
             </p>
@@ -376,31 +381,34 @@ export default function QEntropyExperiment({
             {mode === "pool" ? "Configure withdrawal" : "Configure run"}
           </h3>
 
-          {mode === "pool" ? (
-            <PresetSelector
-              key="pool-bit-count"
-              label="Bits per chiplet"
-              presets={BIT_COUNT_PRESETS}
-              value={bitCount}
-              onChange={setBitCount}
-              min={1}
-              max={1_000_000}
-            />
-          ) : (
-            <PresetSelector
-              key="live-samples"
-              label="Samples"
-              presets={SAMPLE_COUNT_PRESETS}
-              value={samples}
-              onChange={setSamples}
-              min={samplesParam?.min ?? 1_000}
-              max={samplesParam?.max ?? 1_000_000}
-              formatPreset={(n) => n.toLocaleString()}
-            />
-          )}
+          <div data-tour="q-entropy-bits">
+            {mode === "pool" ? (
+              <PresetSelector
+                key="pool-bit-count"
+                label="Bits per chiplet"
+                presets={BIT_COUNT_PRESETS}
+                value={bitCount}
+                onChange={setBitCount}
+                min={1}
+                max={1_000_000}
+              />
+            ) : (
+              <PresetSelector
+                key="live-samples"
+                label="Samples"
+                presets={SAMPLE_COUNT_PRESETS}
+                value={samples}
+                onChange={setSamples}
+                min={samplesParam?.min ?? 1_000}
+                max={samplesParam?.max ?? 1_000_000}
+                formatPreset={(n) => n.toLocaleString()}
+              />
+            )}
+          </div>
 
           {mode === "pool" && (
             <label
+              data-tour="q-entropy-combine"
               className={`flex items-start gap-2 text-sm ${
                 selectedChiplets.length < 2 ? "text-gray-300" : "text-gray-700"
               }`}
@@ -453,6 +461,7 @@ export default function QEntropyExperiment({
           ) : (
             <button
               type="button"
+              data-tour="q-entropy-withdraw"
               disabled={!canSubmit}
               onClick={mode === "pool" ? handleWithdraw : handleRunLive}
               className="default-radius inline-flex cursor-pointer items-center justify-center border border-[var(--brand-primary)] bg-[var(--brand-primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--brand-primary-light)] disabled:cursor-not-allowed disabled:opacity-50"
