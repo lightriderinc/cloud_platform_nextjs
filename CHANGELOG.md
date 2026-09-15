@@ -1,3 +1,34 @@
+# [2.2.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v2.1.0...v2.2.0) (2026-09-15)
+
+
+### Bug Fixes
+
+* added insufficient credits error in withdraw panel ([96225a9](https://github.com/lightriderinc/cloud_platform_nextjs/commit/96225a9abe1baba0bd2109baf748bea8d5364607))
+* badge styles ([e900dd1](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e900dd1f73747e6e3bd21562b56202eb29b314c6))
+* chiplet text readable ([dbba3f1](https://github.com/lightriderinc/cloud_platform_nextjs/commit/dbba3f1e9da639690a6e5655314d712f14363cc5))
+* consistent card backgrounds ([d1c3638](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d1c36384e8b91803ab8a84346e90106d05988b5e))
+* dashboard getting started cards updated ([a760a17](https://github.com/lightriderinc/cloud_platform_nextjs/commit/a760a17d47622843e55674935d6d3dd7d2f58846))
+* entropy experiment structure update ([c441c54](https://github.com/lightriderinc/cloud_platform_nextjs/commit/c441c5475d1464f2d930f016593089293ed219f6))
+* experiment chiplet tooltip text ([879236e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/879236ee59f65c95a0f2070ac304cc91710c2c85))
+* higher than max bit numbers not allowed in withdrawal panel ([ad14061](https://github.com/lightriderinc/cloud_platform_nextjs/commit/ad14061567fb57d654b293888d4fd224b281c176))
+* live measurement temporarily unavailable ([d862735](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d862735b903a03907bb5316aa45a3761aad6f8ba))
+* logo updated ([8df4425](https://github.com/lightriderinc/cloud_platform_nextjs/commit/8df44253994a28e6f48d4815d9c49a80e1a0658f))
+* minor dashboard style issues ([f84b782](https://github.com/lightriderinc/cloud_platform_nextjs/commit/f84b7828894d729b30610461bf27bbd45534c5e0))
+* moved experiments to cepheus tabs ([0db64f1](https://github.com/lightriderinc/cloud_platform_nextjs/commit/0db64f1e8c1b4907a85f769c241efabb9494bec0))
+* scrollable backend page tabs ([16ab6b0](https://github.com/lightriderinc/cloud_platform_nextjs/commit/16ab6b058acfc12f2b0114e8691ef97742411f5c))
+* skeleton load added to experiments page ([1d9523c](https://github.com/lightriderinc/cloud_platform_nextjs/commit/1d9523c7cd5ae91cffa045644281456d5bbe886e))
+* updated chiplet gradient representation ([acee42a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/acee42af9ad6bc82ed0a7e85a502f5040b8c3a10))
+* updated experiments update date ([2b56135](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2b56135de620d88e516afdc0b8a9ee737fd9faba))
+* updated open graph ([8577baf](https://github.com/lightriderinc/cloud_platform_nextjs/commit/8577baf3021f0a3ed8f7f1b30d97d32e12dee7c7))
+* user plans removed for now ([8ab4ed4](https://github.com/lightriderinc/cloud_platform_nextjs/commit/8ab4ed48aafbaf164c3cb51188331d7ba99c5a69))
+* withdrawal credit error messages ([35947d0](https://github.com/lightriderinc/cloud_platform_nextjs/commit/35947d03bec8e99c013e17cd01af53016de27b4e))
+
+
+### Features
+
+* dashboard updates section ([9e2d451](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9e2d451c757e887c015ffa23dea62fbbb98f7344))
+* interactive tour for entropy experiment ([15842e8](https://github.com/lightriderinc/cloud_platform_nextjs/commit/15842e88335628c2d2410e6f457d7e4dcd4bd97e))
+
 # [2.1.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v2.0.1...v2.1.0) (2026-08-28)
 
 
