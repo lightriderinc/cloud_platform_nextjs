@@ -12,7 +12,7 @@ export default function DashboardUpdatesSection() {
         <DashboardUpdateCard
           href="/backends/rigetti-cepheus-1-108q?tab=experiments"
           color="lime"
-          date="2024-09-12"
+          date="2024-09-15"
           title="Experiments available on Cepheus-1-108Q"
           description="Experiments are specific use-cases designed to help you explore the unique capabilities of the device and understand how to best utilize it for your applications."
         />
