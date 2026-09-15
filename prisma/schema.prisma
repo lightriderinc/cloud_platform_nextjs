@@ -32,6 +32,9 @@ model Customer {
 
   subscriptions   Subscription[]
   ledgerEntries   CreditLedgerEntry[]
+  // Ledger rows belonging to *someone else* that name this customer as the
+  // other side of a credit transfer. Only populated for transfer rows.
+  counterpartyLedgerEntries CreditLedgerEntry[] @relation("LedgerCounterparty")
   usageEvents     ApiUsageEvent[]
   apiKey          ApiKey?
   quantumJobs     QuantumJobSubmission[]
@@ -69,9 +72,26 @@ model CreditLedgerEntry {
   customerId   String
   customer     Customer @relation(fields: [customerId], references: [id])
   amountCents  Int      // signed
-  reason       String   // e.g. "checkout:cs_123", "job:job_456", "manual_adjustment"
+  reason       String   // e.g. "checkout:cs_123", "job:job_456", "manual_adjustment", "transfer_sent:<transferId>"
   stripeEventId String? @unique // idempotency guard for webhook replays
+  // Customer-to-customer credit transfers (see lib/billing/transferCredits.ts)
+  // write exactly two rows sharing one transferId: the sender's debit and the
+  // recipient's credit. Both nullable — every pre-transfer row, and every
+  // non-transfer row written since, leaves them null. `reason` still carries
+  // the same `namespace:detail` convention ("transfer_sent:<transferId>" /
+  // "transfer_received:<transferId>") so anything parsing reason strings keeps
+  // working; these columns are the joinable version of the same fact.
+  transferId             String?
+  // The *other* party to the transfer: the recipient on a sender's debit row,
+  // the sender on a recipient's credit row. One column rather than two
+  // mutually-exclusive ones — direction is already unambiguous from the sign
+  // of amountCents.
+  counterpartyCustomerId String?
+  counterpartyCustomer   Customer? @relation("LedgerCounterparty", fields: [counterpartyCustomerId], references: [id])
   createdAt    DateTime @default(now())
+
+  @@index([transferId])
+  @@index([counterpartyCustomerId])
 }
 
 // Mirror of Stripe meter events we report for EaaS API usage, kept for our
