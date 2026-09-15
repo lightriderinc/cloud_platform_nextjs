@@ -1,3 +1,10 @@
+## [2.2.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v2.2.0...v2.2.1) (2026-09-15)
+
+
+### Bug Fixes
+
+* avatar image error fix ([b82b69e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b82b69e6d6d48d0b38b7adcdda7446b140477ec6))
+
 # [2.2.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v2.1.0...v2.2.0) (2026-09-15)
 
 
