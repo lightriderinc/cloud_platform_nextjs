@@ -15,7 +15,7 @@ interface PresetSelectorProps {
 }
 
 const chipBase =
-  "px-3 py-1.5 default-radius text-sm font-medium border transition-colors cursor-pointer";
+  "px-3 py-1.5 bg-white default-radius text-sm font-medium border transition-colors cursor-pointer";
 const chipOn =
   "border-[var(--brand-primary)] bg-red-50 text-[var(--brand-primary)]";
 const chipOff =
@@ -53,9 +53,18 @@ export default function PresetSelector({
   }
 
   function onCustomInput(raw: string) {
-    setCustomInput(raw);
     const parsed = parseInt(raw, 10);
-    onChange(Number.isNaN(parsed) ? 0 : parsed);
+    if (Number.isNaN(parsed)) {
+      setCustomInput(raw);
+      onChange(0);
+      return;
+    }
+    // Clamp here rather than relying on the input's max attribute -- that
+    // only affects :invalid/spinner behavior, it doesn't stop someone from
+    // typing a larger number directly.
+    const clamped = Math.min(parsed, max);
+    setCustomInput(String(clamped));
+    onChange(clamped);
   }
 
   return (

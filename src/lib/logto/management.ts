@@ -17,6 +17,25 @@ function endpointBase(): string {
   return logtoConfig.managementEndpoint.replace(/\/$/, "");
 }
 
+/**
+ * Whether M2M access is configured at all. Callers use this to skip the
+ * Management API entirely rather than firing a request that cannot succeed.
+ *
+ * Guards against a placeholder value as well as an absent one: an env file
+ * carrying literal text like "[SENSITIVE]" produces `fetch("[SENSITIVE]/oidc/token")`,
+ * whose "Failed to parse URL" throw looked alarming in the dev overlay on
+ * every account-page render, despite the caller already falling back cleanly.
+ */
+export function isManagementApiConfigured(): boolean {
+  const endpoint = logtoConfig.managementEndpoint;
+  return (
+    typeof endpoint === "string" &&
+    /^https?:\/\//.test(endpoint) &&
+    Boolean(process.env.LOGTO_M2M_APP_ID) &&
+    Boolean(process.env.LOGTO_M2M_APP_SECRET)
+  );
+}
+
 async function getAccessToken(): Promise<string> {
   if (cachedToken && cachedToken.expiresAt - Date.now() > TOKEN_EXPIRY_BUFFER_MS) {
     return cachedToken.accessToken;

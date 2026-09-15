@@ -18,8 +18,10 @@
 // local preview, clearly labelled as unsaved — that's what lets the UI be
 // built and reviewed ahead of the storage work.
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MdDeleteOutline, MdLink, MdUploadFile } from "react-icons/md";
+
+import { beginProtectedWork } from "@/lib/auth/protected-work";
 
 import ModalShell from "@/components/applications/ModalShell";
 import AvatarEditor, {
@@ -98,6 +100,11 @@ export default function EditAvatarModal({
   // Upload tab
   const [file, setFile] = useState<File | null>(null);
   const editorRef = useRef<AvatarEditorHandle>(null);
+
+  // The picked file, its crop position and a typed URL all live only in this
+  // component's state, and the modal is mounted only while it is open — so
+  // hold off the silent SSO redirect for exactly as long as it is on screen.
+  useEffect(() => beginProtectedWork(), []);
 
   // URL tab. Intentionally starts empty even when an avatar is already set —
   // the field is for entering a *new* link, not editing the current one.

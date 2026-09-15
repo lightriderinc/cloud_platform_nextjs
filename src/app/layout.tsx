@@ -1,7 +1,9 @@
+import SessionSync from "@/components/auth/SessionSync";
 import Header from "@/components/Header";
 import Sidebar from "@/components/sidebar/Sidebar";
 import SidebarSecondary from "@/components/sidebar/SidebarSecondary";
 import SidebarSecondaryGate from "@/components/sidebar/SidebarSecondaryGate";
+import { getSession } from "@/lib/auth/session";
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Science_Gothic } from "next/font/google";
 import "./globals.css";
@@ -28,11 +30,13 @@ export const metadata: Metadata = {
   description: "Light Rider cloud quantum platform.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { isAuthenticated } = await getSession();
+
   return (
     <html
       lang="en"
@@ -42,6 +46,7 @@ export default function RootLayout({
         <Providers>
           {/* <WelcomeModal />
           <TourProvider /> */}
+          <SessionSync initialAuthenticated={isAuthenticated} />
           <Header />
           <div className="flex flex-1 min-h-0">
             <Sidebar />

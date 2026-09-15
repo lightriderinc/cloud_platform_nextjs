@@ -42,7 +42,7 @@ export default function BackendCard({
         <h2 className="text-base font-semibold leading-tight">{name}</h2>
         {comingSoon && (
           <span
-            className="w-fit default-radius px-2 py-0.5 text-xs font-medium text-white"
+            className="w-fit rounded px-2 py-0.5 text-xs font-medium text-white"
             style={{ backgroundColor: "var(--brand-tertiary)" }}
           >
             Coming soon

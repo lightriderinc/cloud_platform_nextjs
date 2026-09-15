@@ -15,6 +15,7 @@ import {
   type SetStateAction,
 } from "react";
 import { MdArrowLeft, MdArrowRight } from "react-icons/md";
+import ChipletBox from "./ChipletBox";
 import { errorRateRgb, scoreColor, toCss } from "./errorGradient";
 import { STATE_CLASSES } from "./stateStyles";
 import type { Selection, TooltipState } from "./types";
@@ -214,92 +215,72 @@ export default function ProcessorMapCard({
               (q) => q.presence !== "absent",
             ).length;
             return (
-              <div
+              <ChipletBox
                 key={chipletId}
                 id={`chip-${chipletId}`}
-                className="relative z-10 cursor-pointer default-radius border border-gray-100 bg-gray-100 p-1.5 hover:border-gray-200 transition-colors duration-300"
+                label={chipletId}
+                countLabel={`${activeCount}/${chipletQubits.length}`}
                 onClick={() =>
                   chipletQubits[0] &&
                   onSelect({ kind: "qubit", qubit: chipletQubits[0] })
                 }
-              >
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="text-sm font-semibold text-gray-700">
-                    {chipletId}
-                  </span>
-                  <span className="text-xs text-gray-400">
-                    {activeCount}/{chipletQubits.length}
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-1">
-                  {chipletQubits.map((q) => {
-                    const errorPct =
-                      q.presence !== "absent" &&
-                      q.frbSimultaneous.state === "active" &&
-                      q.frbSimultaneous.value !== null
-                        ? (1 - q.frbSimultaneous.value) * 100
-                        : null;
-                    const gradientColor =
-                      errorPct !== null && errorStats
-                        ? toCss(
-                            errorRateRgb(
-                              errorPct,
-                              errorStats.min,
-                              errorStats.max,
-                            ),
-                            hoveredQubit === q.qubitIndex,
-                          )
-                        : null;
-                    return (
-                      <div
-                        key={q.qubitIndex}
-                        className={`aspect-square default-radius border ${
-                          gradientColor
-                            ? "transition-colors duration-150"
-                            : q.presence === "absent"
-                              ? STATE_CLASSES.absent.cell
-                              : STATE_CLASSES[q.frbSimultaneous.state].cell
-                        }`}
-                        style={
-                          gradientColor
-                            ? {
-                                backgroundColor: gradientColor,
-                                borderColor: gradientColor,
-                              }
-                            : undefined
-                        }
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelect({ kind: "qubit", qubit: q });
-                        }}
-                        onMouseEnter={(e) => {
-                          setHoveredQubit(q.qubitIndex);
-                          const html =
-                            q.presence === "absent"
-                              ? `<b>q${q.qubitIndex} — ABSENT</b>Not exposed in the ISA.`
-                              : `<b>q${q.qubitIndex} - fRB (simultaneous): ${formatMetricValue(q.frbSimultaneous, formatFidelityPct)}`;
-                          onTooltip({
-                            html,
-                            x: e.clientX + 12,
-                            y: e.clientY + 12,
-                          });
-                        }}
-                        onMouseMove={(e) =>
-                          onTooltip((t) =>
-                            t
-                              ? { ...t, x: e.clientX + 12, y: e.clientY + 12 }
-                              : t,
-                          )
-                        }
-                        onMouseLeave={() => {
-                          setHoveredQubit(null);
-                          onTooltip(null);
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
+                cells={chipletQubits.map((q) => {
+                  const errorPct =
+                    q.presence !== "absent" &&
+                    q.frbSimultaneous.state === "active" &&
+                    q.frbSimultaneous.value !== null
+                      ? (1 - q.frbSimultaneous.value) * 100
+                      : null;
+                  const gradientColor =
+                    errorPct !== null && errorStats
+                      ? toCss(
+                          errorRateRgb(
+                            errorPct,
+                            errorStats.min,
+                            errorStats.max,
+                          ),
+                          hoveredQubit === q.qubitIndex,
+                        )
+                      : null;
+                  return {
+                    key: q.qubitIndex,
+                    className: gradientColor
+                      ? "transition-colors duration-150"
+                      : q.presence === "absent"
+                        ? STATE_CLASSES.absent.cell
+                        : STATE_CLASSES[q.frbSimultaneous.state].cell,
+                    style: gradientColor
+                      ? { backgroundColor: gradientColor, borderColor: gradientColor }
+                      : undefined,
+                    onClick: (e) => {
+                      e.stopPropagation();
+                      onSelect({ kind: "qubit", qubit: q });
+                    },
+                    onMouseEnter: (e) => {
+                      setHoveredQubit(q.qubitIndex);
+                      const html =
+                        q.presence === "absent"
+                          ? `<b>q${q.qubitIndex} — ABSENT</b>Not exposed in the ISA.`
+                          : `<b>q${q.qubitIndex} - fRB (simultaneous): ${formatMetricValue(q.frbSimultaneous, formatFidelityPct)}`;
+                      onTooltip({
+                        html,
+                        x: e.clientX + 12,
+                        y: e.clientY + 12,
+                      });
+                    },
+                    onMouseMove: (e) =>
+                      onTooltip((t) =>
+                        t
+                          ? { ...t, x: e.clientX + 12, y: e.clientY + 12 }
+                          : t,
+                      ),
+                    onMouseLeave: () => {
+                      setHoveredQubit(null);
+                      onTooltip(null);
+                    },
+                  };
+                })}
+              />
             );
           })}
         </div>

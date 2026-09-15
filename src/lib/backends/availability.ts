@@ -83,5 +83,5 @@ export function formatAvailability(
 export function availabilityTextClass(
   availability: BackendAvailability | undefined,
 ): string {
-  return availability?.availableNow ? "text-green-600" : "text-gray-400";
+  return availability?.availableNow ? "text-emerald-600" : "text-gray-400";
 }
