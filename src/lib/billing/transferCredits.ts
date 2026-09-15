@@ -46,6 +46,13 @@ export type TransferResult =
        * field so the route never has to infer intent from message text.
        */
       cause: "caller" | "server";
+      /**
+       * Upstream failure detail (e.g. the Logto status and body) for
+       * diagnostics. The route only ever forwards this outside production —
+       * it names internal infrastructure, which is fine in preview and not
+       * something to hand to real users.
+       */
+      detail?: string;
     };
 
 /**
@@ -115,6 +122,7 @@ export async function transferCredits(
       status: "error",
       cause: "server",
       message: "Couldn't look up that account right now. Please try again.",
+      detail: err instanceof Error ? err.message : String(err),
     };
   }
 
@@ -143,6 +151,7 @@ export async function transferCredits(
       status: "error",
       cause: "server",
       message: "Couldn't set up the recipient's account. Please try again.",
+      detail: err instanceof Error ? err.message : String(err),
     };
   }
 

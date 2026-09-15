@@ -96,7 +96,15 @@ export async function POST(req: Request) {
       // Caller-fixable problems (bad amount, sending to yourself) are 400;
       // anything else is ours.
       return NextResponse.json(
-        { error: "error", message: result.message },
+        {
+          error: "error",
+          message: result.message,
+          // Upstream cause, for preview/local debugging only — never sent to
+          // real users, since it names internal services and status codes.
+          ...(result.detail && process.env.VERCEL_ENV !== "production"
+            ? { detail: result.detail }
+            : {}),
+        },
         { status: result.cause === "caller" ? 400 : 500 },
       );
   }
