@@ -1,8 +1,13 @@
 "use client";
 
-import { isProtectedWorkInProgress } from "@/lib/auth/protected-work";
+import {
+  hasUnsavedInput,
+  isProtectedWorkInProgress,
+} from "@/lib/auth/protected-work";
 import {
   RETURN_CHECK_COOLDOWN_SECONDS,
+  SCROLL_RESTORE_MAX_AGE_MS,
+  SILENT_SSO_SCROLL_KEY,
   RETURN_FROM_AWAY_MIN_SECONDS,
   SIGNED_IN_LOAD_COOLDOWN_SECONDS,
   SIGNED_OUT_LOAD_COOLDOWN_SECONDS,
@@ -10,7 +15,7 @@ import {
   isSilentSsoAllowedPath,
 } from "@/lib/auth/silent-sso";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 
 /** How often to re-check auth state while a tab is open and visible. */
 const POLL_INTERVAL_MS = 30_000;
@@ -67,6 +72,12 @@ export default function SessionSync({ initialAuthenticated }: Props) {
       // file or a finished scan; the session is re-checked when that work is
       // submitted instead. See @/lib/auth/protected-work.
       if (isProtectedWorkInProgress()) return;
+      // Blanket guard for every ordinary form that never opted in above. A
+      // half-typed transfer, lead form or search box is exactly the work this
+      // redirect used to destroy, and the cheap /api/auth/session poll keeps
+      // running regardless — so all that is deferred here is cross-app
+      // propagation, until the field is submitted or cleared.
+      if (hasUnsavedInput()) return;
       if (!isSilentSsoAllowedPath(pathname)) return;
 
       let storage: Storage;
@@ -88,6 +99,20 @@ export default function SessionSync({ initialAuthenticated }: Props) {
       }
 
       const returnTo = `${window.location.pathname}${window.location.search}`;
+
+      // The redirect reloads the document, so the browser lands at the top of
+      // the page. Record where the user actually was and restore it on the way
+      // back — the check is supposed to be invisible, and being thrown to the
+      // top of a long page is the most visible thing it did.
+      try {
+        storage.setItem(
+          SILENT_SSO_SCROLL_KEY,
+          JSON.stringify({ path: returnTo, y: window.scrollY, at: Date.now() }),
+        );
+      } catch {
+        // Non-fatal: losing the scroll position is better than losing the check.
+      }
+
       // Must be a real document navigation, not router.push(): this route
       // answers with a redirect to Logto (a different origin), and a
       // client-side RSC transition cannot follow that. The OIDC flow also
@@ -134,6 +159,32 @@ export default function SessionSync({ initialAuthenticated }: Props) {
     },
     [router, attemptSilentCheck],
   );
+
+  // Runs before the first paint so the page never visibly starts at the top
+  // and jump afterwards.
+  useLayoutEffect(() => {
+    let raw: string | null = null;
+    try {
+      raw = window.sessionStorage.getItem(SILENT_SSO_SCROLL_KEY);
+      if (raw) window.sessionStorage.removeItem(SILENT_SSO_SCROLL_KEY);
+    } catch {
+      return; // Storage unreadable — nothing to restore.
+    }
+    if (!raw) return;
+
+    try {
+      const saved = JSON.parse(raw) as { path: string; y: number; at: number };
+      const here = `${window.location.pathname}${window.location.search}`;
+      // Only restore onto the same page, and only for a position saved by the
+      // round-trip we just completed.
+      if (saved.path !== here) return;
+      if (Date.now() - saved.at > SCROLL_RESTORE_MAX_AGE_MS) return;
+      if (typeof saved.y !== "number" || saved.y <= 0) return;
+      window.scrollTo(0, saved.y);
+    } catch {
+      // Malformed entry — already cleared above.
+    }
+  }, []);
 
   useEffect(() => {
     // Automatic page-load check: the strict-cooldown path, since this is the

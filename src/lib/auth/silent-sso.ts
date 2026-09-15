@@ -107,6 +107,20 @@ export const CONSENT_RETRY_PARAM = "consent";
 export const SILENT_SSO_STORAGE_KEY = "lr:silent-sso:last-attempt";
 
 /**
+ * sessionStorage key holding the scroll position from just before a silent
+ * check navigated the document away, so returning lands where the user was
+ * rather than at the top of the page.
+ */
+export const SILENT_SSO_SCROLL_KEY = "lr:silent-sso:scroll";
+
+/**
+ * How long a stored scroll position stays valid. Only ever meant to survive
+ * one redirect round-trip (about a second); anything older is a stale entry
+ * from an abandoned check and restoring it would yank the page unexpectedly.
+ */
+export const SCROLL_RESTORE_MAX_AGE_MS = 60_000;
+
+/**
  * Server-side guard window. This is a LOOP breaker, not a rate limit: an
  * automatic redirect cycle completes in well under a second, so a short window
  * is enough to stop one dead, while staying out of the way of a legitimate
