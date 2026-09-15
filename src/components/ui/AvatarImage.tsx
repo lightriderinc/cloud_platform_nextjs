@@ -9,7 +9,7 @@
 // which can 403, expire, or simply be wrong, and a bare <img> would show the
 // browser's broken-image glyph plus the alt text.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type Props = {
   /** Preferred image. Null/empty skips straight to `fallbackSrc`. */
@@ -42,9 +42,14 @@ export default function AvatarImage({
   const [attempt, setAttempt] = useState(0);
 
   // A new src (e.g. right after a save) deserves a fresh set of attempts.
-  useEffect(() => {
+  // Resetting state during render (rather than in an effect) avoids an
+  // extra commit; React re-renders immediately with the reset value.
+  const sourceKey = `${src ?? ""}|${fallbackSrc ?? ""}`;
+  const [prevSourceKey, setPrevSourceKey] = useState(sourceKey);
+  if (sourceKey !== prevSourceKey) {
+    setPrevSourceKey(sourceKey);
     setAttempt(0);
-  }, [src, fallbackSrc]);
+  }
 
   const current = candidates[attempt];
 
