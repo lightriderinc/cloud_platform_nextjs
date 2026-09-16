@@ -1,6 +1,7 @@
 import { requireLogtoUser } from "@/lib/auth/session";
 import { db } from "@/lib/billing/db";
 import { getOrCreateCustomer } from "@/lib/billing/customer";
+import { TRANSFER_RECEIVED_PREFIX } from "@/lib/billing/transferCredits";
 import { NextResponse } from "next/server";
 
 /**
@@ -30,6 +31,9 @@ export async function GET() {
         customerId: customer.id,
         amountCents: { gt: 0 },
         reason: { not: "signup_credit" },
+        // Received transfers are spendable but were never purchased — see
+        // hasPurchasedCredits(), which gates real QPU access the same way.
+        NOT: { reason: { startsWith: TRANSFER_RECEIVED_PREFIX } },
       },
       _sum: { amountCents: true },
     }),

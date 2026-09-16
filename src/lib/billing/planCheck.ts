@@ -1,5 +1,6 @@
 import { Customer } from "@prisma/client";
 import { db } from "@/lib/billing/db";
+import { TRANSFER_RECEIVED_PREFIX } from "@/lib/billing/transferCredits";
 
 /**
  * Customer has no `tier` field — Pro status isn't stored on Customer at all.
@@ -37,7 +38,15 @@ export function hasEnoughCredits(customer: Customer, costCents: number): boolean
  */
 export async function hasPurchasedCredits(customerId: string): Promise<boolean> {
   const result = await db.creditLedgerEntry.aggregate({
-    where: { customerId, amountCents: { gt: 0 }, reason: { not: "signup_credit" } },
+    where: {
+      customerId,
+      amountCents: { gt: 0 },
+      reason: { not: "signup_credit" },
+      // Credits received from another customer are not a purchase. Without
+      // this, being sent credits would unlock real QPU access for someone who
+      // never paid — which is exactly what this gate exists to prevent.
+      NOT: { reason: { startsWith: TRANSFER_RECEIVED_PREFIX } },
+    },
     _sum: { amountCents: true },
   });
   return (result._sum.amountCents ?? 0) > 0;
