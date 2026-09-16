@@ -20,6 +20,17 @@ import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 /** How often to re-check auth state while a tab is open and visible. */
 const POLL_INTERVAL_MS = 30_000;
 
+/**
+ * How long to wait before re-reading auth state to confirm an apparent change.
+ * /api/auth/session goes all the way to Logto's userinfo endpoint and reports
+ * signed-out on ANY failure, so one dropped request looks identical to a real
+ * sign-out. Acting on a single read made a transient blip trigger
+ * router.refresh(), and the next poll flip it back — a visible refresh loop
+ * during ordinary use. Long enough to outlast a blip, short enough that a
+ * genuine sign-out still propagates in about a second.
+ */
+const CHANGE_CONFIRM_DELAY_MS = 1_500;
+
 type Props = {
   /** Auth state as of the server render, used as the baseline to diff against. */
   initialAuthenticated: boolean;
@@ -54,6 +65,15 @@ export default function SessionSync({ initialAuthenticated }: Props) {
   // When the tab was last hidden, so we can tell "came back from another app"
   // apart from "clicked around in this tab".
   const awaySince = useRef<number | null>(null);
+  // Read through a ref, never a dependency. Depending on `pathname` directly
+  // made the sync effect tear down and re-run on every client-side navigation,
+  // so each link click cost a userinfo round-trip and could fire the silent
+  // check — which reloads the document and lands the user back where they
+  // started. Route changes are not a reason to re-check the session.
+  const pathnameRef = useRef(pathname);
+  useEffect(() => {
+    pathnameRef.current = pathname;
+  }, [pathname]);
 
   /**
    * Guard 1 of the loop protection: only redirect if we can *prove* we
@@ -78,7 +98,7 @@ export default function SessionSync({ initialAuthenticated }: Props) {
       // running regardless — so all that is deferred here is cross-app
       // propagation, until the field is submitted or cleared.
       if (hasUnsavedInput()) return;
-      if (!isSilentSsoAllowedPath(pathname)) return;
+      if (!isSilentSsoAllowedPath(pathnameRef.current)) return;
 
       let storage: Storage;
       try {
@@ -127,20 +147,39 @@ export default function SessionSync({ initialAuthenticated }: Props) {
         `/api/auth/silent-check?returnTo=${encodeURIComponent(returnTo)}`,
       );
     },
-    [pathname],
+    [],
   );
+
+  /** One read of server-side auth state; null when it could not be determined. */
+  const readAuthState = useCallback(async (): Promise<boolean | null> => {
+    try {
+      const response = await fetch("/api/auth/session", { cache: "no-store" });
+      if (!response.ok) return null;
+      const { isAuthenticated } = (await response.json()) as { isAuthenticated: boolean };
+      return Boolean(isAuthenticated);
+    } catch {
+      return null; // Offline or transient — indistinguishable from unknown.
+    }
+  }, []);
 
   const syncNow = useCallback(
     async (options: { silentCheckCooldownSeconds: number | null }) => {
       if (inFlight.current) return;
       inFlight.current = true;
       try {
-        const response = await fetch("/api/auth/session", { cache: "no-store" });
-        if (!response.ok) return;
-        const { isAuthenticated } = (await response.json()) as { isAuthenticated: boolean };
+        const observed = await readAuthState();
+        if (observed === null) return;
 
-        if (isAuthenticated !== knownAuthenticated.current) {
-          knownAuthenticated.current = isAuthenticated;
+        if (observed !== knownAuthenticated.current) {
+          // Confirm before acting: router.refresh() re-renders the entire
+          // server tree, which the user sees. Never pay that for one blip.
+          await new Promise((resolve) =>
+            window.setTimeout(resolve, CHANGE_CONFIRM_DELAY_MS),
+          );
+          const confirmed = await readAuthState();
+          if (confirmed !== observed) return; // Disagreed — treat as noise.
+
+          knownAuthenticated.current = observed;
           // Re-render the server tree, layouts included, so the header and
           // sidebars stop disagreeing with the page body.
           router.refresh();
@@ -151,13 +190,11 @@ export default function SessionSync({ initialAuthenticated }: Props) {
         if (options.silentCheckCooldownSeconds !== null) {
           attemptSilentCheck(options.silentCheckCooldownSeconds);
         }
-      } catch {
-        // Offline or transient — leave the UI as-is and try again next tick.
       } finally {
         inFlight.current = false;
       }
     },
-    [router, attemptSilentCheck],
+    [router, attemptSilentCheck, readAuthState],
   );
 
   // Runs before the first paint so the page never visibly starts at the top
