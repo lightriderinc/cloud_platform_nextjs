@@ -1,9 +1,10 @@
 import CourseHeader from "../course/CourseHeader";
+import CourseMobileToc from "../course/CourseMobileToc";
 import CourseSection from "../course/CourseSection";
 import CourseTableOfContents from "../course/CourseTableOfContents";
 import BitToggler from "./BitToggler";
-import LogicGateExplorer from "./LogicGateExplorer";
 import HalfAdderSimulator from "./HalfAdderSimulator";
+import LogicGateExplorer from "./LogicGateExplorer";
 import RecapQuiz from "./RecapQuiz";
 
 const SECTIONS = [
@@ -29,9 +30,11 @@ export default function ClassicalComputingCourse() {
         description="Bits, boolean logic, and the gates built from them."
       />
 
-      <div className="lg:flex lg:items-start lg:gap-16">
+      <div className="lg:flex lg:items-start justify-between lg:gap-16">
         <div className="min-w-0 max-w-3xl flex-1">
-          <CourseSection id="bits" title="Bits">
+          <CourseMobileToc sections={SECTIONS} />
+
+          <CourseSection className="border-b border-gray-100" id="bits" title="Bits">
             <p>
               A digital computer stores and moves information as bits. A bit
               has exactly two possible states, usually written as 0 and 1.
@@ -65,7 +68,7 @@ export default function ClassicalComputingCourse() {
             <BitToggler />
           </CourseSection>
 
-          <CourseSection id="boolean-algebra" title="Boolean algebra">
+          <CourseSection className="border-b border-gray-100" id="boolean-algebra" title="Boolean algebra">
             <p>
               Once information is stored as bits, a computer needs a way to
               combine them into new bits. That&apos;s boolean algebra — an
@@ -118,7 +121,7 @@ export default function ClassicalComputingCourse() {
             </div>
           </CourseSection>
 
-          <CourseSection id="gates" title="Logic gates">
+          <CourseSection className="border-b border-gray-100" id="gates" title="Logic gates">
             <p>
               A logic gate is a small piece of hardware that implements one
               boolean operation directly, wired together from transistors.
@@ -133,7 +136,7 @@ export default function ClassicalComputingCourse() {
             <LogicGateExplorer />
           </CourseSection>
 
-          <CourseSection id="circuits" title="Building a circuit">
+          <CourseSection className="border-b border-gray-100" id="circuits" title="Building a circuit">
             <p>
               Gates by themselves don&apos;t do much — the point is
               combining them. A half adder is the simplest arithmetic
@@ -163,7 +166,7 @@ export default function ClassicalComputingCourse() {
           </CourseSection>
         </div>
 
-        <aside className="hidden shrink-0 lg:block lg:w-48">
+        <aside className="shrink-0 lg:w-48 lg:sticky lg:top-0 lg:self-start ">
           <CourseTableOfContents sections={SECTIONS} />
         </aside>
       </div>
