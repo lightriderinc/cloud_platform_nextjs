@@ -10,7 +10,7 @@ export default function ClassroomBoardBeginnerPanel() {
         </h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <ClassroomBoardCourseCard
-            href="/classroom"
+            href="/classroom/classical-computing-basics"
             icon={FaSquareBinary}
             title="Classical computing basics"
             description="Learn the fundamental ideas in classical computing."
