@@ -5,7 +5,7 @@ import SidebarSecondary from "@/components/sidebar/SidebarSecondary";
 import SidebarSecondaryGate from "@/components/sidebar/SidebarSecondaryGate";
 import { getSession } from "@/lib/auth/session";
 import type { Metadata } from "next";
-import { Gaegu, IBM_Plex_Mono, IBM_Plex_Sans, Science_Gothic } from "next/font/google";
+import { Gamja_Flower, IBM_Plex_Mono, IBM_Plex_Sans, Science_Gothic } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
 
@@ -25,10 +25,10 @@ const scienceGothic = Science_Gothic({
   subsets: ["latin"],
 });
 
-const gaegu = Gaegu({
-  variable: "--font-gaegu",
+const gamjaFlower = Gamja_Flower({
+  variable: "--font-gamja-flower",
   subsets: ["latin"],
-  weight: ["300", "400", "700"],
+  weight: ["400"],
 });
 
 export const metadata: Metadata = {
@@ -46,7 +46,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} ${scienceGothic.variable} ${gaegu.variable} h-full antialiased`}
+      className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} ${scienceGothic.variable} ${gamjaFlower.variable} h-full antialiased`}
     >
       <body className="h-full flex flex-col overflow-hidden">
         <Providers>

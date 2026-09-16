@@ -2,6 +2,7 @@ import { IoDocumentTextSharp } from "react-icons/io5";
 import { MdApps, MdBarChart, MdDashboard } from "react-icons/md";
 import { RiCpuFill } from "react-icons/ri";
 
+import { FaChalkboardTeacher } from "react-icons/fa";
 import SidebarNavGroup from "./SidebarNavGroup";
 import SidebarNavItem from "./SidebarNavItem";
 
@@ -73,6 +74,13 @@ export default function SidebarGroupDefault({
       </SidebarNavGroup>
 
       <SidebarNavGroup label="Resources">
+        <SidebarNavItem
+          name="Classroom"
+          href="/classroom"
+          icon={FaChalkboardTeacher}
+          onNavigate={onNavigate}
+          tourId="sidebar-applications"
+        />
         <SidebarNavItem
           name="Documentation"
           external
