@@ -13,7 +13,7 @@ export default function CourseMobileToc({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="sticky -top-6 z-10 mb-8 border-b border-gray-100 bg-white/90 backdrop-blur-sm lg:hidden -mx-4">
+    <div className="sticky -top-6 z-10 mb-8 border-b border-gray-100 bg-white/90 backdrop-blur-sm lg:hidden -mx-4 w-[100vw]">
       <div className="flex w-full items-center py-3 px-4">
       <button
         type="button"
