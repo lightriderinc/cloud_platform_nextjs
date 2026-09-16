@@ -1,5 +1,6 @@
 import { Customer } from "@prisma/client";
 import { db } from "@/lib/billing/db";
+import { REFERRAL_REWARD_PREFIX } from "@/lib/billing/referrals";
 
 /**
  * Customer has no `tier` field — Pro status isn't stored on Customer at all.
@@ -30,10 +31,13 @@ export function hasEnoughCredits(customer: Customer, costCents: number): boolean
  * Whether this customer's credits are unlocked for real-hardware use (QPU
  * jobs, reservations, entropy withdrawal).
  *
- * The one-time signup grant (customer.ts: SIGNUP_CREDIT_CENTS) does NOT
- * unlock anything on its own — that is the whole point of the grant being
- * "locked" until the account proves itself. Anything else that put real
- * credits on the account does unlock it:
+ * Two kinds of credit do NOT unlock anything on their own — both are things
+ * the platform handed out rather than something the account obtained:
+ *   - the one-time signup grant (customer.ts: SIGNUP_CREDIT_CENTS), and
+ *   - referral rewards (see referrals.ts), excluded by policy so that
+ *     inviting someone who pays cannot substitute for paying.
+ *
+ * What does unlock:
  *   - a purchase (checkout, or plan credits from a subscription), or
  *   - credits received from another customer via Share Credits.
  *
@@ -43,10 +47,9 @@ export function hasEnoughCredits(customer: Customer, costCents: number): boolean
  * The trade-off is accepted and explicit: being sent any amount, however
  * small, unlocks the recipient's own signup grant for real hardware too.
  *
- * Expressed as "any positive ledger row that isn't the signup grant", which
- * covers both cases without enumerating reason prefixes. Checked against the
- * ledger rather than creditsBalanceCents so a customer who has since spent
- * back down to zero stays unlocked — this gates access, not balance.
+ * Checked against the ledger rather than creditsBalanceCents so a customer
+ * who has since spent back down to zero stays unlocked — this gates access,
+ * not balance.
  *
  * Renamed from hasPurchasedCredits(): a purchase is no longer the only way
  * to satisfy it, and a name that still said "purchased" would misdescribe
@@ -58,6 +61,10 @@ export async function hasUnlockedCredits(customerId: string): Promise<boolean> {
       customerId,
       amountCents: { gt: 0 },
       reason: { not: "signup_credit" },
+      // Policy: a referral reward adds to balance but never unlocks. Without
+      // this, inviting one person who pays would unlock the inviter's own
+      // signup grant for real hardware without them ever paying.
+      NOT: { reason: { startsWith: REFERRAL_REWARD_PREFIX } },
     },
     _sum: { amountCents: true },
   });

@@ -1,6 +1,7 @@
 import { requireLogtoUser } from "@/lib/auth/session";
 import { db } from "@/lib/billing/db";
 import { getOrCreateCustomer } from "@/lib/billing/customer";
+import { REFERRAL_REWARD_PREFIX } from "@/lib/billing/referrals";
 import { TRANSFER_RECEIVED_PREFIX } from "@/lib/billing/transferCredits";
 import { NextResponse } from "next/server";
 
@@ -41,9 +42,14 @@ export async function GET() {
         customerId: customer.id,
         amountCents: { gt: 0 },
         reason: { not: "signup_credit" },
-        // Received transfers are spendable but were never purchased — this
-        // field reports genuine purchases only. Unlocking is `hasUnlocked`.
-        NOT: { reason: { startsWith: TRANSFER_RECEIVED_PREFIX } },
+        // Received transfers and referral rewards are spendable but were
+        // never purchased — this field reports genuine purchases only.
+        NOT: {
+          OR: [
+            { reason: { startsWith: TRANSFER_RECEIVED_PREFIX } },
+            { reason: { startsWith: REFERRAL_REWARD_PREFIX } },
+          ],
+        },
       },
       _sum: { amountCents: true },
     }),

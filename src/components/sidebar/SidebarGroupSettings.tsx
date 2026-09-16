@@ -2,6 +2,7 @@ import { handleSignIn } from "@/app/actions/auth";
 import {
   MdAccountCircle,
   MdCardGiftcard,
+  MdGroupAdd,
   MdHistory,
   MdLocalOffer,
   MdPayments,
@@ -85,6 +86,12 @@ export default function SidebarGroupSettings({
               name="Share Credits"
               href="/settings/share-credits"
               icon={MdCardGiftcard}
+              onNavigate={onNavigate}
+            />
+            <SidebarNavItem
+              name="Refer & Earn"
+              href="/settings/refer-earn"
+              icon={MdGroupAdd}
               onNavigate={onNavigate}
             />
           </SidebarNavGroup>

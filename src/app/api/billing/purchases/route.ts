@@ -1,6 +1,7 @@
 import { requireLogtoUser } from "@/lib/auth/session";
 import { db } from "@/lib/billing/db";
 import { getOrCreateCustomer } from "@/lib/billing/customer";
+import { REFERRAL_REWARD_PREFIX } from "@/lib/billing/referrals";
 import { TRANSFER_RECEIVED_PREFIX } from "@/lib/billing/transferCredits";
 import { NextResponse } from "next/server";
 
@@ -27,9 +28,15 @@ export async function GET() {
       customerId: customer.id,
       amountCents: { gt: 0 },
       reason: { not: "signup_credit" },
-      // Credits received from another customer belong in transfer history
-      // (/settings/share-credits), not in the purchase list.
-      NOT: { reason: { startsWith: TRANSFER_RECEIVED_PREFIX } },
+      // Credits received from another customer, and referral rewards, belong
+      // in the Share Credits "Received" history — not in the purchase list,
+      // where they would render as "Compute credit purchase".
+      NOT: {
+        OR: [
+          { reason: { startsWith: TRANSFER_RECEIVED_PREFIX } },
+          { reason: { startsWith: REFERRAL_REWARD_PREFIX } },
+        ],
+      },
     },
     orderBy: { createdAt: "desc" },
   });

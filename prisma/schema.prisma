@@ -35,6 +35,7 @@ model Customer {
   // Ledger rows belonging to *someone else* that name this customer as the
   // other side of a credit transfer. Only populated for transfer rows.
   counterpartyLedgerEntries CreditLedgerEntry[] @relation("LedgerCounterparty")
+  invitesSent       Invite[]   @relation("InvitesSent")
   referralsSent     Referral[] @relation("ReferralsSent")
   referralsReceived Referral[] @relation("ReferralsReceived")
   usageEvents     ApiUsageEvent[]
@@ -121,11 +122,36 @@ model ProcessedTransferBatch {
   @@index([customerId])
 }
 
-// Placeholder for the referral programme. Deliberately inert: nothing writes
-// a row yet (no invite flow exists to create one), and no qualifying-event
-// listener is wired into job billing or the Stripe webhook. The reward amount
-// and the qualifying trigger are both undecided — `rewardCents` and
-// `qualifyingEventReason` stay null until they are.
+// An emailed invitation to join Light Rider. One row per invite actually
+// sent; an address that already has an account never gets a row (so it can
+// never consume the sender's daily quota).
+model Invite {
+  id                String   @id @default(cuid())
+  inviterCustomerId String
+  inviter           Customer @relation("InvitesSent", fields: [inviterCustomerId], references: [id])
+  email             String
+  token             String   @unique // the ?token= in the invite link
+  status            String   @default("pending") // pending | accepted | expired
+  expiresAt         DateTime // INVITE_TTL_DAYS out from createdAt
+  acceptedAt        DateTime?
+  // The Customer the invitee became, once they sign up.
+  acceptedByCustomerId String?
+  createdAt         DateTime @default(now())
+
+  // The daily rate limit counts this inviter's rows inside a rolling window.
+  @@index([inviterCustomerId, createdAt])
+  @@index([email])
+}
+
+// Refer & Earn. A row is created alongside every Invite (linked by
+// inviteToken); refereeCustomerId is filled in at signup by
+// markRefereeSignedUp(), and the reward fires on the referee's first
+// qualifying event — see lib/billing/referrals.ts.
+//
+// status: pending -> rewarded. "qualified" and "expired" remain in the
+// vocabulary but nothing sets them today: the reward is granted in the same
+// transaction that recognises qualification, so there is no window in which a
+// referral is qualified-but-unrewarded.
 model Referral {
   id                    String   @id @default(cuid())
   referrerCustomerId    String
