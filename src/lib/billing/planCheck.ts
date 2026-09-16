@@ -1,6 +1,5 @@
 import { Customer } from "@prisma/client";
 import { db } from "@/lib/billing/db";
-import { TRANSFER_RECEIVED_PREFIX } from "@/lib/billing/transferCredits";
 
 /**
  * Customer has no `tier` field — Pro status isn't stored on Customer at all.
@@ -28,24 +27,37 @@ export function hasEnoughCredits(customer: Customer, costCents: number): boolean
 }
 
 /**
- * Real QPU access requires having bought credits at least once — the
- * one-time signup grant (see customer.ts: SIGNUP_CREDIT_CENTS) doesn't
- * count, even though it's still spendable dollar-for-dollar once a customer
- * has purchased something. Checked against the ledger directly (not
- * creditsBalanceCents) so a customer who has since spent their purchase back
- * down to $0 still counts as "has purchased" — this gates access, not
- * balance.
+ * Whether this customer's credits are unlocked for real-hardware use (QPU
+ * jobs, reservations, entropy withdrawal).
+ *
+ * The one-time signup grant (customer.ts: SIGNUP_CREDIT_CENTS) does NOT
+ * unlock anything on its own — that is the whole point of the grant being
+ * "locked" until the account proves itself. Anything else that put real
+ * credits on the account does unlock it:
+ *   - a purchase (checkout, or plan credits from a subscription), or
+ *   - credits received from another customer via Share Credits.
+ *
+ * Receiving a transfer counts deliberately: those are real credits somebody
+ * already paid for, and the recipient can spend, send and receive them
+ * normally — treating their account as un-proven made the lock arbitrary.
+ * The trade-off is accepted and explicit: being sent any amount, however
+ * small, unlocks the recipient's own signup grant for real hardware too.
+ *
+ * Expressed as "any positive ledger row that isn't the signup grant", which
+ * covers both cases without enumerating reason prefixes. Checked against the
+ * ledger rather than creditsBalanceCents so a customer who has since spent
+ * back down to zero stays unlocked — this gates access, not balance.
+ *
+ * Renamed from hasPurchasedCredits(): a purchase is no longer the only way
+ * to satisfy it, and a name that still said "purchased" would misdescribe
+ * the check at every call site.
  */
-export async function hasPurchasedCredits(customerId: string): Promise<boolean> {
+export async function hasUnlockedCredits(customerId: string): Promise<boolean> {
   const result = await db.creditLedgerEntry.aggregate({
     where: {
       customerId,
       amountCents: { gt: 0 },
       reason: { not: "signup_credit" },
-      // Credits received from another customer are not a purchase. Without
-      // this, being sent credits would unlock real QPU access for someone who
-      // never paid — which is exactly what this gate exists to prevent.
-      NOT: { reason: { startsWith: TRANSFER_RECEIVED_PREFIX } },
     },
     _sum: { amountCents: true },
   });

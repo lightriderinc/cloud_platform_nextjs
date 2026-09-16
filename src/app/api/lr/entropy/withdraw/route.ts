@@ -1,6 +1,6 @@
 import { resolveCustomerFromRequest } from "@/lib/auth/resolveCustomer";
 import { db } from "@/lib/billing/db";
-import { hasEnoughCredits, hasPurchasedCredits } from "@/lib/billing/planCheck";
+import { hasEnoughCredits, hasUnlockedCredits } from "@/lib/billing/planCheck";
 import { DEFAULT_ENTROPY_BACKEND_ID, proxyEntropyWithdrawPost } from "@/lib/entropy/proxy";
 import { entropyCostCents } from "@/lib/entropy/pricing";
 import { NextRequest, NextResponse } from "next/server";
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   // The only entropy backend is real Rigetti hardware (see
   // DEFAULT_ENTROPY_BACKEND_ID) -- there's no free mock variant, so every
   // withdrawal is gated the same way other real-hardware paths are.
-  if (!(await hasPurchasedCredits(customer.id))) {
+  if (!(await hasUnlockedCredits(customer.id))) {
     return NextResponse.json(
       {
         error: "purchase_required",

@@ -1,5 +1,5 @@
 import { resolveCustomerFromRequest } from "@/lib/auth/resolveCustomer";
-import { hasEnoughCredits, hasPurchasedCredits } from "@/lib/billing/planCheck";
+import { hasEnoughCredits, hasUnlockedCredits } from "@/lib/billing/planCheck";
 import { db } from "@/lib/billing/db";
 import { isValidBackend, QUANTUM_BACKENDS } from "@/lib/quantum/backends";
 import { NextResponse } from "next/server";
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
   // having purchased credits at least once — the free signup grant alone
   // doesn't unlock it, even if it'd otherwise cover this job's cost. Mock/
   // sample-circuit backends (costPerShotCents: 0) are unaffected.
-  if (config.costPerShotCents > 0 && !(await hasPurchasedCredits(customer.id))) {
+  if (config.costPerShotCents > 0 && !(await hasUnlockedCredits(customer.id))) {
     return NextResponse.json(
       {
         error: "purchase_required",
