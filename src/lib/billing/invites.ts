@@ -24,13 +24,69 @@ export const INVITE_TTL_DAYS = 14;
 
 const RATE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-/** Where invite links point. Always the production origin, never a preview URL:
- * an invite outlives the deployment that sent it, so a per-deployment host
- * would break every link as soon as that deployment was superseded. */
-const INVITE_BASE_URL = "https://platform.lightriderinc.com";
+/**
+ * The one origin production invites may ever point at. Hard-pinned rather than
+ * read from env: a production invite sits in someone's inbox for 14 days and
+ * has to outlive the deployment that sent it, so a misconfigured variable must
+ * not be able to silently aim a fortnight of invites at a dead host.
+ */
+const PRODUCTION_ORIGIN = "https://platform.lightriderinc.com";
+
+/** Fallback when nothing else resolves. Matches package.json's pinned dev port. */
+const LOCAL_ORIGIN = "http://localhost:3001";
+
+/**
+ * Where invite links point, per environment.
+ *
+ * Production is pinned. Everywhere else the link points at whatever origin
+ * THIS deployment actually answers on, because a preview invite is only
+ * useful on the preview that created it — its token lives in the preview
+ * database, which production cannot read. A preview invite aimed at
+ * production is broken twice over: wrong code, and wrong database.
+ *
+ * Preview/local links are therefore short-lived by design: they die when the
+ * deployment or the tunnel does, well before the 14-day expiry. That is the
+ * accepted trade — durability is a production requirement, not a dev one.
+ */
+export function inviteBaseUrl(): string {
+  if (process.env.VERCEL_ENV === "production") return PRODUCTION_ORIGIN;
+
+  // INVITE_BASE_URL exists so invite links can point somewhere OTHER than this
+  // app's own origin. The obvious case is local development: NEXT_BASE_URL has
+  // to stay http://localhost:3001 there, because Logto builds redirect_uri
+  // from it and pointing that at a deployed host breaks local sign-in — but a
+  // localhost invite link is only clickable on the machine that sent it. Set
+  // this to the shared preview alias and the emailed link opens anywhere.
+  //
+  // ONLY VALID WHEN THE TARGET READS THE SAME DATABASE this deployment writes
+  // to. The token is a row; a host pointed at a different Postgres will report
+  // the invite as invalid, not as missing.
+  const override = validOrigin(process.env.INVITE_BASE_URL);
+  if (override) return override;
+
+  // This app's own origin. Validated rather than truthy-checked: `vercel env
+  // pull` writes the literal string "[SENSITIVE]" for variables flagged
+  // Sensitive, a configured-looking value that would otherwise produce
+  // "[SENSITIVE]/invite?token=".
+  const configured = validOrigin(process.env.NEXT_BASE_URL);
+  if (configured) return configured;
+
+  // Vercel sets this on every deployment, so preview still works even when
+  // NEXT_BASE_URL is missing or masked.
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+
+  return LOCAL_ORIGIN;
+}
+
+/** An http(s) origin with no trailing slash, or null if the value is unusable. */
+function validOrigin(raw: string | undefined): string | null {
+  const value = raw?.trim();
+  if (!value || !/^https?:\/\//.test(value)) return null;
+  return value.replace(/\/$/, "");
+}
 
 export function inviteLink(token: string): string {
-  return `${INVITE_BASE_URL}/invite?token=${encodeURIComponent(token)}`;
+  return `${inviteBaseUrl()}/invite?token=${encodeURIComponent(token)}`;
 }
 
 /** Invites this inviter has created inside the rolling window. */
