@@ -47,14 +47,16 @@ function toCircuitType(gate: string | undefined): CircuitType | null {
 export default function BackendSubmitModal({
   backend,
   title = "Submit Sample Circuit",
+  initialCircuit = "h",
   onClose,
 }: {
   backend: QuantumBackendId;
   title?: string;
+  initialCircuit?: CircuitType;
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
-  const [circuit, setCircuit] = useState<CircuitType>("h");
+  const [circuit, setCircuit] = useState<CircuitType>(initialCircuit);
   const [shots, setShots] = useState(1000);
   const [submittedJob, setSubmittedJob] = useState<Job | null>(null);
 
