@@ -19,7 +19,7 @@ export default function ClassroomBoardCourseCard({
 }) {
   return (
     <Link
-      className="flex flex-col border-2 rounded-lg border-gray-200 p-4 justify-between gap-2 cursor-pointer hover:bg-emerald-900 hover:border-[var(--brand-primary-light)] transition duration-150 group"
+      className="flex flex-col border-2 rounded-lg border-gray-200 p-4 justify-between gap-2 cursor-pointer hover:bg-emerald-900 hover:border-[var(--brand-primary-light)] active:bg-emerald-900 active:border-[var(--brand-primary-light)] transition duration-150 group"
       href={href}
     >
       <div className="flex flex-col gap-4">
@@ -50,7 +50,7 @@ export default function ClassroomBoardCourseCard({
           Coming soon
         </span>
       ) : (
-        <MdArrowForward className="text-2xl text-gray-100 self-end group-hover:text-[var(--brand-primary-light)] transition duration-150" />
+        <MdArrowForward className="text-2xl text-gray-100 self-end group-hover:text-[var(--brand-primary-light)] group-active:text-[var(--brand-primary-light)] transition duration-150" />
       )}
     </Link>
   );
