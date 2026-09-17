@@ -19,7 +19,7 @@ export default function ClassroomBoardCourseCard({
 }) {
   return (
     <Link
-      className="flex flex-col border-2 rounded-lg border-gray-300 p-4 justify-between gap-2 cursor-pointer hover:bg-emerald-900 hover:border-[var(--brand-primary-light)] transition duration-150 group"
+      className="flex flex-col border-2 rounded-lg border-gray-200 p-4 justify-between gap-2 cursor-pointer hover:bg-emerald-900 hover:border-[var(--brand-primary-light)] transition duration-150 group"
       href={href}
     >
       <div className="flex flex-col gap-4">
@@ -37,7 +37,7 @@ export default function ClassroomBoardCourseCard({
             {badges.map((badge) => (
               <span
                 key={badge}
-                className="text-sm handwritten text-gray-50 border border-gray-200 py-0.5 px-2 rounded-lg bg-green-800 group-hover:bg-green-700 transition duration-150"
+                className="text-sm handwritten text-gray-50 border border-gray-200 py-0.5 px-2 rounded-lg bg-green-800 transition duration-150"
               >
                 {badge}
               </span>
