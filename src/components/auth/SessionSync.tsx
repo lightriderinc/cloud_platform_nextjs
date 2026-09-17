@@ -155,7 +155,13 @@ export default function SessionSync({ initialAuthenticated }: Props) {
     try {
       const response = await fetch("/api/auth/session", { cache: "no-store" });
       if (!response.ok) return null;
-      const { isAuthenticated } = (await response.json()) as { isAuthenticated: boolean };
+      const { isAuthenticated, indeterminate } = (await response.json()) as {
+        isAuthenticated: boolean;
+        indeterminate?: boolean;
+      };
+      // The server could not reach Logto. That is not a sign-out, and acting
+      // on it would re-render the tree under a user who is still signed in.
+      if (indeterminate) return null;
       return Boolean(isAuthenticated);
     } catch {
       return null; // Offline or transient — indistinguishable from unknown.
@@ -248,18 +254,27 @@ export default function SessionSync({ initialAuthenticated }: Props) {
       const awayMs = awaySince.current ? Date.now() - awaySince.current : 0;
       awaySince.current = null;
 
-      // Coming back after being away is the strongest available hint that the
-      // user just did something on another platform, so it earns an immediate
-      // check. It cannot spin: each one costs a deliberate tab switch, and a
-      // redirect round-trip returning here never leaves the tab hidden long
-      // enough to qualify.
+      // Coming back after a REAL absence hints the user may have signed in on
+      // another platform. A quick glance at another window does not.
       const returnedFromAway = awayMs >= RETURN_FROM_AWAY_MIN_SECONDS * 1000;
 
+      // The redirect's one unique power is signing someone IN from a session
+      // created on another platform — which only helps a user who is signed
+      // out HERE. For a signed-in user it can only ever confirm what we
+      // already know, and this app does not need it to: back-channel logout
+      // (RevokedLogtoSession + /api/webhooks/logto) catches a sign-out
+      // instantly, and the 30s poll below catches an upstream-revoked token
+      // on its own, because getSession's userinfo call fails and reads as
+      // signed out. So a signed-in user is never sent on a full-document
+      // round trip just for returning to the tab — that reloaded the page
+      // they were looking at and swallowed whatever they clicked during it.
+      const worthRedirecting = returnedFromAway && !knownAuthenticated.current;
+
       void syncNow({
-        silentCheckCooldownSeconds: returnedFromAway
+        silentCheckCooldownSeconds: worthRedirecting
           ? RETURN_CHECK_COOLDOWN_SECONDS
-          : // Same-tab focus with no real absence: refresh state, but never
-            // redirect a user who is actively working here.
+          : // Still re-checks auth state over the cheap, invisible poll —
+            // it just never navigates the document to do it.
             null,
       });
     };

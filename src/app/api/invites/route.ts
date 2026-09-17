@@ -1,9 +1,9 @@
-import { requireLogtoUser } from "@/lib/auth/session";
+import { getDisplayName, requireLogtoUser } from "@/lib/auth/session";
 import { getOrCreateCustomer } from "@/lib/billing/customer";
 import { db } from "@/lib/billing/db";
 import {
   INVITE_DAILY_LIMIT,
-  createAndSendInvite,
+  createAndSendInvites,
   invitesUsedToday,
 } from "@/lib/billing/invites";
 import { REFERRAL_REWARD_PREFIX } from "@/lib/billing/referrals";
@@ -42,10 +42,19 @@ export async function GET(req: Request) {
   };
 
   if (view === "rewards") {
-    // Referrals this customer earned as the REFERRER. The referee's own
-    // reward row is on their ledger, not in this list.
+    // BOTH sides of a rewarded referral. "Rewards earned" has to mean what it
+    // says: the referee is paid the same 100 credits as the referrer, and
+    // before this their only trace of it was a "Referral reward" line buried
+    // in Share Credits history — a page someone who joined by invite has no
+    // reason to open.
     const referrals = await db.referral.findMany({
-      where: { referrerCustomerId: customer.id, status: "rewarded" },
+      where: {
+        status: "rewarded",
+        OR: [
+          { referrerCustomerId: customer.id },
+          { refereeCustomerId: customer.id },
+        ],
+      },
       orderBy: { rewardedAt: "desc" },
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE + 1,
@@ -54,11 +63,22 @@ export async function GET(req: Request) {
     const hasMore = referrals.length > PAGE_SIZE;
     const rows = referrals.slice(0, PAGE_SIZE);
 
-    // Invite rows carry the invitee's email; referrals only link by token.
-    const invites = await db.invite.findMany({
-      where: { token: { in: rows.map((r) => r.inviteToken ?? "") } },
-    });
-    const emailByToken = new Map(invites.map((i) => [i.token, i.email]));
+    // The counterparty differs by side: as referrer it is the person you
+    // invited (carried on the Invite row, since Referral only links by token);
+    // as referee it is whoever invited you (a Customer).
+    const [invites, referrers] = await Promise.all([
+      db.invite.findMany({
+        where: {
+          token: { in: rows.map((r) => r.inviteToken).filter((t): t is string => !!t) },
+        },
+      }),
+      db.customer.findMany({
+        where: { id: { in: rows.map((r) => r.referrerCustomerId) } },
+        select: { id: true, email: true },
+      }),
+    ]);
+    const inviteeByToken = new Map(invites.map((i) => [i.token, i.email]));
+    const referrerById = new Map(referrers.map((c) => [c.id, c.email]));
 
     return NextResponse.json({
       view,
@@ -66,16 +86,24 @@ export async function GET(req: Request) {
       pageSize: PAGE_SIZE,
       hasMore,
       quota,
-      rewards: rows.map((referral) => ({
-        id: referral.id,
-        email: referral.inviteToken
-          ? (emailByToken.get(referral.inviteToken) ?? null)
-          : null,
-        rewardCents: referral.rewardCents,
-        qualifyingEventReason: referral.qualifyingEventReason,
-        rewardedAt: referral.rewardedAt?.toISOString() ?? null,
-        reason: `${REFERRAL_REWARD_PREFIX}${referral.id}`,
-      })),
+      rewards: rows.map((referral) => {
+        const side =
+          referral.referrerCustomerId === customer.id ? "referrer" : "referee";
+        return {
+          id: referral.id,
+          side,
+          counterpartyEmail:
+            side === "referrer"
+              ? (referral.inviteToken
+                  ? (inviteeByToken.get(referral.inviteToken) ?? null)
+                  : null)
+              : (referrerById.get(referral.referrerCustomerId) ?? null),
+          rewardCents: referral.rewardCents,
+          qualifyingEventReason: referral.qualifyingEventReason,
+          rewardedAt: referral.rewardedAt?.toISOString() ?? null,
+          reason: `${REFERRAL_REWARD_PREFIX}${referral.id}`,
+        };
+      }),
     });
   }
 
@@ -131,7 +159,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   }
 
-  let body: { email?: unknown };
+  let body: { emails?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -141,9 +169,24 @@ export async function POST(req: Request) {
     );
   }
 
-  const email = typeof body.email === "string" ? body.email : "";
+  if (!Array.isArray(body.emails)) {
+    return NextResponse.json(
+      { error: "error", message: "Expected a list of email addresses." },
+      { status: 400 },
+    );
+  }
+
+  const emails = body.emails.map((raw) => (typeof raw === "string" ? raw : ""));
+
   const inviter = await getOrCreateCustomer(user.sub, user.email);
-  const result = await createAndSendInvite(inviter, email);
+
+  // The email leads with the inviter by name. getDisplayName() reads the Logto
+  // Account API and is best-effort, so it degrades to the address and then to
+  // a generic phrase rather than ever printing "undefined invited you".
+  const displayName = await getDisplayName().catch(() => null);
+  const inviterName = displayName ?? inviter.email ?? "A Light Rider user";
+
+  const result = await createAndSendInvites(inviter, emails, inviterName);
 
   const withDetail = (payload: Record<string, unknown>, detail?: string) =>
     detail && process.env.VERCEL_ENV !== "production"
@@ -154,40 +197,32 @@ export async function POST(req: Request) {
     case "ok":
       return NextResponse.json({
         ok: true,
-        email: result.invite.email,
-        expiresAt: result.invite.expiresAt.toISOString(),
+        rows: result.rows,
+        sentCount: result.sentCount,
         remainingToday: result.remainingToday,
       });
 
-    case "already_member":
-      return NextResponse.json(
-        { error: "already_member", message: result.message },
-        { status: 409 },
-      );
-
-    case "self_invite":
-    case "invalid_email":
-      return NextResponse.json(
-        { error: result.status, message: result.message },
-        { status: 400 },
-      );
-
     case "rate_limited":
       return NextResponse.json(
-        { error: "rate_limited", message: result.message },
+        {
+          error: "rate_limited",
+          message: result.message,
+          usedToday: result.usedToday,
+          limit: result.limit,
+        },
         { status: 429 },
       );
 
-    case "email_failed":
-      // 502, not 500: the invite exists and is valid — only the delivery
-      // failed, and the user should retry the send rather than assume nothing
-      // happened.
+    case "too_many_rows":
       return NextResponse.json(
-        withDetail(
-          { error: "email_failed", message: result.message },
-          result.detail,
-        ),
-        { status: 502 },
+        { error: "too_many_rows", message: result.message },
+        { status: 400 },
+      );
+
+    case "no_rows":
+      return NextResponse.json(
+        { error: "no_rows", message: result.message },
+        { status: 400 },
       );
 
     case "error":

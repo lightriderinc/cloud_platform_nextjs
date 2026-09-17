@@ -146,19 +146,27 @@ export const SIGNED_OUT_LOAD_COOLDOWN_SECONDS = 30;
 export const SIGNED_IN_LOAD_COOLDOWN_SECONDS = 600;
 
 /**
- * How long the tab must have been hidden/blurred before returning to it counts
- * as "you may have been doing something on another platform". Long enough that
- * a redirect round-trip returning to this tab never qualifies, short enough
- * that genuinely switching apps always does.
+ * How long the tab must have been hidden before returning to it counts as "you
+ * may have been doing something on another platform".
+ *
+ * This was 3 seconds, which is not an absence — it is a glance at an editor, a
+ * terminal, or a notification. Every such flick triggered a full-document
+ * round trip through Logto, so the page was perpetually reloading and clicks
+ * made during it went nowhere. Signing in on another platform and coming back
+ * takes far longer than this; a tab flick takes less.
  */
-export const RETURN_FROM_AWAY_MIN_SECONDS = 3;
+export const RETURN_FROM_AWAY_MIN_SECONDS = 30;
 
 /**
- * Floor between return-from-away checks. Nearly free, because this trigger
- * cannot spin on its own — it takes a deliberate tab switch each time. It
- * exists only so focus and visibilitychange firing together count once.
+ * Floor between return-from-away checks.
+ *
+ * Was 5 seconds, on the reasoning that this trigger "cannot spin on its own
+ * because it takes a deliberate tab switch". True, but people switch tabs
+ * constantly, so in practice it spun anyway. This only ever needs to be short
+ * enough that someone who just signed in elsewhere is recognised on their next
+ * return — two minutes is well inside that, and stops the bouncing.
  */
-export const RETURN_CHECK_COOLDOWN_SECONDS = 5;
+export const RETURN_CHECK_COOLDOWN_SECONDS = 120;
 
 /** Route prefixes the silent check must never fire on, to keep redirects acyclic. */
 export const SILENT_SSO_EXCLUDED_PREFIXES = ["/callback", "/api/"];

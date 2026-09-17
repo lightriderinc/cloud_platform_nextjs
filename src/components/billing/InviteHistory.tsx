@@ -23,7 +23,10 @@ type InviteRow = {
 
 type RewardRow = {
   id: string;
-  email: string | null;
+  /** Which side of the referral this customer was on. */
+  side: "referrer" | "referee";
+  /** The person you invited, or the person who invited you. */
+  counterpartyEmail: string | null;
   rewardCents: number | null;
   qualifyingEventReason: string | null;
   rewardedAt: string | null;
@@ -49,7 +52,7 @@ async function fetchInvites(
 }
 
 const INVITE_HEADERS = ["Sent", "Invitee", "Status", "Reward"];
-const REWARD_HEADERS = ["Rewarded", "Invitee", "Earned by", "Amount"];
+const REWARD_HEADERS = ["Rewarded", "Referral", "Earned by", "Amount"];
 
 function StatusBadge({ status }: { status: InviteRow["status"] }) {
   const styles = {
@@ -119,7 +122,7 @@ export default function InviteHistory() {
         <div className="default-radius border border-dashed border-gray-200 bg-gray-50 p-16 text-center text-sm text-gray-500">
           {view === "invites"
             ? "Invites you send will appear here."
-            : "Once someone you invited runs their first job or buys credits, your reward shows up here."}
+            : "Rewards show up here — both for people you invite, and for the invite that brought you to Light Rider."}
         </div>
       ) : (
         <>
@@ -182,7 +185,18 @@ export default function InviteHistory() {
                           : "—"}
                       </td>
                       <td className="px-4 py-3 text-gray-700">
-                        {row.email ?? <span className="text-gray-400">—</span>}
+                        {row.counterpartyEmail ? (
+                          <>
+                            <span className="text-gray-500">
+                              {row.side === "referrer"
+                                ? "You invited "
+                                : "Invited by "}
+                            </span>
+                            {row.counterpartyEmail}
+                          </>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-gray-500">
                         {describeQualifyingEvent(row.qualifyingEventReason)}
