@@ -66,6 +66,7 @@ export default function RecapQuiz() {
                     <ChalkButton
                       key={option}
                       active={isChosen}
+                      correct={isChosen && optionIndex === question.answer}
                       onClick={() => choose(questionIndex, optionIndex)}
                     >
                       {option}
