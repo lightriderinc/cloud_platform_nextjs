@@ -139,9 +139,17 @@ export const SERVER_COOLDOWN_SECONDS = 15;
 export const SIGNED_OUT_LOAD_COOLDOWN_SECONDS = 30;
 
 /**
- * Automatic (page-load) checks for signed-in visitors. Rare by design: here a
- * redirect interrupts real work. On Cloud, back-channel logout already catches
- * sign-out instantly; this is the backstop for apps with no revocation store.
+ * Automatic (page-load) checks for signed-in visitors.
+ *
+ * NO LONGER USED BY THIS APP. SessionSync now refuses to redirect a signed-in
+ * visitor under any trigger, because back-channel logout
+ * (RevokedLogtoSession + /api/webhooks/logto) already catches a sign-out here
+ * instantly and the poll catches a rejected token on its own.
+ *
+ * Kept exported for apps that share this module but have NO revocation store,
+ * where the page-load redirect is still the only sign-out backstop. Deleting
+ * it would break their build; using it here would reintroduce a reload the
+ * user cannot predict.
  */
 export const SIGNED_IN_LOAD_COOLDOWN_SECONDS = 600;
 

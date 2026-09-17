@@ -1,5 +1,6 @@
 "use client";
 
+import { unwrap, type ActionResult } from "@/lib/actionResult";
 import DisableMfaModal from "@/components/profile/DisableMfaModal";
 import EditEmailModal from "@/components/profile/EditEmailModal";
 import EditPasswordModal from "@/components/profile/EditPasswordModal";
@@ -24,23 +25,23 @@ type Props = {
    * render itself.
    */
   connectedAccounts?: React.ReactNode;
-  onVerifyPassword: (password: string) => Promise<string>;
+  onVerifyPassword: (password: string) => Promise<ActionResult<string>>;
   onUpdatePassword: (
     verificationId: string,
     newPassword: string,
-  ) => Promise<void>;
-  onSendEmailCode: (email: string) => Promise<string>;
+  ) => Promise<ActionResult<void>>;
+  onSendEmailCode: (email: string) => Promise<ActionResult<string>>;
   onVerifyEmailCode: (
     email: string,
     code: string,
     verificationRecordId: string,
-  ) => Promise<string>;
-  onCheckEmailAvailable: (email: string) => Promise<void>;
+  ) => Promise<ActionResult<string>>;
+  onCheckEmailAvailable: (email: string) => Promise<ActionResult<void>>;
   onUpdateEmail: (
     currentVerifId: string,
     newVerifId: string,
     email: string,
-  ) => Promise<void>;
+  ) => Promise<ActionResult<void>>;
   onUpdateBirthdate: (birthdate: string) => Promise<void>;
   onGenerateTotpSecret: () => Promise<string>;
   onBindTotp: (

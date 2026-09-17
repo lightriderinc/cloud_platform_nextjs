@@ -9,7 +9,6 @@ import {
   SCROLL_RESTORE_MAX_AGE_MS,
   SILENT_SSO_SCROLL_KEY,
   RETURN_FROM_AWAY_MIN_SECONDS,
-  SIGNED_IN_LOAD_COOLDOWN_SECONDS,
   SIGNED_OUT_LOAD_COOLDOWN_SECONDS,
   SILENT_SSO_STORAGE_KEY,
   isSilentSsoAllowedPath,
@@ -169,7 +168,7 @@ export default function SessionSync({ initialAuthenticated }: Props) {
   }, []);
 
   const syncNow = useCallback(
-    async (options: { silentCheckCooldownSeconds: number | null }) => {
+    async (options: { allowSilentCheck: boolean; cooldownSeconds: number }) => {
       if (inFlight.current) return;
       inFlight.current = true;
       try {
@@ -193,8 +192,28 @@ export default function SessionSync({ initialAuthenticated }: Props) {
           return;
         }
 
-        if (options.silentCheckCooldownSeconds !== null) {
-          attemptSilentCheck(options.silentCheckCooldownSeconds);
+        // THE RULE: only a signed-OUT visitor is ever sent on the redirect.
+        //
+        // Its one unique power is signing someone IN from a session created on
+        // another Light Rider app; for a signed-in user it can only confirm
+        // what we already know. This app does not need it to — back-channel
+        // logout (RevokedLogtoSession + /api/webhooks/logto) catches a
+        // sign-out instantly, and the poll above catches a rejected token on
+        // its own.
+        //
+        // Decided from `observed` — the reading we JUST took — not from
+        // knownAuthenticated, which is the server render's answer and can be
+        // stale on the very first page after signing in. That staleness is
+        // what used to reload the dashboard out from under a first-time user
+        // mid-click.
+        //
+        // Consequence worth stating plainly: while signed in, SessionSync
+        // NEVER navigates the document. No reloads, no lost form state, no
+        // swallowed clicks. Those were all one behaviour, not four bugs.
+        if (observed) return;
+
+        if (options.allowSilentCheck) {
+          attemptSilentCheck(options.cooldownSeconds);
         }
       } finally {
         inFlight.current = false;
@@ -230,12 +249,12 @@ export default function SessionSync({ initialAuthenticated }: Props) {
   }, []);
 
   useEffect(() => {
-    // Automatic page-load check: the strict-cooldown path, since this is the
-    // only trigger that could re-fire without the user doing anything.
+    // Page-load check. On a brand-new session sessionStorage holds no marker,
+    // so the cooldown below can never block the first attempt however long it
+    // is — which is exactly why this must not be reachable while signed in.
     void syncNow({
-      silentCheckCooldownSeconds: knownAuthenticated.current
-        ? SIGNED_IN_LOAD_COOLDOWN_SECONDS
-        : SIGNED_OUT_LOAD_COOLDOWN_SECONDS,
+      allowSilentCheck: true,
+      cooldownSeconds: SIGNED_OUT_LOAD_COOLDOWN_SECONDS,
     });
 
     // Only a genuine visibility change counts as being away. Window blur must
@@ -258,24 +277,12 @@ export default function SessionSync({ initialAuthenticated }: Props) {
       // another platform. A quick glance at another window does not.
       const returnedFromAway = awayMs >= RETURN_FROM_AWAY_MIN_SECONDS * 1000;
 
-      // The redirect's one unique power is signing someone IN from a session
-      // created on another platform — which only helps a user who is signed
-      // out HERE. For a signed-in user it can only ever confirm what we
-      // already know, and this app does not need it to: back-channel logout
-      // (RevokedLogtoSession + /api/webhooks/logto) catches a sign-out
-      // instantly, and the 30s poll below catches an upstream-revoked token
-      // on its own, because getSession's userinfo call fails and reads as
-      // signed out. So a signed-in user is never sent on a full-document
-      // round trip just for returning to the tab — that reloaded the page
-      // they were looking at and swallowed whatever they clicked during it.
-      const worthRedirecting = returnedFromAway && !knownAuthenticated.current;
-
+      // Whether a redirect is worth it is decided inside syncNow, against the
+      // freshly read auth state. All this decides is whether the absence was
+      // long enough to suggest the user did something on another platform.
       void syncNow({
-        silentCheckCooldownSeconds: worthRedirecting
-          ? RETURN_CHECK_COOLDOWN_SECONDS
-          : // Still re-checks auth state over the cheap, invisible poll —
-            // it just never navigates the document to do it.
-            null,
+        allowSilentCheck: returnedFromAway,
+        cooldownSeconds: RETURN_CHECK_COOLDOWN_SECONDS,
       });
     };
 
@@ -294,7 +301,7 @@ export default function SessionSync({ initialAuthenticated }: Props) {
       if (document.visibilityState === "visible") {
         // Polling never redirects — it only detects locally-visible changes
         // (e.g. back-channel logout). Redirects stay tied to load and return.
-        void syncNow({ silentCheckCooldownSeconds: null });
+        void syncNow({ allowSilentCheck: false, cooldownSeconds: 0 });
       }
     }, POLL_INTERVAL_MS);
 

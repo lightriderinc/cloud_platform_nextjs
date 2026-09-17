@@ -3,6 +3,7 @@ import LogoutButton from "@/components/auth/LogoutButton";
 import CurrentPlanBadge from "@/components/billing/CurrentPlanBadge";
 import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
+import { attempt, type ActionResult } from "@/lib/actionResult";
 import { AVATAR_FORM_FIELD, resolveAvatarSources } from "@/lib/avatar";
 import {
   getAccountProfile,
@@ -96,19 +97,28 @@ export default async function AccountPage() {
       email,
     });
 
-  async function doVerifyPassword(password: string): Promise<string> {
+  // Returns rather than throws: a wrong password is an expected answer, and a
+  // thrown one is replaced by Next's generic sanitized message in production.
+  // See lib/actionResult.ts.
+  async function doVerifyPassword(
+    password: string,
+  ): Promise<ActionResult<string>> {
     "use server";
-    const token = await getAccessToken(logtoConfig);
-    return verifyPassword(token, password);
+    return attempt(async () => {
+      const token = await getAccessToken(logtoConfig);
+      return verifyPassword(token, password);
+    }, "Incorrect password. Please check your input.");
   }
 
   async function doUpdatePassword(
     verificationId: string,
     newPassword: string,
-  ): Promise<void> {
+  ): Promise<ActionResult<void>> {
     "use server";
-    const token = await getAccessToken(logtoConfig);
-    await updatePassword(token, verificationId, newPassword);
+    return attempt(async () => {
+      const token = await getAccessToken(logtoConfig);
+      await updatePassword(token, verificationId, newPassword);
+    }, "Could not update your password. Please try again.");
   }
 
   /**
@@ -125,55 +135,65 @@ export default async function AccountPage() {
    * This matches the platform's existing sign-up behavior, and can be masked
    * later via Logto's "Hide account existence" setting if desired.
    */
-  async function doCheckEmailAvailability(emailAddr: string): Promise<void> {
+  async function doCheckEmailAvailability(
+    emailAddr: string,
+  ): Promise<ActionResult<void>> {
     "use server";
-    const candidate = emailAddr.trim();
-    const { sub } = await requireLogtoUser();
+    return attempt(async () => {
+      const candidate = emailAddr.trim();
+      const { sub } = await requireLogtoUser();
 
-    let existing: LogtoUserSummary | null = null;
-    try {
-      existing = await findUserByPrimaryEmail(candidate);
-    } catch (err) {
-      console.error(
-        "[account] email availability pre-check failed; allowing flow to continue:",
-        err,
-      );
-      return;
-    }
+      let existing: LogtoUserSummary | null = null;
+      try {
+        existing = await findUserByPrimaryEmail(candidate);
+      } catch (err) {
+        console.error(
+          "[account] email availability pre-check failed; allowing flow to continue:",
+          err,
+        );
+        return;
+      }
 
-    if (!existing) {
-      return; // available
-    }
-    if (existing.id === sub) {
-      throw new Error("That's already the email address on your account.");
-    }
-    throw new Error("That email is already linked to another account.");
+      if (!existing) return; // available
+      if (existing.id === sub) {
+        throw new Error("That's already the email address on your account.");
+      }
+      throw new Error("That email is already linked to another account.");
+    });
   }
 
-  async function doSendEmailCode(emailAddr: string): Promise<string> {
+  async function doSendEmailCode(
+    emailAddr: string,
+  ): Promise<ActionResult<string>> {
     "use server";
-    const token = await getAccessToken(logtoConfig);
-    return sendEmailCode(token, emailAddr);
+    return attempt(async () => {
+      const token = await getAccessToken(logtoConfig);
+      return sendEmailCode(token, emailAddr);
+    }, "Could not send the verification code. Please try again.");
   }
 
   async function doVerifyEmailCode(
     emailAddr: string,
     code: string,
     verificationRecordId: string,
-  ): Promise<string> {
+  ): Promise<ActionResult<string>> {
     "use server";
-    const token = await getAccessToken(logtoConfig);
-    return verifyEmailCode(token, emailAddr, code, verificationRecordId);
+    return attempt(async () => {
+      const token = await getAccessToken(logtoConfig);
+      return verifyEmailCode(token, emailAddr, code, verificationRecordId);
+    }, "That code is not valid. Please check it and try again.");
   }
 
   async function doUpdateEmail(
     currentVerifId: string,
     newVerifId: string,
     emailAddr: string,
-  ): Promise<void> {
+  ): Promise<ActionResult<void>> {
     "use server";
-    const token = await getAccessToken(logtoConfig);
-    await updatePrimaryEmail(token, currentVerifId, newVerifId, emailAddr);
+    return attempt(async () => {
+      const token = await getAccessToken(logtoConfig);
+      await updatePrimaryEmail(token, currentVerifId, newVerifId, emailAddr);
+    }, "Could not update your email. Please try again.");
   }
 
   /**

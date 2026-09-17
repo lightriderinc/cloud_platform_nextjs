@@ -1,5 +1,6 @@
 'use client';
 
+import { unwrap, type ActionResult } from "@/lib/actionResult";
 import { useState } from 'react';
 
 import InfoBox from '@/components/InfoBox';
@@ -8,13 +9,13 @@ import LRButton from '@/components/ui/LRButton';
 type Props = {
   /** The user's current email, used for the email-code verification path. */
   email: string;
-  onVerifyPassword: (password: string) => Promise<string>;
-  onSendEmailCode: (email: string) => Promise<string>;
+  onVerifyPassword: (password: string) => Promise<ActionResult<string>>;
+  onSendEmailCode: (email: string) => Promise<ActionResult<string>>;
   onVerifyEmailCode: (
     email: string,
     code: string,
     verificationRecordId: string,
-  ) => Promise<string>;
+  ) => Promise<ActionResult<string>>;
   /**
    * Called with a Logto verification record id once identity is confirmed.
    * May be async; anything it throws is surfaced inline as an error.
@@ -80,7 +81,7 @@ export default function VerifyIdentity({
     setError('');
     setLoading(true);
     try {
-      const id = await onVerifyPassword(password);
+      const id = unwrap(await onVerifyPassword(password));
       await onVerified(id);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Incorrect password');
@@ -92,7 +93,7 @@ export default function VerifyIdentity({
     setError('');
     setLoading(true);
     try {
-      const id = await onSendEmailCode(email);
+      const id = unwrap(await onSendEmailCode(email));
       setSentId(id);
       setEmailStage('code');
     } catch (e) {
@@ -106,7 +107,7 @@ export default function VerifyIdentity({
     setError('');
     setLoading(true);
     try {
-      const verifiedId = await onVerifyEmailCode(email, code, sentId);
+      const verifiedId = unwrap(await onVerifyEmailCode(email, code, sentId));
       await onVerified(verifiedId);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Invalid code');
