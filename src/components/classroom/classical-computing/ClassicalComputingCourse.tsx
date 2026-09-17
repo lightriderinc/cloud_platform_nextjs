@@ -143,6 +143,13 @@ const SECTIONS = [
           single bits together.
         </p>
         <p>
+          It&apos;s called a &quot;half&quot; adder because it only handles
+          two input bits, with no way to fold in a carry from a previous
+          column. If we wire two gates together, it can add A and B; a{" "}
+          <strong>full adder</strong> adds a third input, the carry-in, so
+          adders can be chained to add numbers wider than a single bit.
+        </p>
+        <p>
           Adding two bits produces two results: a sum bit, and a carry bit
           for when the result needs a second digit (1 + 1 is 10 in binary).
           Written with the gates from the last section:
@@ -151,6 +158,39 @@ const SECTIONS = [
           <li>the sum is A XOR B</li>
           <li>the carry is A AND B</li>
         </ul>
+        <p>
+          Both gates read the same two inputs, they just disagree on what
+          counts as &quot;interesting.&quot; XOR fires whenever A and B
+          differ, which is exactly when their sum is 1 without overflowing.
+          AND fires only when both are 1, which is exactly when the sum
+          needs that second digit. Put side by side, the two gates cover
+          every case in the addition table.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="text-sm border border-gray-200 rounded">
+            <thead>
+              <tr className="border-b border-gray-200 bg-gray-50">
+                <th className="px-3 py-2 text-left font-medium">A</th>
+                <th className="px-3 py-2 text-left font-medium">B</th>
+                <th className="px-3 py-2 text-left font-medium">Sum</th>
+                <th className="px-3 py-2 text-left font-medium">Carry</th>
+              </tr>
+            </thead>
+            <tbody>
+              {BOOLEAN_TABLE_ROWS.map(([a, b]) => (
+                <tr
+                  key={`${a}${b}`}
+                  className="border-b border-gray-100 last:border-0"
+                >
+                  <td className="px-3 py-2">{a}</td>
+                  <td className="px-3 py-2">{b}</td>
+                  <td className="px-3 py-2">{a ^ b}</td>
+                  <td className="px-3 py-2">{a & b}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <p>Toggle A and B below to see both outputs.</p>
         <HalfAdderSimulator />
         <p>
