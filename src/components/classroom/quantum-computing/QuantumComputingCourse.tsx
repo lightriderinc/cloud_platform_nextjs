@@ -22,33 +22,33 @@ const SECTIONS = [
     content: (
       <>
         <p>
-          A classical bit is always definitely 0 or definitely 1. A qubit can
-          be prepared in a mix of both at once, a state called{" "}
+          A classical bit is always definitely 0 or definitely 1. A qubit can be
+          prepared in a mix of both at once, a state called{" "}
           <strong>superposition</strong>. Physically a qubit might be the
           polarization of a photon, the spin of an electron, or a
           superconducting circuit cooled close to absolute zero.
         </p>
         <p>
-          The state of a qubit is written with two numbers called
-          amplitudes, one attached to 0 and one attached to 1:
+          The state of a qubit is written with two numbers called amplitudes,
+          one attached to 0 and one attached to 1:
         </p>
         <p className="font-mono text-sm bg-gray-50 border border-gray-200 rounded px-3 py-2 w-fit">
           |ψ⟩ = α|0⟩ + β|1⟩
         </p>
         <p>
-          Amplitudes can be negative, or even complex numbers, but they
-          always satisfy |α|² + |β|² = 1. You never read α and β directly.
-          Measuring the qubit gives you a single binary digit, 0 or 1, and
-          the odds of each outcome come from those amplitudes: P(0) = |α|²
-          and P(1) = |β|². That rule for turning amplitudes into
-          probabilities is called the Born rule.
+          Amplitudes can be negative, or even complex numbers, but they always
+          satisfy |α|² + |β|² = 1. You never read α and β directly. Measuring
+          the qubit gives you a single binary digit, 0 or 1, and the odds of
+          each outcome come from those amplitudes: P(0) = |α|² and P(1) = |β|².
+          That rule for turning amplitudes into probabilities is called the Born
+          rule.
         </p>
         <p>
-          Set the slider below somewhere between a pure |0⟩ and a pure |1⟩,
-          then measure it a few times. Each measurement collapses the qubit
-          to one definite outcome, the way a flipped coin lands on one face
-          the moment you look, except here the qubit was genuinely
-          undetermined until that happened.
+          Set the slider below somewhere between a pure |0⟩ and a pure |1⟩, then
+          measure it a few times. Each measurement collapses the qubit to one
+          definite outcome, the way a flipped coin lands on one face the moment
+          you look, except here the qubit was genuinely undetermined until that
+          happened.
         </p>
         <QubitSuperpositionDemo />
       </>
@@ -61,19 +61,19 @@ const SECTIONS = [
       <>
         <p>
           Since a single qubit&apos;s state is just two numbers constrained by
-          |α|² + |β|² = 1, the whole state fits on the surface of a sphere.
-          That picture is called the <strong>Bloch sphere</strong>. The north
-          pole is |0⟩, the south pole is |1⟩, and every other point is some
-          mix of the two.
+          |α|² + |β|² = 1, the whole state fits on the surface of a sphere. That
+          picture is called the <strong>Bloch sphere</strong>. The north pole is
+          |0⟩, the south pole is |1⟩, and every other point is some mix of the
+          two.
         </p>
         <p>
-          Points on the equator are equal mixes of |0⟩ and |1⟩, such as |+⟩
-          and |−⟩. They give identical measurement odds (50/50 either way)
-          but sit on opposite sides of the sphere, because the amplitudes
-          themselves differ even when the probabilities don&apos;t. Two states
-          that look the same under measurement can still be genuinely
-          different quantum states, and gates can tell them apart even
-          though a single measurement can&apos;t.
+          Points on the equator are equal mixes of |0⟩ and |1⟩, such as |+⟩ and
+          |−⟩. They give identical measurement odds (50/50 either way) but sit
+          on opposite sides of the sphere, because the amplitudes themselves
+          differ even when the probabilities don&apos;t. Two states that look
+          the same under measurement can still be genuinely different quantum
+          states, and gates can tell them apart even though a single measurement
+          can&apos;t.
         </p>
         <p>Try a few of the six marked states and see where they land.</p>
         <BlochSphereExplorer />
@@ -86,33 +86,32 @@ const SECTIONS = [
     content: (
       <>
         <p>
-          A quantum gate takes a qubit&apos;s state and moves it to a new point on
-          the sphere. Every gate here is reversible, and unlike classical
-          logic gates, most of them aren&apos;t their own inverse, so applying one
-          twice usually lands you somewhere new rather than back where you
+          A quantum gate takes a qubit&apos;s state and moves it to a new point
+          on the sphere. Every gate here is reversible, and unlike classical
+          logic gates, most of them aren&apos;t their own inverse, so applying
+          one twice usually lands you somewhere new rather than back where you
           started.
         </p>
         <p>A handful of gates come up constantly:</p>
         <ul className="list-disc pl-6 flex flex-col gap-1">
           <li>
-            <strong>X</strong> swaps the roles of |0⟩ and |1⟩, the closest
-            thing to a classical NOT.
+            <strong>X</strong> swaps the roles of |0⟩ and |1⟩, the closest thing
+            to a classical NOT.
           </li>
           <li>
-            <strong>Z</strong> leaves the measurement odds alone but flips
-            the sign of β, moving the state to the opposite side of the
-            sphere.
+            <strong>Z</strong> leaves the measurement odds alone but flips the
+            sign of β, moving the state to the opposite side of the sphere.
           </li>
           <li>
-            <strong>H</strong> (Hadamard) rotates |0⟩ or |1⟩ onto the
-            equator. It&apos;s the gate that puts a qubit into an even
-            superposition in the first place.
+            <strong>H</strong> (Hadamard) rotates |0⟩ or |1⟩ onto the equator.
+            It&apos;s the gate that puts a qubit into an even superposition in
+            the first place.
           </li>
         </ul>
         <p>
-          Two more, Y and S, round out the explorer below. Gates chain
-          together the same way logic gates do: apply one, then feed the
-          result into the next.
+          Two more, Y and S, round out the explorer below. Gates chain together
+          the same way logic gates do: apply one, then feed the result into the
+          next.
         </p>
         <p>
           Start from |0⟩ and apply a few gates to see how each one moves the
@@ -129,30 +128,44 @@ const SECTIONS = [
       <>
         <p>
           A quantum circuit is a set of instructions for a quantum computer,
-          drawn as one horizontal line per qubit, called a wire. Time runs
-          left to right along each wire. Every gate from the last section
-          shows up as a box sitting on the wire it acts on, and a small
-          meter symbol at the end marks where a qubit gets measured and
-          turned into an ordinary 0 or 1.
+          drawn as one horizontal line per qubit, called a wire. Time runs left
+          to right along each wire. Every gate from the last section shows up as
+          a box sitting on the wire it acts on, and a small meter symbol at the
+          end marks where a qubit gets measured and turned into an ordinary 0 or
+          1.
         </p>
         <p>
-          Here&apos;s the simplest circuit that does anything interesting:
-          one qubit, one H gate, one measurement.
+          Here&apos;s the simplest circuit that does anything interesting: one
+          qubit, one H gate, one measurement.
         </p>
         <CircuitSchematic circuit="h" className="w-fit" />
         <p>
           This circuit doesn&apos;t compute in the usual sense. It puts the
-          qubit into an even superposition and lets the measurement pick 0
-          or 1 with genuinely equal odds. That&apos;s already a real use
-          case: a coin flip built out of superposition rather than assumed
-          randomness is exactly how a quantum random number generator
-          works, and it&apos;s one of the few quantum applications already
-          running as an ordinary product today.
+          qubit into an even superposition and lets the measurement pick 0 or 1
+          with genuinely equal odds. That&apos;s already a real use case: a coin
+          flip built out of superposition rather than assumed randomness is
+          exactly how a quantum random number generator works, and it&apos;s one
+          of the few quantum applications already running as an ordinary product
+          today.
         </p>
         <p>
-          Add a second qubit and a CNOT gate and the same idea builds
-          something with no classical equivalent: an entangled pair,
-          covered next.
+          Add a second qubit and a CNOT gate and the same idea builds something
+          with no classical equivalent: an entangled pair, covered next.
+        </p>
+        <p>
+          When you submit a circuit for real, you don&apos;t ask for a single
+          run of it. You ask for a batch of runs, called <strong>shots</strong>,
+          where each shot is one full execution of the circuit followed by one
+          measurement.
+        </p>
+        <p>
+          If you submit 1,000 shots, the simulator runs the whole circuit 1,000
+          times over, then hands back a count of how often each outcome came up,
+          the same idea behind the &quot;measure a few times&quot; buttons
+          earlier in this course, just at a scale that makes the probabilities
+          clearly visible. More shots settle closer to the true odds, fewer
+          shots leave more noise. You&apos;ll get to set the shot count yourself
+          when you submit below.
         </p>
         <p>
           The H gate circuit above is a ready-made preset on Light Rider
@@ -170,28 +183,28 @@ const SECTIONS = [
         <p>
           Two qubits are entangled when their combined state can&apos;t be split
           into a separate state for each qubit on its own. Measuring one
-          instantly tells you something about the other, no matter how far
-          apart they physically are. That&apos;s not a way to send information,
-          but it is a real correlation with no classical explanation.
+          instantly tells you something about the other, no matter how far apart
+          they physically are. That&apos;s not a way to send information, but it
+          is a real correlation with no classical explanation.
         </p>
         <p>
           The standard way to build an entangled pair, called a{" "}
-          <strong>Bell state</strong>, is an H gate on one qubit followed by
-          a CNOT gate controlled by that qubit and targeting the other. CNOT
-          flips its target qubit only when its control qubit is 1. Drawn as
-          a circuit, it looks like this:
+          <strong>Bell state</strong>, is an H gate on one qubit followed by a
+          CNOT gate controlled by that qubit and targeting the other. CNOT flips
+          its target qubit only when its control qubit is 1. Drawn as a circuit,
+          it looks like this:
         </p>
         <CircuitSchematic circuit="bell" className="w-fit" />
         <p>
-          Past the entanglement itself, this exact circuit doubles as a
-          standard hardware benchmark. It&apos;s small enough to run in a
-          fraction of a second and sensitive enough to noise that providers
-          use it to check how well a chip actually preserves entanglement.
-          It&apos;s also a ready-made preset you can submit right now.
+          Past the entanglement itself, this exact circuit doubles as a standard
+          hardware benchmark. It&apos;s small enough to run in a fraction of a
+          second and sensitive enough to noise that providers use it to check
+          how well a chip actually preserves entanglement.
         </p>
-        <CircuitPresetsPanel circuit="bell" />
         <p>Step through the circuit below and measure the pair a few times.</p>
         <BellStateSimulator />
+        <p>It&apos;s also a ready-made preset you can submit right now.</p>
+        <CircuitPresetsPanel circuit="bell" />
       </>
     ),
   },
@@ -217,7 +230,10 @@ export default function QuantumComputingCourse() {
       isFirstRender.current = false;
       return;
     }
-    sectionTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    sectionTopRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   }, [activeIndex]);
 
   const activeSection = SECTIONS[activeIndex];
