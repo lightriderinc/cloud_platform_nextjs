@@ -33,7 +33,7 @@ export default function ClassroomBoardCourseCard({
           <span className="text-md handwritten text-gray-100">
             You&apos;ll learn about:
           </span>
-          <div className="flex flex-row gap-2">
+          <div className="flex flex-row flex-wrap gap-2">
             {badges.map((badge) => (
               <span
                 key={badge}
