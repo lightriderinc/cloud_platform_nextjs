@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import type { Customer, Invite } from "@prisma/client";
 import { db } from "@/lib/billing/db";
+import { renderInviteEmail } from "@/lib/email/inviteEmail";
 import { isEmailConfigured, sendEmail } from "@/lib/email/postmark";
 import {
   findUserByPrimaryEmail,
@@ -10,6 +11,9 @@ import {
 /**
  * Send Invite — emailing someone a link that signs them up and links them to
  * the inviter's referral (see lib/billing/referrals.ts).
+ *
+ * ONE CODE PATH. A single invite is a batch of one row, mirroring
+ * transferCredits.ts — there is no separate single-invite implementation.
  */
 
 /** Invites one inviter may create in any rolling 24 hours. */
@@ -29,21 +33,6 @@ export function inviteLink(token: string): string {
   return `${INVITE_BASE_URL}/invite?token=${encodeURIComponent(token)}`;
 }
 
-export type CreateInviteResult =
-  | { status: "ok"; invite: Invite; remainingToday: number }
-  | { status: "already_member"; message: string }
-  | { status: "self_invite"; message: string }
-  | { status: "rate_limited"; message: string }
-  | { status: "invalid_email"; message: string }
-  | {
-      status: "email_failed";
-      message: string;
-      /** The invite row IS kept — only the send failed, so it can be retried. */
-      invite: Invite;
-      detail?: string;
-    }
-  | { status: "error"; message: string; cause: "caller" | "server"; detail?: string };
-
 /** Invites this inviter has created inside the rolling window. */
 export async function invitesUsedToday(customerId: string): Promise<number> {
   return db.invite.count({
@@ -54,39 +43,84 @@ export async function invitesUsedToday(customerId: string): Promise<number> {
   });
 }
 
-/**
- * Creates an Invite plus its linked Referral, then emails the link.
- *
- * Order is deliberate. Everything that can reject the request — bad address,
- * self-invite, existing member, rate limit, unconfigured mail — is checked
- * BEFORE any row is written, so a refused invite never consumes quota and
- * never leaves an orphan record.
- *
- * The one exception is a Postmark failure, which happens after the rows
- * exist. Those rows are deliberately KEPT rather than rolled back: the token
- * is valid and the referral is real, so the right recovery is resending, not
- * re-creating. The caller is told clearly that the mail did not go out.
- */
-export async function createAndSendInvite(
-  inviter: Customer,
-  rawEmail: string,
-): Promise<CreateInviteResult> {
-  const email = rawEmail.trim().toLowerCase();
+/** Per-row outcome. Every submitted row gets exactly one of these back. */
+export type InviteRowResult =
+  | { status: "ok"; email: string; expiresAt: string }
+  | { status: "already_member"; email: string }
+  | { status: "already_invited"; email: string; expiresAt: string }
+  | { status: "self_invite"; email: string }
+  | { status: "invalid_email"; email: string }
+  | { status: "email_failed"; email: string; message: string }
+  | { status: "lookup_failed"; email: string; message: string };
 
-  if (!email || !email.includes("@")) {
-    return {
-      status: "invalid_email",
-      message: "Enter a valid email address.",
+export type SendInvitesResult =
+  | {
+      status: "ok";
+      rows: InviteRowResult[];
+      /** How many rows actually created an invite and consumed quota. */
+      sentCount: number;
+      remainingToday: number;
+    }
+  | {
+      status: "rate_limited";
+      message: string;
+      usedToday: number;
+      limit: number;
+    }
+  | { status: "too_many_rows"; message: string }
+  | { status: "no_rows"; message: string }
+  | {
+      status: "error";
+      message: string;
+      cause: "caller" | "server";
+      detail?: string;
     };
+
+/**
+ * Merges duplicate addresses in one submission, case-insensitively — the same
+ * rule Logto uses when comparing email identifiers, and the same behaviour
+ * dedupeRows() gives Share Credits. Listing one person twice in one go is a
+ * slip, not a request to send them two emails.
+ */
+export function dedupeEmails(emails: string[]): string[] {
+  const seen = new Map<string, string>();
+  for (const raw of emails) {
+    const email = raw.trim();
+    const key = email.toLowerCase();
+    if (key !== "" && !seen.has(key)) seen.set(key, email);
+  }
+  return [...seen.values()];
+}
+
+/**
+ * Validates, resolves and sends a whole batch of invites.
+ *
+ * QUOTA. The daily limit is checked ONCE, upfront, against the number of
+ * submitted rows — if `usedToday + rows > INVITE_DAILY_LIMIT` the entire batch
+ * is refused and nothing is sent. Same discipline as Share Credits refusing an
+ * unaffordable batch outright: sending the first eight of someone's twelve and
+ * stopping is the behaviour that actually confuses people.
+ *
+ * The check is deliberately conservative. Rows that turn out to be existing
+ * members create nothing and consume nothing, so real usage can end up lower
+ * than the figure the batch was measured against — erring toward refusing a
+ * batch that would have just fit, rather than overshooting the limit.
+ */
+export async function createAndSendInvites(
+  inviter: Customer,
+  rawEmails: string[],
+  inviterName: string,
+): Promise<SendInvitesResult> {
+  const emails = dedupeEmails(rawEmails);
+
+  if (emails.length === 0) {
+    return { status: "no_rows", message: "Add at least one email address." };
   }
 
-  // Compared case-insensitively on the address, because at this point there
-  // is no account to compare ids with — unlike credit transfers, where the
-  // recipient always resolves to a Customer row first.
-  if (inviter.email && inviter.email.trim().toLowerCase() === email) {
+  if (emails.length > INVITE_DAILY_LIMIT) {
     return {
-      status: "self_invite",
-      message: "That's your own email address — you already have an account.",
+      status: "too_many_rows",
+      message: `You can invite at most ${INVITE_DAILY_LIMIT} people at once.`,
     };
   }
 
@@ -101,34 +135,9 @@ export async function createAndSendInvite(
     };
   }
 
-  // Checked before mail config so "already a member" — which creates nothing
-  // and costs no quota — still answers correctly on a deployment with no
-  // Postmark credentials.
-  let existing;
-  try {
-    existing = await findUserByPrimaryEmail(email);
-  } catch (err) {
-    console.error("[invite] Logto user lookup failed:", err);
-    return {
-      status: "error",
-      cause: "server",
-      message: "Couldn't check that address right now. Please try again.",
-      detail: err instanceof Error ? err.message : String(err),
-    };
-  }
-
-  if (existing) {
-    // Deliberately no Invite row: this doesn't count against the daily limit,
-    // because nothing was sent.
-    return {
-      status: "already_member",
-      message: "That person already has a Light Rider account.",
-    };
-  }
-
   if (!isEmailConfigured()) {
     console.error(
-      "[invite] POSTMARK_SERVER_TOKEN / POSTMARK_FROM_EMAIL are not configured; refusing to create an invite that cannot be sent.",
+      "[invite] POSTMARK_SERVER_TOKEN / POSTMARK_FROM_EMAIL are not configured; refusing to create invites that cannot be sent.",
     );
     return {
       status: "error",
@@ -137,72 +146,140 @@ export async function createAndSendInvite(
     };
   }
 
-  const used = await invitesUsedToday(inviter.id);
-  if (used >= INVITE_DAILY_LIMIT) {
+  const usedToday = await invitesUsedToday(inviter.id);
+  if (usedToday + emails.length > INVITE_DAILY_LIMIT) {
+    const remaining = Math.max(0, INVITE_DAILY_LIMIT - usedToday);
     return {
       status: "rate_limited",
-      message: "You've reached today's invite limit, try again tomorrow.",
+      message:
+        remaining === 0
+          ? "You've reached today's invite limit, try again tomorrow."
+          : `That's ${emails.length} invites but you only have ${remaining} left today. Nothing was sent.`,
+      usedToday,
+      limit: INVITE_DAILY_LIMIT,
     };
   }
 
-  const token = randomUUID();
-  const expiresAt = new Date(Date.now() + INVITE_TTL_DAYS * 24 * 60 * 60 * 1000);
+  const inviterEmail = inviter.email?.trim().toLowerCase() ?? null;
+  const rows: InviteRowResult[] = [];
+  let sentCount = 0;
 
-  // Invite and Referral are written together: a referral with no invite is
-  // unreachable, and an invite with no referral would sign someone up with no
-  // reward attached and no way to notice.
-  const invite = await db.$transaction(async (tx) => {
-    const created = await tx.invite.create({
-      data: { inviterCustomerId: inviter.id, email, token, expiresAt },
-    });
+  for (const original of emails) {
+    const email = original.toLowerCase();
 
-    await tx.referral.create({
-      data: {
-        referrerCustomerId: inviter.id,
-        inviteToken: token,
+    if (!email.includes("@")) {
+      rows.push({ status: "invalid_email", email: original });
+      continue;
+    }
+
+    // Compared on the address, not on a Customer id: at this point there is
+    // no account to compare ids with, unlike a credit transfer.
+    if (inviterEmail && inviterEmail === email) {
+      rows.push({ status: "self_invite", email: original });
+      continue;
+    }
+
+    let existing;
+    try {
+      existing = await findUserByPrimaryEmail(email);
+    } catch (err) {
+      console.error(`[invite] Logto user lookup failed for ${email}:`, err);
+      rows.push({
+        status: "lookup_failed",
+        email: original,
+        message: "Couldn't check that address right now.",
+      });
+      continue;
+    }
+
+    if (existing) {
+      // No Invite row is written, so no quota is consumed. This holds per row
+      // inside a batch exactly as it did for a single invite.
+      rows.push({ status: "already_member", email: original });
+      continue;
+    }
+
+    // An unexpired invite already outstanding for this pair means a resend
+    // would double-mail the recipient and burn a second slot. Report the
+    // existing one instead. This also makes a retried submit largely
+    // harmless, which matters because there is no idempotency key here.
+    const outstanding = await db.invite.findFirst({
+      where: {
+        inviterCustomerId: inviter.id,
+        email,
         status: "pending",
+        expiresAt: { gt: new Date() },
       },
     });
+    if (outstanding) {
+      rows.push({
+        status: "already_invited",
+        email: original,
+        expiresAt: outstanding.expiresAt.toISOString(),
+      });
+      continue;
+    }
 
-    return created;
-  });
+    const token = randomUUID();
+    const expiresAt = new Date(
+      Date.now() + INVITE_TTL_DAYS * 24 * 60 * 60 * 1000,
+    );
 
-  const inviterName = inviter.email ?? "A Light Rider user";
-
-  try {
-    await sendEmail({
-      to: email,
-      subject: `${inviterName} invited you to Light Rider`,
-      textBody: [
-        `${inviterName} invited you to Light Rider.`,
-        "",
-        "Light Rider gives you access to real quantum hardware, quantum randomness, and the tools to build on them.",
-        "",
-        inviteLink(token),
-        "",
-        // Sets expectations before they hit the lock. A new account's free
-        // credits don't cover real hardware, and discovering that only after
-        // signing up reads as a bait-and-switch.
-        "Simulators are free to use the moment you sign up. Running on real quantum hardware needs credits, which you can buy once you're in.",
-        "",
-        `This link expires in ${INVITE_TTL_DAYS} days.`,
-      ].join("\n"),
+    // Invite and Referral are written together: a referral with no invite is
+    // unreachable, and an invite with no referral would sign someone up with
+    // no reward attached and nothing to notice it.
+    const invite = await db.$transaction(async (tx) => {
+      const created = await tx.invite.create({
+        data: { inviterCustomerId: inviter.id, email, token, expiresAt },
+      });
+      await tx.referral.create({
+        data: {
+          referrerCustomerId: inviter.id,
+          inviteToken: token,
+          status: "pending",
+        },
+      });
+      return created;
     });
-  } catch (err) {
-    console.error(`[invite] Postmark send failed for invite ${invite.id}:`, err);
-    return {
-      status: "email_failed",
-      message:
-        "The invite was created but the email couldn't be sent. Please try again.",
-      invite,
-      detail: err instanceof Error ? err.message : String(err),
-    };
+
+    sentCount += 1;
+
+    const { subject, textBody, htmlBody } = renderInviteEmail({
+      inviterName,
+      inviteUrl: inviteLink(token),
+      ttlDays: INVITE_TTL_DAYS,
+    });
+
+    try {
+      await sendEmail({ to: email, subject, textBody, htmlBody });
+    } catch (err) {
+      console.error(
+        `[invite] Postmark send failed for invite ${invite.id}:`,
+        err,
+      );
+      // The rows are KEPT deliberately: the token is valid and the referral is
+      // real, so the recovery is resending, not re-creating. It still counted
+      // against quota, because an invite genuinely does exist.
+      rows.push({
+        status: "email_failed",
+        email: original,
+        message: "Created, but the email couldn't be sent.",
+      });
+      continue;
+    }
+
+    rows.push({
+      status: "ok",
+      email: original,
+      expiresAt: invite.expiresAt.toISOString(),
+    });
   }
 
   return {
     status: "ok",
-    invite,
-    remainingToday: Math.max(0, INVITE_DAILY_LIMIT - (used + 1)),
+    rows,
+    sentCount,
+    remainingToday: Math.max(0, INVITE_DAILY_LIMIT - (usedToday + sentCount)),
   };
 }
 

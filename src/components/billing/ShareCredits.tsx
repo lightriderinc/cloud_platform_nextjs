@@ -5,6 +5,7 @@ import {
   formatCredits,
   type Credits,
 } from "@/components/billing/CreditsSummary";
+import { useProtectedWork } from "@/lib/auth/protected-work";
 import LRButton from "@/components/ui/LRButton";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -188,6 +189,13 @@ export default function ShareCredits() {
 
   const failure = send.error instanceof BatchError ? send.error.failure : null;
   const resultRows = send.data?.rows ?? failure?.rows;
+
+  // Hold off the silent SSO check (which reloads the whole document) while
+  // there is a batch in progress. hasUnsavedInput() already covers the typed
+  // rows, but not the review step — that replaces the inputs with a summary,
+  // so there is nothing left in the DOM to detect while the riskiest state is
+  // on screen.
+  useProtectedWork(payload.length > 0 || pendingKey !== null || send.isPending);
 
   return (
     <div className="default-radius border border-gray-50 bg-gray-50 p-5">

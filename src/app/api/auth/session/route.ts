@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/auth/session";
+import { getSessionOutcome } from "@/lib/auth/session";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -21,10 +21,15 @@ export const dynamic = "force-dynamic";
  * more than the saved request.
  */
 export async function GET() {
-  const { isAuthenticated } = await getSession();
+  const { isAuthenticated, indeterminate } = await getSessionOutcome();
 
+  // `indeterminate` distinguishes "Logto says there is no session" from "we
+  // could not reach Logto". SessionSync treats the latter as no answer at all
+  // rather than as a sign-out, so a single failed round-trip cannot trigger a
+  // router.refresh() — which re-renders the server tree and, on a page with a
+  // half-filled form, used to throw the user's input away.
   return NextResponse.json(
-    { isAuthenticated },
+    { isAuthenticated, indeterminate },
     { headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } },
   );
 }

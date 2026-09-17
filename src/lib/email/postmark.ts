@@ -39,8 +39,14 @@ export function isEmailConfigured(): boolean {
 export type SendEmailInput = {
   to: string;
   subject: string;
-  /** Plain text only — there is no HTML template layer, by design. */
+  /**
+   * Always required, even when htmlBody is supplied. Some clients render the
+   * text part by preference, some fall back to it when HTML is blocked, and
+   * sending HTML alone hurts deliverability — so this is never optional.
+   */
   textBody: string;
+  /** Optional HTML part. Postmark sends multipart/alternative when both exist. */
+  htmlBody?: string;
 };
 
 /**
@@ -52,6 +58,7 @@ export async function sendEmail({
   to,
   subject,
   textBody,
+  htmlBody,
 }: SendEmailInput): Promise<void> {
   const token = process.env.POSTMARK_SERVER_TOKEN;
   const from = process.env.POSTMARK_FROM_EMAIL;
@@ -74,6 +81,7 @@ export async function sendEmail({
       To: to,
       Subject: subject,
       TextBody: textBody,
+      ...(htmlBody ? { HtmlBody: htmlBody } : {}),
       MessageStream: "outbound",
     }),
   });

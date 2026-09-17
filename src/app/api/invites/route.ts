@@ -1,9 +1,9 @@
-import { requireLogtoUser } from "@/lib/auth/session";
+import { getDisplayName, requireLogtoUser } from "@/lib/auth/session";
 import { getOrCreateCustomer } from "@/lib/billing/customer";
 import { db } from "@/lib/billing/db";
 import {
   INVITE_DAILY_LIMIT,
-  createAndSendInvite,
+  createAndSendInvites,
   invitesUsedToday,
 } from "@/lib/billing/invites";
 import { REFERRAL_REWARD_PREFIX } from "@/lib/billing/referrals";
@@ -131,7 +131,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   }
 
-  let body: { email?: unknown };
+  let body: { emails?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -141,9 +141,24 @@ export async function POST(req: Request) {
     );
   }
 
-  const email = typeof body.email === "string" ? body.email : "";
+  if (!Array.isArray(body.emails)) {
+    return NextResponse.json(
+      { error: "error", message: "Expected a list of email addresses." },
+      { status: 400 },
+    );
+  }
+
+  const emails = body.emails.map((raw) => (typeof raw === "string" ? raw : ""));
+
   const inviter = await getOrCreateCustomer(user.sub, user.email);
-  const result = await createAndSendInvite(inviter, email);
+
+  // The email leads with the inviter by name. getDisplayName() reads the Logto
+  // Account API and is best-effort, so it degrades to the address and then to
+  // a generic phrase rather than ever printing "undefined invited you".
+  const displayName = await getDisplayName().catch(() => null);
+  const inviterName = displayName ?? inviter.email ?? "A Light Rider user";
+
+  const result = await createAndSendInvites(inviter, emails, inviterName);
 
   const withDetail = (payload: Record<string, unknown>, detail?: string) =>
     detail && process.env.VERCEL_ENV !== "production"
@@ -154,40 +169,32 @@ export async function POST(req: Request) {
     case "ok":
       return NextResponse.json({
         ok: true,
-        email: result.invite.email,
-        expiresAt: result.invite.expiresAt.toISOString(),
+        rows: result.rows,
+        sentCount: result.sentCount,
         remainingToday: result.remainingToday,
       });
 
-    case "already_member":
-      return NextResponse.json(
-        { error: "already_member", message: result.message },
-        { status: 409 },
-      );
-
-    case "self_invite":
-    case "invalid_email":
-      return NextResponse.json(
-        { error: result.status, message: result.message },
-        { status: 400 },
-      );
-
     case "rate_limited":
       return NextResponse.json(
-        { error: "rate_limited", message: result.message },
+        {
+          error: "rate_limited",
+          message: result.message,
+          usedToday: result.usedToday,
+          limit: result.limit,
+        },
         { status: 429 },
       );
 
-    case "email_failed":
-      // 502, not 500: the invite exists and is valid — only the delivery
-      // failed, and the user should retry the send rather than assume nothing
-      // happened.
+    case "too_many_rows":
       return NextResponse.json(
-        withDetail(
-          { error: "email_failed", message: result.message },
-          result.detail,
-        ),
-        { status: 502 },
+        { error: "too_many_rows", message: result.message },
+        { status: 400 },
+      );
+
+    case "no_rows":
+      return NextResponse.json(
+        { error: "no_rows", message: result.message },
+        { status: 400 },
       );
 
     case "error":

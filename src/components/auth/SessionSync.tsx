@@ -155,7 +155,13 @@ export default function SessionSync({ initialAuthenticated }: Props) {
     try {
       const response = await fetch("/api/auth/session", { cache: "no-store" });
       if (!response.ok) return null;
-      const { isAuthenticated } = (await response.json()) as { isAuthenticated: boolean };
+      const { isAuthenticated, indeterminate } = (await response.json()) as {
+        isAuthenticated: boolean;
+        indeterminate?: boolean;
+      };
+      // The server could not reach Logto. That is not a sign-out, and acting
+      // on it would re-render the tree under a user who is still signed in.
+      if (indeterminate) return null;
       return Boolean(isAuthenticated);
     } catch {
       return null; // Offline or transient — indistinguishable from unknown.
