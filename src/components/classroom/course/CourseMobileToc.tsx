@@ -23,7 +23,7 @@ export default function CourseMobileToc({
         aria-expanded={isOpen}
         className="flex gap-1.5 text-sm font-medium text-gray-500 inline-flex items-center hover:text-[var(--brand-primary)] cursor-pointer"
       >
-        On this course
+        In this course
         <MdArrowForwardIos
           className={`transition-transform duration-150 ${
             isOpen ? "rotate-90" : ""

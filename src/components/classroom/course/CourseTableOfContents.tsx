@@ -12,7 +12,7 @@ export default function CourseTableOfContents({
   return (
     <nav className="sticky top-24 hidden self-start lg:block sticky-top">
       <span className="block text-sm font-semibold tracking-wide text-gray-500 mb-3">
-        On this course
+        In this course
       </span>
       <ul className="flex flex-col gap-2 border-l border-gray-100">
         {sections.map((section) => {
