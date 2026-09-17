@@ -1,5 +1,4 @@
 import CreditsTopUp from "@/components/billing/CreditsTopUp";
-import ShareCredits from "@/components/billing/ShareCredits";
 import InfoBox from "@/components/InfoBox";
 import BackButton from "@/components/ui/BackButton";
 
@@ -58,10 +57,6 @@ export default function QuantumComputePricingPage() {
       <div className="flex flex-col gap-12">
         <div className="block lg:flex">
           <CreditsTopUp />
-        </div>
-
-        <div className="block lg:flex">
-          <ShareCredits />
         </div>
 
         <div className="lg:col-span-2">

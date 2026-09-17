@@ -1,6 +1,7 @@
 import { resolveCustomerFromRequest } from "@/lib/auth/resolveCustomer";
-import { hasEnoughCredits, hasPurchasedCredits } from "@/lib/billing/planCheck";
+import { hasEnoughCredits, hasUnlockedCredits } from "@/lib/billing/planCheck";
 import { db } from "@/lib/billing/db";
+import { grantReferralRewardIfEligible } from "@/lib/billing/referrals";
 import { isValidBackend, QUANTUM_BACKENDS } from "@/lib/quantum/backends";
 import { NextResponse } from "next/server";
 
@@ -57,7 +58,7 @@ export async function POST(req: Request) {
   // having purchased credits at least once — the free signup grant alone
   // doesn't unlock it, even if it'd otherwise cover this job's cost. Mock/
   // sample-circuit backends (costPerShotCents: 0) are unaffected.
-  if (config.costPerShotCents > 0 && !(await hasPurchasedCredits(customer.id))) {
+  if (config.costPerShotCents > 0 && !(await hasUnlockedCredits(customer.id))) {
     return NextResponse.json(
       {
         error: "purchase_required",
@@ -167,6 +168,22 @@ export async function POST(req: Request) {
 
   if (ops.length > 0) {
     await db.$transaction(ops);
+  }
+
+  // Qualifying event (a) for Refer & Earn: a real-hardware job that actually
+  // debited. Placed AFTER the transaction resolved, so a proxy failure, a
+  // rejected submission or a rolled-back debit can never pay a reward.
+  // costCents > 0 is what makes this real hardware — every mock backend is
+  // costPerShotCents: 0 (see backends.ts).
+  //
+  // Deliberately not awaited: the reward is a bonus and must never delay or
+  // fail a job that already succeeded. grantReferralRewardIfEligible swallows
+  // and logs its own errors; the .catch is belt-and-braces against an
+  // unhandled rejection taking down the process.
+  if (costCents > 0) {
+    void grantReferralRewardIfEligible(customer.id, "first_qpu_job").catch(
+      (err) => console.error("[referral] unexpected reward failure:", err),
+    );
   }
 
   return NextResponse.json(data);

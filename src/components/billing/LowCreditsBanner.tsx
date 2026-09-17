@@ -34,9 +34,12 @@ export default function LowCreditsBanner() {
     queryFn: () => fetchJson<Credits>("/api/billing/credits"),
   });
 
+  // Gated on `hasUnlocked`, not on purchases: a transfer-only recipient can
+  // now run real-hardware jobs, so they need the same running-low warning as
+  // anyone who bought. A locked account has nothing to run low on.
   const isLow =
     !!data &&
-    data.purchasedCents > 0 &&
+    !!data.hasUnlocked &&
     data.remainingCents <= LOW_CREDIT_THRESHOLD_CENTS;
 
   if (!isLow || dismissed) {

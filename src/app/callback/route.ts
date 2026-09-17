@@ -5,7 +5,9 @@ import {
   consentRetryCookieName,
   sanitizeReturnTo,
 } from '@/lib/auth/silent-sso';
-import { handleSignIn } from '@logto/next/server-actions';
+import { acceptInviteForUser } from '@/lib/billing/acceptInvite';
+import { INVITE_TOKEN_COOKIE } from '@/lib/billing/inviteCookie';
+import { getLogtoContext, handleSignIn } from '@logto/next/server-actions';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { NextRequest, NextResponse } from 'next/server';
@@ -80,6 +82,29 @@ export async function GET(request: NextRequest) {
   }
 
   await handleSignIn(logtoConfig, searchParams);
+
+  // An invite token parked here by /invite means this sign-in completed an
+  // invited sign-up. Runs after handleSignIn so the session exists and the
+  // Logto subject is readable. Best-effort: acceptInviteForUser swallows its
+  // own errors, and the cookie is cleared either way so a failed accept can
+  // never wedge every later sign-in.
+  const cookieStore = await cookies();
+  const inviteToken = cookieStore.get(INVITE_TOKEN_COOKIE)?.value;
+  if (inviteToken) {
+    cookieStore.delete({ name: INVITE_TOKEN_COOKIE, path: '/' });
+    try {
+      const { claims } = await getLogtoContext(logtoConfig);
+      if (claims?.sub) {
+        await acceptInviteForUser(
+          inviteToken,
+          claims.sub,
+          claims.email as string | undefined,
+        );
+      }
+    } catch (err) {
+      console.error('[callback] invite acceptance failed; sign-in unaffected:', err);
+    }
+  }
 
   redirect('/');
 }

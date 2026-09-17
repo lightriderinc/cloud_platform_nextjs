@@ -161,14 +161,14 @@ export default function QEntropyExperiment({
     pricingShown &&
     credits.data !== undefined &&
     credits.data.remainingCents < withdrawCostCents;
-  // purchasedCents <= 0 means any remaining balance is just the signup
-  // bonus, which isn't spendable until a first purchase unlocks it -- same
-  // gate CreditsSummary uses.
+  // Not unlocked means any remaining balance is just the signup bonus, which
+  // isn't spendable until a purchase or a received transfer unlocks it --
+  // same gate CreditsSummary uses.
   const creditsLocked =
     pricingShown &&
     credits.data !== undefined &&
     !insufficientCredits &&
-    credits.data.purchasedCents <= 0;
+    !credits.data.hasUnlocked;
 
   function switchMode(next: Mode) {
     setMode(next);

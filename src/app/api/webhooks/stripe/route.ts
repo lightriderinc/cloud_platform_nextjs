@@ -1,4 +1,5 @@
 import { db } from "@/lib/billing/db";
+import { grantReferralRewardIfEligible } from "@/lib/billing/referrals";
 import { findApiPlanByPriceId, findUserPlanByPriceId } from "@/lib/billing/plans";
 import { assignRoleToUser, revokeRoleFromUser } from "@/lib/logto/management";
 import { withRetries } from "@/lib/retry";
@@ -180,6 +181,14 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         data: { creditsBalanceCents: { increment: amountCents } },
       }),
     ]);
+
+    // Qualifying event (b) for Refer & Earn: a completed credit purchase.
+    // After the transaction resolved, so a failed credit grant never pays a
+    // reward. Awaited here, unlike the job path: this handler owns the whole
+    // webhook response and has no user waiting on it, and letting the promise
+    // float past the end of a serverless invocation risks it being killed
+    // mid-transaction. It cannot throw — the helper swallows its own errors.
+    await grantReferralRewardIfEligible(customer.id, "first_purchase");
     return;
   }
 

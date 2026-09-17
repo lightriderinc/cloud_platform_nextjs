@@ -65,12 +65,13 @@ export default function BackendSubmitModal({
     queryFn: () => fetchJson<Credits>("/api/billing/credits"),
     enabled: needsCredits,
   });
-  // Real QPU access requires having purchased credits at least once — the
-  // free signup grant alone doesn't unlock it, even if remainingCents > 0.
+  // Real QPU access requires an unlocked account — a purchase or credits
+  // received from another user. The free signup grant alone doesn't unlock
+  // it, even if remainingCents > 0. Mirrors hasUnlockedCredits() server-side.
   const blockedByCredits =
     needsCredits &&
     credits !== undefined &&
-    (credits.purchasedCents <= 0 || credits.remainingCents <= 0);
+    (!credits.hasUnlocked || credits.remainingCents <= 0);
   const stillCheckingCredits = needsCredits && credits === undefined;
 
   useEffect(() => {

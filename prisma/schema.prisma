@@ -35,6 +35,9 @@ model Customer {
   // Ledger rows belonging to *someone else* that name this customer as the
   // other side of a credit transfer. Only populated for transfer rows.
   counterpartyLedgerEntries CreditLedgerEntry[] @relation("LedgerCounterparty")
+  invitesSent       Invite[]   @relation("InvitesSent")
+  referralsSent     Referral[] @relation("ReferralsSent")
+  referralsReceived Referral[] @relation("ReferralsReceived")
   usageEvents     ApiUsageEvent[]
   apiKey          ApiKey?
   quantumJobs     QuantumJobSubmission[]
@@ -88,10 +91,85 @@ model CreditLedgerEntry {
   // of amountCents.
   counterpartyCustomerId String?
   counterpartyCustomer   Customer? @relation("LedgerCounterparty", fields: [counterpartyCustomerId], references: [id])
+  // Groups every row written by one multi-recipient submit. A single-recipient
+  // send is just a batch of one, so this is set on those too; only pre-batch
+  // and non-transfer rows leave it null.
+  batchId                String?
+  // The counterparty's email as it stood when the transfer happened, captured
+  // from the Logto lookup the transfer already performs. History renders from
+  // this instead of calling Logto per row, and a later email change on their
+  // side never rewrites what this transfer actually was.
+  counterpartyEmailSnapshot String?
   createdAt    DateTime @default(now())
 
   @@index([transferId])
   @@index([counterpartyCustomerId])
+  @@index([batchId])
+  // History pages read one customer's rows newest-first.
+  @@index([customerId, createdAt])
+}
+
+// Guards a batch transfer submit against double execution. The id is the
+// client-generated idempotency key; its primary key is the whole guard, so a
+// double-click or retry loses the insert race inside the transaction rather
+// than being filtered by application logic that could itself race.
+model ProcessedTransferBatch {
+  id         String   @id // client-supplied idempotency key
+  customerId String // the sender, so one user's key can never block another's
+  batchId    String   @unique // the batch actually written for this key
+  createdAt  DateTime @default(now())
+
+  @@index([customerId])
+}
+
+// An emailed invitation to join Light Rider. One row per invite actually
+// sent; an address that already has an account never gets a row (so it can
+// never consume the sender's daily quota).
+model Invite {
+  id                String   @id @default(cuid())
+  inviterCustomerId String
+  inviter           Customer @relation("InvitesSent", fields: [inviterCustomerId], references: [id])
+  email             String
+  token             String   @unique // the ?token= in the invite link
+  status            String   @default("pending") // pending | accepted | expired
+  expiresAt         DateTime // INVITE_TTL_DAYS out from createdAt
+  acceptedAt        DateTime?
+  // The Customer the invitee became, once they sign up.
+  acceptedByCustomerId String?
+  createdAt         DateTime @default(now())
+
+  // The daily rate limit counts this inviter's rows inside a rolling window.
+  @@index([inviterCustomerId, createdAt])
+  @@index([email])
+}
+
+// Refer & Earn. A row is created alongside every Invite (linked by
+// inviteToken); refereeCustomerId is filled in at signup by
+// markRefereeSignedUp(), and the reward fires on the referee's first
+// qualifying event — see lib/billing/referrals.ts.
+//
+// status: pending -> rewarded. "qualified" and "expired" remain in the
+// vocabulary but nothing sets them today: the reward is granted in the same
+// transaction that recognises qualification, so there is no window in which a
+// referral is qualified-but-unrewarded.
+model Referral {
+  id                    String   @id @default(cuid())
+  referrerCustomerId    String
+  referrer              Customer @relation("ReferralsSent", fields: [referrerCustomerId], references: [id])
+  refereeCustomerId     String? // null until the invited person actually signs up
+  referee               Customer? @relation("ReferralsReceived", fields: [refereeCustomerId], references: [id])
+  inviteToken           String?  @unique // links to the eventual Send Invite token, nullable so
+                                         // this table can exist before Send Invite ships
+  status                String   @default("pending") // pending | qualified | rewarded | expired
+  qualifyingEventReason String? // set once the reward trigger fires later, e.g. "first_qpu_job"
+                                // or "first_purchase" — free text, decided when built
+  rewardCents           Int? // set once a reward amount is decided; null = not yet rewarded
+  createdAt             DateTime @default(now())
+  qualifiedAt           DateTime?
+  rewardedAt            DateTime?
+
+  @@index([referrerCustomerId])
+  @@index([refereeCustomerId])
 }
 
 // Mirror of Stripe meter events we report for EaaS API usage, kept for our
