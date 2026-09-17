@@ -1,25 +1,36 @@
 type GateName = "AND" | "OR" | "NOT" | "XOR";
 
 const GATE_BODY: Record<GateName, string> = {
-  AND: "M60,50 H100 A30,30 0 0 1 100,110 H60 Z",
+  AND: "M65,50 H100 A40,30 0 0 1 100,110 H65 Z",
   OR: "M60,50 Q110,50 150,80 Q110,110 60,110 Q75,80 60,50 Z",
   XOR: "M60,50 Q110,50 150,80 Q110,110 60,110 Q75,80 60,50 Z",
-  NOT: "M60,50 L60,110 L150,80 Z",
+  NOT: "M65,50 L65,110 L150,80 Z",
 };
 
 const GATE_TIP_X: Record<GateName, number> = {
-  AND: 210,
+  AND: 221,
   OR: 230,
   XOR: 230,
   NOT: 249,
 };
 
 const INPUT_X = 28;
-const GATE_LEFT_X = 140;
+const GATE_LEFT_X = 145;
 const OUTPUT_X = 352;
 const TOP_Y = 50;
 const BOTTOM_Y = 110;
 const MID_Y = 80;
+const INPUT_WIRE_START_X = INPUT_X + 28;
+const INPUT_WIRE_MID_X = (INPUT_WIRE_START_X + GATE_LEFT_X) / 2;
+const INPUT_WIRE_BEND = 20;
+
+function inputWirePath(y: number, bendTowardCenter: boolean) {
+  if (!bendTowardCenter) {
+    return `M${INPUT_WIRE_START_X},${y} L${GATE_LEFT_X},${y}`;
+  }
+  const endY = y < MID_Y ? y + INPUT_WIRE_BEND : y - INPUT_WIRE_BEND;
+  return `M${INPUT_WIRE_START_X},${y} L${INPUT_WIRE_MID_X},${y} L${INPUT_WIRE_MID_X},${endY} L${GATE_LEFT_X},${endY}`;
+}
 
 const ACTIVE_COLOR = "var(--brand-primary-light)";
 const INACTIVE_COLOR = "#9ca3af";
@@ -63,20 +74,16 @@ export default function GateSymbol({
         className="absolute inset-0 h-full w-full"
         aria-hidden="true"
       >
-        <line
-          x1={INPUT_X+28}
-          y1={aY}
-          x2={GATE_LEFT_X}
-          y2={aY}
+        <path
+          d={inputWirePath(aY, inputs === 2)}
+          fill="none"
           stroke={wireColor(a === 1)}
           strokeWidth={3}
         />
         {inputs === 2 && (
-          <line
-            x1={INPUT_X+28}
-            y1={BOTTOM_Y}
-            x2={GATE_LEFT_X}
-            y2={BOTTOM_Y}
+          <path
+            d={inputWirePath(BOTTOM_Y, true)}
+            fill="none"
             stroke={wireColor(b === 1)}
             strokeWidth={3}
           />
