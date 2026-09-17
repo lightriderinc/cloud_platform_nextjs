@@ -5,7 +5,7 @@ import SidebarSecondary from "@/components/sidebar/SidebarSecondary";
 import SidebarSecondaryGate from "@/components/sidebar/SidebarSecondaryGate";
 import { getSession } from "@/lib/auth/session";
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, IBM_Plex_Sans, Science_Gothic } from "next/font/google";
+import { Gamja_Flower, IBM_Plex_Mono, IBM_Plex_Sans, Science_Gothic } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
 
@@ -25,6 +25,12 @@ const scienceGothic = Science_Gothic({
   subsets: ["latin"],
 });
 
+const gamjaFlower = Gamja_Flower({
+  variable: "--font-gamja-flower",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
 export const metadata: Metadata = {
   title: "Cloud quantum computing",
   description: "Light Rider cloud quantum platform.",
@@ -40,7 +46,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} ${scienceGothic.variable} h-full antialiased`}
+      className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} ${scienceGothic.variable} ${gamjaFlower.variable} h-full antialiased`}
     >
       <body className="h-full flex flex-col overflow-hidden">
         <Providers>

@@ -24,3 +24,7 @@
 .text-2xs {
   font-size: 0.6875rem !important;
 }
+
+.handwritten {
+  font-family: var(--font-gamja-flower) !important;
+}
