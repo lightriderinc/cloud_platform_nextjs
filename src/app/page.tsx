@@ -1,5 +1,6 @@
 import CreditsSummary from "@/components/billing/CreditsSummary";
 import LowCreditsBanner from "@/components/billing/LowCreditsBanner";
+import DashboardClassroomLink from "@/components/dashboard/DashboardClassroomLink";
 import DashboardDemoCircuit from "@/components/dashboard/DashboardDemoCircuit";
 import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntropy";
 import DashboardLatestJobs from "@/components/dashboard/DashboardLatestJobs";
@@ -96,6 +97,7 @@ export default async function Home() {
             </h2>
           </div>
           <div className="flex flex-row gap-4">
+            <DashboardClassroomLink />
             <DashboardDemoCircuit />
             <DashboardDemoEntropy />
           </div>
