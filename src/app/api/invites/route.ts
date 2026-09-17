@@ -42,10 +42,19 @@ export async function GET(req: Request) {
   };
 
   if (view === "rewards") {
-    // Referrals this customer earned as the REFERRER. The referee's own
-    // reward row is on their ledger, not in this list.
+    // BOTH sides of a rewarded referral. "Rewards earned" has to mean what it
+    // says: the referee is paid the same 100 credits as the referrer, and
+    // before this their only trace of it was a "Referral reward" line buried
+    // in Share Credits history — a page someone who joined by invite has no
+    // reason to open.
     const referrals = await db.referral.findMany({
-      where: { referrerCustomerId: customer.id, status: "rewarded" },
+      where: {
+        status: "rewarded",
+        OR: [
+          { referrerCustomerId: customer.id },
+          { refereeCustomerId: customer.id },
+        ],
+      },
       orderBy: { rewardedAt: "desc" },
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE + 1,
@@ -54,11 +63,22 @@ export async function GET(req: Request) {
     const hasMore = referrals.length > PAGE_SIZE;
     const rows = referrals.slice(0, PAGE_SIZE);
 
-    // Invite rows carry the invitee's email; referrals only link by token.
-    const invites = await db.invite.findMany({
-      where: { token: { in: rows.map((r) => r.inviteToken ?? "") } },
-    });
-    const emailByToken = new Map(invites.map((i) => [i.token, i.email]));
+    // The counterparty differs by side: as referrer it is the person you
+    // invited (carried on the Invite row, since Referral only links by token);
+    // as referee it is whoever invited you (a Customer).
+    const [invites, referrers] = await Promise.all([
+      db.invite.findMany({
+        where: {
+          token: { in: rows.map((r) => r.inviteToken).filter((t): t is string => !!t) },
+        },
+      }),
+      db.customer.findMany({
+        where: { id: { in: rows.map((r) => r.referrerCustomerId) } },
+        select: { id: true, email: true },
+      }),
+    ]);
+    const inviteeByToken = new Map(invites.map((i) => [i.token, i.email]));
+    const referrerById = new Map(referrers.map((c) => [c.id, c.email]));
 
     return NextResponse.json({
       view,
@@ -66,16 +86,24 @@ export async function GET(req: Request) {
       pageSize: PAGE_SIZE,
       hasMore,
       quota,
-      rewards: rows.map((referral) => ({
-        id: referral.id,
-        email: referral.inviteToken
-          ? (emailByToken.get(referral.inviteToken) ?? null)
-          : null,
-        rewardCents: referral.rewardCents,
-        qualifyingEventReason: referral.qualifyingEventReason,
-        rewardedAt: referral.rewardedAt?.toISOString() ?? null,
-        reason: `${REFERRAL_REWARD_PREFIX}${referral.id}`,
-      })),
+      rewards: rows.map((referral) => {
+        const side =
+          referral.referrerCustomerId === customer.id ? "referrer" : "referee";
+        return {
+          id: referral.id,
+          side,
+          counterpartyEmail:
+            side === "referrer"
+              ? (referral.inviteToken
+                  ? (inviteeByToken.get(referral.inviteToken) ?? null)
+                  : null)
+              : (referrerById.get(referral.referrerCustomerId) ?? null),
+          rewardCents: referral.rewardCents,
+          qualifyingEventReason: referral.qualifyingEventReason,
+          rewardedAt: referral.rewardedAt?.toISOString() ?? null,
+          reason: `${REFERRAL_REWARD_PREFIX}${referral.id}`,
+        };
+      }),
     });
   }
 
