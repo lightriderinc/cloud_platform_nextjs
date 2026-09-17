@@ -17,7 +17,8 @@ export default function ClassroomBoardBeginnerPanel() {
             badges={["Bits", "Gates", "Boolean Algebra"]}
           />
           <ClassroomBoardCourseCard
-            href="/classroom"
+            href="#"
+            comingSoon
             icon={BiAtom}
             title="Quantum computing basics"
             description="Learn the very basics of quantum computing."

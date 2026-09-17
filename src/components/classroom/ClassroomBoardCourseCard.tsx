@@ -8,12 +8,14 @@ export default function ClassroomBoardCourseCard({
   title,
   description,
   badges,
+  comingSoon = false,
 }: {
   href: string;
   icon: IconType;
   title: string;
   description: string;
   badges: string[];
+  comingSoon?: boolean;
 }) {
   return (
     <Link
@@ -43,7 +45,13 @@ export default function ClassroomBoardCourseCard({
           </div>
         </div>
       </div>
-      <MdArrowForward className="text-2xl text-gray-100 self-end group-hover:text-[var(--brand-primary-light)] transition duration-150" />
+      {comingSoon ? (
+        <span className="text-lg self-end handwritten text-gray-100 opacity-75">
+          Coming soon
+        </span>
+      ) : (
+        <MdArrowForward className="text-2xl text-gray-100 self-end group-hover:text-[var(--brand-primary-light)] transition duration-150" />
+      )}
     </Link>
   );
 }
