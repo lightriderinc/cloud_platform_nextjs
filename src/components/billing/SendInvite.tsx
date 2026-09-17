@@ -184,7 +184,7 @@ export default function SendInvite() {
       <h2 className="text-lg font-bold text-gray-800">Invite people</h2>
       <p className="mb-4 text-sm text-gray-600">
         Send invite links by email. When someone you invited signs up and buys
-        credits — or runs their first job on real hardware — you both get 100
+        credits or runs their first job on real hardware, you both get 100
         credits.
       </p>
 
