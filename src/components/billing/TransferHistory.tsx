@@ -66,7 +66,6 @@ function describeReason(reason: string): string {
   const [prefix] = reason.split(":");
   if (prefix === "transfer_sent") return "Transfer sent";
   if (prefix === "transfer_received") return "Transfer received";
-  if (prefix === "referral_reward") return "Referral reward";
   return prefix.replace(/_/g, " ");
 }
 
@@ -146,12 +145,9 @@ export default function TransferHistory() {
                           {new Date(row.createdAt).toLocaleString()}
                         </td>
                         <td className="px-4 py-3 text-gray-700">
-                          {row.counterpartyEmail ??
-                            (row.reason.startsWith("referral_reward:") ? (
-                              <span className="text-gray-500">Light Rider</span>
-                            ) : (
-                              <span className="text-gray-400">Unknown</span>
-                            ))}
+                          {row.counterpartyEmail ?? (
+                            <span className="text-gray-400">Unknown</span>
+                          )}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-gray-500">
                           {describeReason(row.reason)}

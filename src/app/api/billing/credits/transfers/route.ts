@@ -1,7 +1,6 @@
 import { requireLogtoUser } from "@/lib/auth/session";
 import { getOrCreateCustomer } from "@/lib/billing/customer";
 import { db } from "@/lib/billing/db";
-import { REFERRAL_REWARD_PREFIX } from "@/lib/billing/referrals";
 import {
   TRANSFER_RECEIVED_PREFIX,
   TRANSFER_SENT_PREFIX,
@@ -37,27 +36,23 @@ export async function GET(req: Request) {
 
   const customer = await getOrCreateCustomer(user.sub, user.email);
 
-  // "Received" covers every inbound credit movement that isn't a purchase:
-  // transfers from other users AND referral rewards. Referral rewards are
-  // deliberately NOT filtered out here — that exclusion exists only in
-  // purchase-eligibility logic (planCheck/purchases), which is about how
-  // credits were obtained, not about what a customer is allowed to see.
-  // Hiding a grant someone actually received would make their balance
-  // unexplainable from their own history.
-  const where =
-    view === "received"
-      ? {
-          customerId: customer.id,
-          OR: [
-            { reason: { startsWith: TRANSFER_RECEIVED_PREFIX } },
-            { reason: { startsWith: REFERRAL_REWARD_PREFIX } },
-          ],
-        }
-      : {
-          customerId: customer.id,
-          transferId: { not: null },
-          reason: { startsWith: TRANSFER_SENT_PREFIX },
-        };
+  // Transfers only — person-to-person credit movements, nothing else.
+  //
+  // Referral rewards used to be folded into "received" so a recipient could
+  // account for every credit in their balance from one place. They now have a
+  // home of their own on Refer & Earn, which shows BOTH sides of a referral
+  // (what you earned for inviting someone, and what you earned for being
+  // invited). Listing them here as well made the same grant appear twice in
+  // two different vocabularies, with "Light Rider" as a counterparty who never
+  // sent anyone anything.
+  const where = {
+    customerId: customer.id,
+    transferId: { not: null },
+    reason: {
+      startsWith:
+        view === "received" ? TRANSFER_RECEIVED_PREFIX : TRANSFER_SENT_PREFIX,
+    },
+  };
 
   // One extra row rather than a second count() query: all the page needs to
   // know is whether a "next" button belongs on screen.
