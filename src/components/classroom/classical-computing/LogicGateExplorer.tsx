@@ -3,6 +3,7 @@
 import { useState } from "react";
 import ChalkboardPanel from "../course/ChalkboardPanel";
 import ChalkButton from "../course/ChalkButton";
+import GateSymbol from "./GateSymbol";
 
 type GateName = "AND" | "OR" | "NOT" | "XOR";
 
@@ -29,14 +30,6 @@ const ONE_INPUT_ROWS: [number, number][] = [
   [1, 0],
 ];
 
-function bitButtonClass(active: number) {
-  return `flex h-14 w-14 items-center justify-center rounded-lg border-2 text-2xl handwritten cursor-pointer transition duration-150 ${
-    active
-      ? "border-[var(--brand-primary-light)] bg-emerald-700 text-white"
-      : "border-gray-200 bg-black/20 text-gray-200 hover:border-gray-100"
-  }`;
-}
-
 export default function LogicGateExplorer() {
   const [gate, setGate] = useState<GateName>("AND");
   const [a, setA] = useState(0);
@@ -61,31 +54,16 @@ export default function LogicGateExplorer() {
           ))}
         </div>
 
-        <div className="flex flex-wrap items-center gap-6">
-          <button
-            type="button"
-            onClick={() => setA(1 - a)}
-            aria-pressed={a === 1}
-            aria-label={`Input A, currently ${a}`}
-            className={bitButtonClass(a)}
-          >
-            {a}
-          </button>
-          {config.inputs === 2 && (
-            <button
-              type="button"
-              onClick={() => setB(1 - b)}
-              aria-pressed={b === 1}
-              aria-label={`Input B, currently ${b}`}
-              className={bitButtonClass(b)}
-            >
-              {b}
-            </button>
-          )}
-          <span className="handwritten text-2xl text-white">→</span>
-          <div className={bitButtonClass(output).replace("cursor-pointer", "")}>
-            {output}
-          </div>
+        <div className="overflow-x-auto">
+          <GateSymbol
+            gate={gate}
+            a={a}
+            b={b}
+            inputs={config.inputs}
+            output={output}
+            onToggleA={() => setA(1 - a)}
+            onToggleB={() => setB(1 - b)}
+          />
         </div>
 
         <table className="w-fit text-left handwritten text-white">
