@@ -48,11 +48,14 @@ export default function BackendSubmitModal({
   backend,
   title = "Submit Sample Circuit",
   initialCircuit = "h",
+  successMessage,
   onClose,
 }: {
   backend: QuantumBackendId;
   title?: string;
   initialCircuit?: CircuitType;
+  /** Extra content shown above the result once the job has been submitted — e.g. course-specific next steps. */
+  successMessage?: React.ReactNode;
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -194,20 +197,23 @@ export default function BackendSubmitModal({
             {/* Left: form or results */}
             <div className="min-w-0">
               {displayedJob ? (
-                <JobResultView
-                  job={displayedJob}
-                  footer={
-                    <LRButton
-                      variant="secondary-outline"
-                      icon={<MdArrowLeft className="text-lg" />}
-                      iconPosition="left"
-                      onClick={handleTryAnother}
-                      className="mt-1 w-fit"
-                    >
-                      Try Another
-                    </LRButton>
-                  }
-                />
+                <div className="flex flex-col gap-5">
+                  {successMessage}
+                  <JobResultView
+                    job={displayedJob}
+                    footer={
+                      <LRButton
+                        variant="secondary-outline"
+                        icon={<MdArrowLeft className="text-lg" />}
+                        iconPosition="left"
+                        onClick={handleTryAnother}
+                        className="mt-1 w-fit"
+                      >
+                        Try Another
+                      </LRButton>
+                    }
+                  />
+                </div>
               ) : stillCheckingCredits ? null : blockedByCredits ? (
                 <CreditsSummary />
               ) : (

@@ -1,5 +1,6 @@
 "use client";
 
+import CircuitSchematic from "@/components/quantum/CircuitSchematic";
 import { useEffect, useRef, useState } from "react";
 import { MdArrowBack, MdArrowForward } from "react-icons/md";
 import LRButton from "../../ui/LRButton";
@@ -9,6 +10,7 @@ import CourseSection from "../course/CourseSection";
 import CourseTableOfContents from "../course/CourseTableOfContents";
 import BellStateSimulator from "./BellStateSimulator";
 import BlochSphereExplorer from "./BlochSphereExplorer";
+import CircuitPresetsPanel from "./CircuitPresetsPanel";
 import QuantumGateExplorer from "./QuantumGateExplorer";
 import QubitSuperpositionDemo from "./QubitSuperpositionDemo";
 import RecapQuiz from "./RecapQuiz";
@@ -122,16 +124,49 @@ const SECTIONS = [
   },
   {
     id: "circuits",
-    title: "Entanglement and circuits",
+    title: "Quantum circuits",
     content: (
       <>
         <p>
-          A quantum circuit is a sequence of gates applied to one or more
-          qubits, read left to right, the same way a classical circuit
-          chains logic gates together. With two or more qubits, something
-          with no classical counterpart becomes possible:{" "}
-          <strong>entanglement</strong>.
+          A quantum circuit is a set of instructions for a quantum computer,
+          drawn as one horizontal line per qubit, called a wire. Time runs
+          left to right along each wire. Every gate from the last section
+          shows up as a box sitting on the wire it acts on, and a small
+          meter symbol at the end marks where a qubit gets measured and
+          turned into an ordinary 0 or 1.
         </p>
+        <p>
+          Here&apos;s the simplest circuit that does anything interesting:
+          one qubit, one H gate, one measurement.
+        </p>
+        <CircuitSchematic circuit="h" className="w-fit" />
+        <p>
+          This circuit doesn&apos;t compute in the usual sense. It puts the
+          qubit into an even superposition and lets the measurement pick 0
+          or 1 with genuinely equal odds. That&apos;s already a real use
+          case: a coin flip built out of superposition rather than assumed
+          randomness is exactly how a quantum random number generator
+          works, and it&apos;s one of the few quantum applications already
+          running as an ordinary product today.
+        </p>
+        <p>
+          Add a second qubit and a CNOT gate and the same idea builds
+          something with no classical equivalent: an entangled pair,
+          covered next.
+        </p>
+        <p>
+          The H gate circuit above is a ready-made preset on Light Rider
+          Quantum. Submit it and it shows up as a job you can track.
+        </p>
+        <CircuitPresetsPanel circuit="h" />
+      </>
+    ),
+  },
+  {
+    id: "entanglement",
+    title: "Entanglement",
+    content: (
+      <>
         <p>
           Two qubits are entangled when their combined state can&apos;t be split
           into a separate state for each qubit on its own. Measuring one
@@ -143,8 +178,18 @@ const SECTIONS = [
           The standard way to build an entangled pair, called a{" "}
           <strong>Bell state</strong>, is an H gate on one qubit followed by
           a CNOT gate controlled by that qubit and targeting the other. CNOT
-          flips its target qubit only when its control qubit is 1.
+          flips its target qubit only when its control qubit is 1. Drawn as
+          a circuit, it looks like this:
         </p>
+        <CircuitSchematic circuit="bell" className="w-fit" />
+        <p>
+          Past the entanglement itself, this exact circuit doubles as a
+          standard hardware benchmark. It&apos;s small enough to run in a
+          fraction of a second and sensitive enough to noise that providers
+          use it to check how well a chip actually preserves entanglement.
+          It&apos;s also a ready-made preset you can submit right now.
+        </p>
+        <CircuitPresetsPanel circuit="bell" />
         <p>Step through the circuit below and measure the pair a few times.</p>
         <BellStateSimulator />
       </>
@@ -189,7 +234,7 @@ export default function QuantumComputingCourse() {
     <div className="max-w-6xl">
       <CourseHeader
         title="Quantum computing basics"
-        description="Qubits, the Bloch sphere, gates, and entanglement."
+        description="Qubits, the Bloch sphere, gates, circuits, and entanglement."
       />
 
       <div className="lg:flex lg:items-start justify-between lg:gap-16">

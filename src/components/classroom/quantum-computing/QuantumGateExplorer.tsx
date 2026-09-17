@@ -4,7 +4,6 @@ import { useState } from "react";
 import ChalkboardPanel from "../course/ChalkboardPanel";
 import ChalkButton from "../course/ChalkButton";
 import BlochSphere from "./BlochSphere";
-import RunOnSimulatorButton from "./RunOnSimulatorButton";
 import { applyGate, formatAmplitude, ZERO, type GateName, type Qubit } from "./qubitMath";
 
 const GATE_ORDER: GateName[] = ["X", "Y", "Z", "H", "S"];
@@ -48,17 +47,6 @@ export default function QuantumGateExplorer() {
           <p className="handwritten text-lg text-white">
             {formatAmplitude(qubit.alpha)}|0⟩ + {formatAmplitude(qubit.beta)}|1⟩
           </p>
-        </div>
-      </div>
-
-      <div className="mt-6 border-t border-white/10 pt-6 flex flex-col gap-3">
-        <p className="handwritten text-lg text-white">
-          Press H once and the qubit lands exactly on the equator, an equal
-          mix of |0⟩ and |1⟩. That single gate is the circuit Light Rider&apos;s
-          simulator runs when you submit the H gate sample.
-        </p>
-        <div>
-          <RunOnSimulatorButton circuit="h" label="Run an H gate on the simulator" />
         </div>
       </div>
     </ChalkboardPanel>

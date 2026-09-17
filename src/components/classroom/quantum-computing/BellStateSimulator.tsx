@@ -3,7 +3,6 @@
 import { useState } from "react";
 import ChalkboardPanel from "../course/ChalkboardPanel";
 import ChalkButton from "../course/ChalkButton";
-import RunOnSimulatorButton from "./RunOnSimulatorButton";
 
 type Outcome = "00" | "01" | "10" | "11";
 
@@ -111,17 +110,6 @@ export default function BellStateSimulator() {
             though each one is random on its own. That&apos;s entanglement.
           </p>
         )}
-
-        <div className="border-t border-white/10 pt-6 flex flex-col gap-3">
-          <p className="handwritten text-lg text-white">
-            This is the same circuit as the Bell state sample on Light
-            Rider&apos;s simulator: an H gate on qubit 0, then a CNOT with
-            qubit 0 as control and qubit 1 as target.
-          </p>
-          <div>
-            <RunOnSimulatorButton circuit="bell" label="Run a Bell pair on the simulator" />
-          </div>
-        </div>
       </div>
     </ChalkboardPanel>
   );
