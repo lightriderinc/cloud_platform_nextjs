@@ -1,7 +1,7 @@
 "use client";
 
-import ClassroomSignInPrompt from "./course/ClassroomSignInPrompt";
 import ClassroomBoardBeginnerPanel from "./ClassroomBeginnerPanel";
+import ClassroomSignInPrompt from "./course/ClassroomSignInPrompt";
 
 export default function ClassroomPageContent({
   isAuthenticated,
@@ -15,7 +15,7 @@ export default function ClassroomPageContent({
   return (
     <div>
       <h2 className="text-xl font-bold text-gray-600 mb-4">
-        Beginner learning materials
+        For beginners
       </h2>
       <ClassroomBoardBeginnerPanel />
     </div>

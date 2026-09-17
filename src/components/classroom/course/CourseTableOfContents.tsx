@@ -14,7 +14,7 @@ export default function CourseTableOfContents({
       <span className="block text-sm font-semibold tracking-wide text-gray-500 mb-3">
         On this page
       </span>
-      <ul className="flex flex-col border-l border-gray-100">
+      <ul className="flex flex-col gap-2 border-l border-gray-100">
         {sections.map((section) => {
           const isActive = section.id === activeId;
           return (
