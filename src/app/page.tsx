@@ -96,7 +96,7 @@ export default async function Home() {
               Getting started
             </h2>
           </div>
-          <div className="flex flex-row gap-4">
+          <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <DashboardClassroomLink />
             <DashboardDemoCircuit />
             <DashboardDemoEntropy />
