@@ -14,7 +14,7 @@ import { MdAdd, MdClose } from "react-icons/md";
 /**
  * Send credits to one or more Light Rider users by email.
  *
- * Transfers are final — there's no pending/accept step and no way to pull them
+ * Transfers are final there's no pending/accept step and no way to pull them
  * back, so the submit goes through an explicit review step listing every
  * recipient and the total before anything is sent. A misclick must not be able
  * to pay five people.
@@ -202,7 +202,7 @@ export default function ShareCredits() {
       <h2 className="text-lg font-bold text-gray-800">Send credits</h2>
       <p className="mb-4 text-sm text-gray-600">
         Send credits to other Light Rider users by email. Transfers are
-        immediate and final — they can&apos;t be cancelled or reversed.
+        immediate and final. They can&apos;t be cancelled or reversed.
       </p>
 
       {credits.isLoading ? (
@@ -309,7 +309,7 @@ export default function ShareCredits() {
       {send.isSuccess && send.data && (
         <p className="mt-3 text-sm text-green-700">
           {send.data.replayed
-            ? "This batch was already sent — nothing was sent twice."
+            ? "This batch was already sent. Nothing was sent twice."
             : `Sent ${formatCredits(send.data.totalSentCents)} credits. Your new balance is ${formatCredits(send.data.senderBalanceCents)} credits.`}
         </p>
       )}
@@ -348,7 +348,7 @@ function ReviewStep({
   return (
     <div className="default-radius border border-amber-200 bg-amber-50 p-4">
       <p className="mb-3 text-sm font-medium text-amber-900">
-        Confirm this transfer — it can&apos;t be undone.
+        Confirm this transfer. It can&apos;t be undone.
       </p>
 
       <ul className="mb-3 divide-y divide-amber-200 border-y border-amber-200">
@@ -385,7 +385,7 @@ function ReviewStep({
           disabled={isPending}
           className="flex-1"
         >
-          {isPending ? "Sending…" : `Send ${formatCredits(totalCents)} credits`}
+          {isPending ? "Sending..." : `Send ${formatCredits(totalCents)} credits`}
         </LRButton>
         <button
           type="button"
@@ -420,10 +420,10 @@ function RowResults({ rows }: { rows: RowResult[] }) {
               key={i}
               className="default-radius border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"
             >
-              {row.email} doesn&apos;t have an account yet — invite them
+              {row.email} doesn&apos;t have an account yet. Invite them
               instead.
               {/*
-                TODO(Feature 2 — Send Invite): render the invite affordance
+                TODO(Send Invite): render the invite affordance
                 here, prefilled with `row.email`. Deliberately not wired up in
                 this change; the invite flow is a separate task.
               */}
@@ -434,8 +434,8 @@ function RowResults({ rows }: { rows: RowResult[] }) {
         if (row.status === "self_transfer") {
           return (
             <li key={i} className="text-sm text-red-600">
-              {row.email} is your own address — you can&apos;t send credits to
-              yourself.
+              {row.email} is your own address. You can&apos;t send credits
+              to yourself.
             </li>
           );
         }

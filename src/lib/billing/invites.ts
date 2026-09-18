@@ -209,7 +209,7 @@ export async function createAndSendInvites(
       status: "rate_limited",
       message:
         remaining === 0
-          ? "You've reached today's invite limit, try again tomorrow."
+          ? "You've reached today's invite limit. Try again tomorrow."
           : `That's ${emails.length} invites but you only have ${remaining} left today. Nothing was sent.`,
       usedToday,
       limit: INVITE_DAILY_LIMIT,

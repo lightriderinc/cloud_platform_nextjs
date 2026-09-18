@@ -74,7 +74,7 @@ function StatusBadge({ status }: { status: InviteRow["status"] }) {
 function describeQualifyingEvent(reason: string | null): string {
   if (reason === "first_qpu_job") return "First quantum job";
   if (reason === "first_purchase") return "First purchase";
-  return reason ?? "—";
+  return reason ?? "Not recorded";
 }
 
 export default function InviteHistory() {
@@ -122,7 +122,7 @@ export default function InviteHistory() {
         <div className="default-radius border border-dashed border-gray-200 bg-gray-50 p-16 text-center text-sm text-gray-500">
           {view === "invites"
             ? "Invites you send will appear here."
-            : "Rewards show up here — both for people you invite, and for the invite that brought you to Light Rider."}
+            : "Rewards appear here for people you invite, and for the invite that brought you to Light Rider."}
         </div>
       ) : (
         <>
@@ -168,7 +168,7 @@ export default function InviteHistory() {
                         {row.rewardCents ? (
                           `+${formatCredits(row.rewardCents)}`
                         ) : (
-                          <span className="text-gray-400">—</span>
+                          <span className="text-gray-400">None yet</span>
                         )}
                       </td>
                     </tr>
@@ -182,7 +182,7 @@ export default function InviteHistory() {
                       <td className="whitespace-nowrap px-4 py-3 text-gray-700">
                         {row.rewardedAt
                           ? new Date(row.rewardedAt).toLocaleDateString()
-                          : "—"}
+                          : ""}
                       </td>
                       <td className="px-4 py-3 text-gray-700">
                         {row.counterpartyEmail ? (
@@ -195,7 +195,7 @@ export default function InviteHistory() {
                             {row.counterpartyEmail}
                           </>
                         ) : (
-                          <span className="text-gray-400">—</span>
+                          <span className="text-gray-400">Unknown</span>
                         )}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-gray-500">

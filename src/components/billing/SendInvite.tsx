@@ -267,7 +267,8 @@ export default function SendInvite() {
 
           {outOfInvites && (
             <p className="text-xs text-gray-600">
-              You&apos;ve reached today&apos;s invite limit, try again tomorrow.
+              You&apos;ve reached today&apos;s invite limit. Try again
+            tomorrow.
             </p>
           )}
         </form>
@@ -277,7 +278,7 @@ export default function SendInvite() {
         <p className="mt-3 text-sm text-green-700">
           {send.data.sentCount > 0
             ? `Sent ${send.data.sentCount} ${send.data.sentCount === 1 ? "invite" : "invites"}. ${send.data.remainingToday} left today.`
-            : "No new invites were sent — see below."}
+            : "No new invites were sent. See the details below."}
         </p>
       )}
 
@@ -334,7 +335,7 @@ function ReviewStep({
           disabled={isPending}
           className="flex-1"
         >
-          {isPending ? "Sending…" : "Send invites"}
+          {isPending ? "Sending..." : "Send invites"}
         </LRButton>
         <button
           type="button"
@@ -365,8 +366,8 @@ function RowResults({ rows }: { rows: RowResult[] }) {
         if (row.status === "already_member") {
           return (
             <li key={i} className="text-sm text-gray-700">
-              {row.email} already has an account — no invite sent, and it
-              didn&apos;t use one of today&apos;s.
+              {row.email} already has an account. No invite was sent, and
+              this did not use one of today&apos;s invites.
             </li>
           );
         }
@@ -375,7 +376,8 @@ function RowResults({ rows }: { rows: RowResult[] }) {
           return (
             <li key={i} className="text-sm text-gray-700">
               {row.email} already has an invite pending until{" "}
-              {new Date(row.expiresAt).toLocaleDateString()} — not sent again.
+              {new Date(row.expiresAt).toLocaleDateString()}. It was not sent
+              again.
             </li>
           );
         }
@@ -383,7 +385,7 @@ function RowResults({ rows }: { rows: RowResult[] }) {
         if (row.status === "self_invite") {
           return (
             <li key={i} className="text-sm text-red-600">
-              {row.email} is your own address — you already have an account.
+              {row.email} is your own address. You already have an account.
             </li>
           );
         }

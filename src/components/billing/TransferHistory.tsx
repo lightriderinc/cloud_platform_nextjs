@@ -153,7 +153,7 @@ export default function TransferHistory() {
                           {describeReason(row.reason)}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 font-medium text-gray-800">
-                          {view === "sent" ? "−" : "+"}
+                          {view === "sent" ? "-" : "+"}
                           {formatCredits(row.amountCents)}
                         </td>
                       </tr>
