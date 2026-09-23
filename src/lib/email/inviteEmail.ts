@@ -7,24 +7,31 @@
  * plain-text version carried, and nothing else. It is a transactional email,
  * not a campaign.
  *
- * HTML-email constraints that drive the odd-looking markup below:
- *   - Tables for layout. Outlook's Word rendering engine has no flexbox or
- *     grid, and float support is unreliable.
+ * DELIBERATELY PLAIN, and that is a deliverability decision rather than a
+ * taste one. The first version had a brand-coloured header bar, a large
+ * filled call-to-action button and a bordered card on a tinted background.
+ * Gmail filed it under Promotions, while the earlier plain-text invite to the
+ * same mailbox landed in Primary. Those three things are among the strongest
+ * signals Gmail's Promotions classifier uses, and an invite nobody sees is
+ * worth less than an ugly one they do.
+ *
+ * So: left-aligned text, one underlined link, no button, no logo, no card, no
+ * background colour. It should read like a short note a person sent.
+ *
+ * HTML-email constraints that drive the remaining markup:
+ *   - Tables for width control. Outlook's Word engine has no flexbox or grid.
  *   - Every style inline. Gmail strips <style> blocks in some contexts, and
  *     no external stylesheet is fetched at all.
  *   - No web fonts. They silently fall back, so the stack is system fonts.
- *   - The button's padding sits on the table cell, not on the <a>. Outlook's
- *     Word engine drops padding on inline-block anchors, which would leave a
- *     bare red-on-red link; padding the cell degrades to a padded red block.
- *   - The raw URL is printed under the button as well, because a client that
- *     blocks or mangles the link leaves the reader with nothing otherwise.
+ *   - The raw URL is printed as well as linked, because a client that blocks
+ *     or rewrites the anchor leaves the reader with nothing otherwise.
  */
 
-const BRAND = "#ef3b39"; // --brand-primary, src/app/styles/variables.css
+const LINK = "#1a56c4"; // a plain link blue: a brand-red CTA reads as marketing
 const INK = "#17171b";
+const FONT =
+  "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 const MUTED = "#6e6e7a";
-const LINE = "#e3e3e7";
-const GROUND = "#f6f6f7";
 
 /** Escapes text interpolated into the HTML part. Names come from user profiles. */
 function escapeHtml(value: string): string {
@@ -87,63 +94,31 @@ export function renderInviteEmail({
 <meta name="color-scheme" content="light">
 <title>${escapeHtml(subject)}</title>
 </head>
-<body style="margin:0; padding:0; background:${GROUND}; -webkit-font-smoothing:antialiased;">
-<!-- Preheader: the grey line clients show next to the subject in the inbox. -->
+<body style="margin:0; padding:0; background:#ffffff;">
 <div style="display:none; max-height:0; overflow:hidden; opacity:0;">${escapeHtml(
     BODY_COPY,
   )}</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${GROUND};">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr>
-    <td align="center" style="padding:32px 16px;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px; background:#ffffff; border:1px solid ${LINE}; border-radius:4px;">
+    <td style="padding:24px 20px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;">
         <tr>
-          <td style="padding:32px 32px 0 32px;">
-            <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:${BRAND}; font-weight:600;">
-              Light Rider
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:16px 32px 0 32px;">
-            <h1 style="margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; line-height:1.25; font-weight:600; color:${INK};">
-              ${name} invited you to join Light Rider
-            </h1>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:16px 32px 0 32px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:1.6; color:${INK};">
-            ${escapeHtml(BODY_COPY)}
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:28px 32px 0 32px;">
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-              <tr>
-                <td align="center" bgcolor="${BRAND}" style="border-radius:4px; padding:13px 28px;">
-                  <a href="${url}" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; font-weight:600; color:#ffffff; text-decoration:none; line-height:1;">
-                    Accept invitation
-                  </a>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:18px 32px 0 32px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:12px; line-height:1.6; color:${MUTED};">
-            Or paste this link into your browser:<br>
-            <a href="${url}" style="color:${MUTED}; word-break:break-all;">${url}</a>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:24px 32px 0 32px;">
-            <div style="border-top:1px solid ${LINE}; height:1px; line-height:1px; font-size:0;">&nbsp;</div>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:20px 32px 32px 32px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:1.6; color:${MUTED};">
-            ${escapeHtml(CREDITS_COPY)}
-            <br><br>
-            ${escapeHtml(expiryCopy)}
+          <td style="font-family:${FONT}; font-size:16px; line-height:1.55; color:${INK};">
+            <p style="margin:0 0 16px;">${name} invited you to join Light Rider.</p>
+            <p style="margin:0 0 16px;">${escapeHtml(BODY_COPY)}</p>
+            <p style="margin:0 0 16px;">
+              <a href="${url}" style="color:${LINK}; text-decoration:underline;">Accept the invitation</a>
+            </p>
+            <p style="margin:0 0 16px; font-size:14px; color:${MUTED};">
+              Or paste this into your browser:<br>
+              <span style="word-break:break-all;">${url}</span>
+            </p>
+            <p style="margin:0 0 16px; font-size:14px; color:${MUTED};">
+              ${escapeHtml(CREDITS_COPY)}
+            </p>
+            <p style="margin:0; font-size:14px; color:${MUTED};">
+              ${escapeHtml(expiryCopy)}
+            </p>
           </td>
         </tr>
       </table>
