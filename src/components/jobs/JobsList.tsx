@@ -1,6 +1,7 @@
 "use client";
 
 import JobDetailModal from "@/components/jobs/JobDetailModal";
+import { COLAB_NOTEBOOKS_BASE_URL } from "@/lib/colab";
 import JobModeTag from "@/components/jobs/JobModeTag";
 import JobRowSkeleton from "@/components/jobs/JobRowSkeleton";
 import JobStatusBadge from "@/components/jobs/JobStatusBadge";
@@ -14,9 +15,6 @@ import { SiGooglecolab } from "react-icons/si";
 import { TbAtom2Filled } from "react-icons/tb";
 
 const TERMINAL = new Set(["COMPLETED", "FAILED", "ABORTED"]);
-const COLAB_NOTEBOOKS_BASE_URL =
-  "https://colab.research.google.com/github/lightriderinc/cloud_platform_nextjs/blob/main/docs/notebooks";
-
 export interface JobRow {
   jobId: string;
   backend: string;

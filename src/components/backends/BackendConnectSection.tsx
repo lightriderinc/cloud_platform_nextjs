@@ -3,21 +3,19 @@
 import { handleSignIn } from "@/app/actions/auth";
 import BackendConnectSectionSkeleton from "@/components/backends/BackendConnectSectionSkeleton";
 import LRButton from "@/components/ui/LRButton";
+import { COLAB_NOTEBOOKS_BASE_URL } from "@/lib/colab";
 import { getQuantumBackendId } from "@/lib/quantum/backends";
 import { fetchMyReservations } from "@/lib/quantum/reservations";
 import type { Backend } from "@/types/backend";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { MdCheck, MdContentCopy, MdOpenInNew } from "react-icons/md";
 import InfoBox from "../InfoBox";
 
 /** rigetti-cepheus is only submittable during a reserved window. */
 const RESERVED_ONLY_BACKEND_ID = "rigetti.qpu.Cepheus-1-108Q";
-
-const COLAB_NOTEBOOKS_BASE_URL =
-  "https://colab.research.google.com/github/lightriderinc/cloud_platform_nextjs/blob/main/docs/notebooks";
 
 // Real backends get their own notebook (backend hardcoded in the submit
 // cell); mock backends — and anything unrecognized — fall through to the
@@ -29,12 +27,11 @@ const COLAB_NOTEBOOKS_BASE_URL =
 // until this entry, the real card silently fell through to the generic
 // notebook instead of a 404, which is why the gap went unnoticed.
 //
-// NOTE: colabUrl() below points at github.com/.../blob/main/docs/notebooks —
-// Colab loads notebooks straight from `main`. quantum-quickstart-rigetti-
-// cepheus.ipynb lands on develop-merge-main first, so this link 404s in
-// Colab until that branch merges to main. Do not change the URL prefix to
-// point at this branch instead — main is the correct target for customers;
-// this is just a sequencing gap until the merge happens.
+// The branch in the URL is no longer hardcoded: COLAB_NOTEBOOKS_BASE_URL is
+// built from the deployment's own git ref (see lib/colab.ts), so a preview
+// links at the notebooks in the branch it was built from and production links
+// at main. The sequencing gap this comment used to warn about — a new
+// notebook 404ing in Colab until its branch merged — no longer exists.
 const COLAB_NOTEBOOK_BY_BACKEND: Record<string, string> = {
   "iqm-garnet": "quantum-quickstart-iqm-garnet.ipynb",
   "iqm-emerald": "quantum-quickstart-iqm-emerald.ipynb",
@@ -50,13 +47,38 @@ function colabUrl(backendId: string | null): string {
   return `${COLAB_NOTEBOOKS_BASE_URL}/${notebook}`;
 }
 
-function pythonSnippet(backendId: string): string {
-  return `%pip install -q lightrider==1.3.1 requests
+/**
+ * The origin the page is being served from, read in a way that is safe across
+ * server render and hydration.
+ *
+ * useSyncExternalStore exists for exactly this: it takes a separate server
+ * snapshot, so React renders the production origin into the HTML and switches
+ * to the real one on the client without a hydration mismatch and without the
+ * extra render a useEffect+setState pair would cost.
+ *
+ * The origin cannot change without a navigation, so there is nothing to
+ * subscribe to and the unsubscribe is a no-op. Both callbacks are defined at
+ * module scope to keep their identities stable across renders.
+ */
+const subscribeToNothing = () => () => {};
+const readOrigin = () => window.location.origin;
+const readOriginOnServer = () => "https://platform.lightriderinc.com";
+
+/**
+ * `baseUrl` is the origin the reader is currently on, not a hardcoded
+ * production URL. An API key only works against the environment that issued
+ * it, so a snippet copied from preview that points at production fails with a
+ * 401 that looks like a bad key. Same trap the notebooks now avoid with their
+ * environment selector.
+ */
+function pythonSnippet(backendId: string, baseUrl: string): string {
+  return `%pip install -q uv
+!uv pip install -q --system lightrider==1.5.2 requests
 import requests
 from lightrider import Circuit
 
 api_key = input("Enter your Light Rider API key: ")
-base_url = "https://platform.lightriderinc.com"
+base_url = "${baseUrl}"
 
 session = requests.Session()
 session.headers["Authorization"] = f"Bearer {api_key}"
@@ -98,6 +120,13 @@ export default function BackendConnectSection({
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [now] = useState(() => Date.now());
+  // The origin this page is actually served from, so the copied snippet
+  // targets the same environment as the reader's API key.
+  const snippetBaseUrl = useSyncExternalStore(
+    subscribeToNothing,
+    readOrigin,
+    readOriginOnServer,
+  );
   const quantumBackendId = getQuantumBackendId(backend.id);
   const isReservedOnlyBackend = backend.id === RESERVED_ONLY_BACKEND_ID;
 
@@ -180,7 +209,7 @@ export default function BackendConnectSection({
     return <BackendConnectSectionSkeleton />;
   }
 
-  const snippet = pythonSnippet(quantumBackendId);
+  const snippet = pythonSnippet(quantumBackendId, snippetBaseUrl);
 
   async function handleCopy() {
     try {

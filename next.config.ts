@@ -3,6 +3,22 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
+  // Pins the deployed git branch into the client bundle at build time, for the
+  // "Open in Colab" links (see src/lib/colab.ts).
+  //
+  // Read here rather than straight from the component because the plain
+  // VERCEL_GIT_COMMIT_REF is a server-only variable: Next inlines only
+  // NEXT_PUBLIC_* into browser code, and every consumer is a client component.
+  // Vercel also publishes NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF itself, but only
+  // when "Automatically expose System Environment Variables" is enabled on the
+  // project. Mapping it here works either way and removes that dependency, so
+  // the links cannot quietly regress to `main` because of a dashboard toggle.
+  env: {
+    NEXT_PUBLIC_COLAB_BRANCH:
+      process.env.VERCEL_GIT_COMMIT_REF ??
+      process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF ??
+      '',
+  },
   async redirects() {
     return [
       {
