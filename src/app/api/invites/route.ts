@@ -43,7 +43,7 @@ export async function GET(req: Request) {
 
   if (view === "rewards") {
     // BOTH sides of a rewarded referral. "Rewards earned" has to mean what it
-    // says: the referee is paid the same 100 credits as the referrer, and
+    // says: the referee is paid the same 1000 credits as the referrer, and
     // before this their only trace of it was a "Referral reward" line buried
     // in Share Credits history — a page someone who joined by invite has no
     // reason to open.

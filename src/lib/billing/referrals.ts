@@ -15,8 +15,8 @@ import { db } from "@/lib/billing/db";
  * qualified-but-unpaid.
  */
 
-/** Flat grant to EACH side. 1 credit = 1 cent, so this is $1.00 each. */
-export const REFERRAL_REWARD_CENTS = 100;
+/** Flat grant to EACH side. 1 credit = 1 cent, so this is $10.00 each. */
+export const REFERRAL_REWARD_CENTS = 1000;
 
 /** Ledger `reason` prefix for both sides of a referral payout. */
 export const REFERRAL_REWARD_PREFIX = "referral_reward:";

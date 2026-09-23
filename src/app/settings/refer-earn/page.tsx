@@ -7,7 +7,7 @@ export default function ReferEarnPage() {
       <h1 className="text-2xl font-semibold text-gray-700">Refer &amp; Earn</h1>
       <p className="mb-12 text-sm text-gray-600">
         Invite people to Light Rider. When someone you invited runs their first
-        real quantum job or buys credits, you both earn 100 credits.
+        real quantum job or buys credits, you both earn 1000 credits.
       </p>
 
       <div className="flex flex-col gap-12">
