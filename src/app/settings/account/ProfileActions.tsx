@@ -1,6 +1,7 @@
 "use client";
 
 import { unwrap, type ActionResult } from "@/lib/actionResult";
+import { birthdateBounds, validateBirthdate } from "@/lib/birthdate";
 import DisableMfaModal from "@/components/profile/DisableMfaModal";
 import EditEmailModal from "@/components/profile/EditEmailModal";
 import EditPasswordModal from "@/components/profile/EditPasswordModal";
@@ -42,7 +43,7 @@ type Props = {
     newVerifId: string,
     email: string,
   ) => Promise<ActionResult<void>>;
-  onUpdateBirthdate: (birthdate: string) => Promise<void>;
+  onUpdateBirthdate: (birthdate: string) => Promise<ActionResult<void>>;
   onGenerateTotpSecret: () => Promise<string>;
   onBindTotp: (
     verificationRecordId: string,
@@ -182,7 +183,7 @@ export default function ProfileActions({
       {open === "birthdate" && (
         <AddBirthdateModal
           onSave={async (date) => {
-            await onUpdateBirthdate(date);
+            unwrap(await onUpdateBirthdate(date));
             setCurrentBirthdate(date);
             setOpen(null);
           }}
@@ -259,9 +260,20 @@ function AddBirthdateModal({
   const [date, setDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // Computed once per open: "today" only matters to the day, and recomputing
+  // each render would change the max mid-session at midnight.
+  const [bounds] = useState(() => birthdateBounds());
 
   async function handleSave() {
     if (!date) return;
+    // Checked before the request so an obviously wrong year is rejected
+    // immediately; the server repeats the same check for callers that skip
+    // this form entirely.
+    const problem = validateBirthdate(date);
+    if (problem) {
+      setError(problem);
+      return;
+    }
     setError("");
     setLoading(true);
     try {
@@ -295,6 +307,8 @@ function AddBirthdateModal({
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          min={bounds.min}
+          max={bounds.max}
           autoFocus
           className="w-full default-radius border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-gray-400 mb-4"
         />

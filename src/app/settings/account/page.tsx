@@ -4,6 +4,7 @@ import CurrentPlanBadge from "@/components/billing/CurrentPlanBadge";
 import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { attempt, type ActionResult } from "@/lib/actionResult";
+import { validateBirthdate } from "@/lib/birthdate";
 import { AVATAR_FORM_FIELD, resolveAvatarSources } from "@/lib/avatar";
 import {
   getAccountProfile,
@@ -271,12 +272,19 @@ export default async function AccountPage() {
   }
 
 
-  async function doUpdateBirthdate(birthdate: string): Promise<void> {
+  async function doUpdateBirthdate(
+    birthdate: string,
+  ): Promise<ActionResult<void>> {
     "use server";
-    const token = await getAccessToken(logtoConfig);
-    await updateBirthdate(token, birthdate);
-    revalidatePath("/settings/account");
-    refresh();
+    return attempt(async () => {
+      // Re-checked here, not just in the form: min/max on a date input is a
+      // convenience the caller can bypass entirely.
+      const problem = validateBirthdate(birthdate);
+      if (problem) throw new Error(problem);
+
+      const token = await getAccessToken(logtoConfig);
+      await updateBirthdate(token, birthdate);
+    }, "Could not save your date of birth. Please try again.");
   }
 
   async function doGenerateTotpSecret(): Promise<string> {
