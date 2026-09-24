@@ -4,8 +4,7 @@ import {
   MdAccountCircle,
   MdCardGiftcard,
   MdGroupAdd,
-  MdHistory,
-  MdWallet
+  MdHistory
 } from "react-icons/md";
 import { RiLockPasswordFill } from "react-icons/ri";
 import SidebarNavGroup from "./SidebarNavGroup";
@@ -63,12 +62,12 @@ export default function SidebarGroupSettings({
 
       {isAuthenticated && (
         <SidebarNavGroup label="Billing & Credits">
-          <SidebarNavItem
+          {/* <SidebarNavItem
             name="Balance"
             href="/settings/balance"
             icon={MdWallet}
             onNavigate={onNavigate}
-          />
+          /> */}
           <SidebarNavItem
             name="Manage Credits"
             href="/settings/credits"

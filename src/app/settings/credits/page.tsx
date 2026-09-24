@@ -1,3 +1,4 @@
+import CreditsSummary from "@/components/billing/CreditsSummary";
 import PricingNavCard from "@/components/pricing/PricingNavCard";
 import { GiProcessor } from "react-icons/gi";
 
@@ -36,6 +37,9 @@ export default function PricingOverviewPage() {
       <p className="mb-12 text-sm text-gray-600">
         Manage your credit balance or send credits to other Light Rider users.
       </p>
+      <div className="mb-8">
+        <CreditsSummary />
+      </div>
 
       <div className="flex flex-col lg:flex-row gap-3">
         <PricingNavCard
