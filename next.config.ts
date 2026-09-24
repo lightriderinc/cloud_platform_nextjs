@@ -52,6 +52,11 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: '/settings/share-credits',
+        destination: '/settings/manage-credits/share',
+        permanent: true,
+      },
+      {
         source: '/settings/purchase-history',
         destination: '/settings/payment-and-history',
         permanent: true,
