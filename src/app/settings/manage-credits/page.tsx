@@ -1,6 +1,7 @@
 import CreditsSummary from "@/components/billing/CreditsSummary";
 import PricingNavCard from "@/components/pricing/PricingNavCard";
-import { GiProcessor } from "react-icons/gi";
+import { LuHandCoins } from "react-icons/lu";
+import { PiCoinsFill } from "react-icons/pi";
 
 const PRICING_PAGES = [
   {
@@ -44,10 +45,17 @@ export default function PricingOverviewPage() {
       <div className="flex flex-col lg:flex-row gap-3">
         <PricingNavCard
           href="/settings/manage-credits/quantum-compute"
-          title="Quantum Compute"
-          description="Pay for quantum runtime by the second when your applications or workflows use quantum resources."
-          icon={GiProcessor}
+          title="Purchase credits"
+          description="Purchase credits to pay for quantum resources."
+          icon={PiCoinsFill}
         />
+        <PricingNavCard
+          href="settings/share-credits"
+          title="Share credits"
+          description="Send credits to other Light Rider users."
+          icon={LuHandCoins}
+        />
+
         {/* <PricingNavCard
           href="/settings/manage-credits/user-plans"
           title="User Plans"

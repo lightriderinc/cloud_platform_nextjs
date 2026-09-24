@@ -25,12 +25,14 @@ export default function PricingNavCard({
       rel={external ? "noopener noreferrer" : undefined}
     >
       <div className="flex flex-col h-full w-full justify-between bg-gray-100 p-5 border border-gray-100 default-radius card-hover-primary gap-3">
-        <div className="flex flex-col gap-3">
-          <Icon className="text-5xl text-gray-200" />
-          <h2 className="flex items-center gap-1 text-md font-semibold text-gray-800">
-            {title} {external && <MdArrowOutward />}
-          </h2>
-          <p className="text-sm text-gray-600">{description}</p>
+        <div className="flex flex-col gap-4">
+          <Icon className="text-5xl text-gray-200 transition-colors duration-150 group-hover:text-[var(--brand-tertiary)]" />
+          <div className="flex flex-col gap-1">
+            <h2 className="flex items-center gap-1 text-lg font-semibold text-gray-800">
+              {title} {external && <MdArrowOutward />}
+            </h2>
+            <p className="text-sm text-gray-600">{description}</p>
+          </div>
         </div>
 
         <div className="flex flex-row justify-end">
