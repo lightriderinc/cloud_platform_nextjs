@@ -46,6 +46,11 @@ const nextConfig: NextConfig = {
         destination: '/settings/manage-credits/:path*',
         permanent: true,
       },
+      {
+        source: '/settings/purchase-history',
+        destination: '/settings/payment-and-history',
+        permanent: true,
+      },
     ];
   },
 }

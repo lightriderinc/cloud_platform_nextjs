@@ -148,10 +148,10 @@ export default function CreditsSummary({
         </a>
         {historyLink && (
           <Link
-            href="/settings/purchase-history"
+            href="/settings/payment-and-history"
             className="text-sm font-medium text-gray-700 inline-flex items-center gap-2 hover:text-[var(--brand-primary)]"
           >
-            View purchase history <MdArrowForward />
+            View payment &amp; history <MdArrowForward />
           </Link>
         )}
       </div>

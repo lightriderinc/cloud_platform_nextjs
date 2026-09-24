@@ -76,7 +76,7 @@ export default function SidebarGroupSettings({
           />
           <SidebarNavItem
             name="Payment & History"
-            href="/settings/purchase-history"
+            href="/settings/payment-and-history"
             icon={MdHistory}
             onNavigate={onNavigate}
           />
