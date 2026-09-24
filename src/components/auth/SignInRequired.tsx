@@ -20,9 +20,9 @@ type Props = {
 export default function SignInRequired({ target = "this page" }: Props) {
   return (
     <div className="animate-fade-in-up flex flex-col items-center justify-center text-center p-12 border border-dashed border-gray-200 default-radius bg-gray-50 max-w-3xl">
-      <h1 className="text-xl font-semibold text-gray-700">
+      <h2 className="text-2xl font-semibold text-gray-700">
         You&apos;re signed out
-      </h1>
+      </h2>
       <p className="mt-2 mb-6 text-sm text-gray-600">
         Log in to access {target}.
       </p>
