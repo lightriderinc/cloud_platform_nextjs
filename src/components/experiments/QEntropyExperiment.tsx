@@ -451,7 +451,7 @@ export default function QEntropyExperiment({
           )}
 
           {creditsLocked || insufficientCredits ? (
-            <Link href="/settings/manage-credits/quantum-compute">
+            <Link href="/settings/manage-credits/purchase">
               <LRButton variant="primary" className="w-full">
                 {creditsLocked
                   ? "Make your first credit purchase"

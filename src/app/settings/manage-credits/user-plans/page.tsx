@@ -14,7 +14,7 @@ export default function UserPricingPage() {
 
       <InfoBox>
         Compute seconds and EaaS API usage are billed separately from your plan.
-        See Quantum Compute and API Pricing for those rates.
+        See Purchase Credits and API Pricing for those rates.
       </InfoBox>
 
       <div className="mt-6">

@@ -42,12 +42,12 @@ const RIGETTI_RUNTIME_TIERS = [
 //   },
 // ];
 
-export default function QuantumComputePricingPage() {
+export default function PurchaseCreditsPage() {
   return (
     <div>
       <BackButton href="/settings/manage-credits" previousPageName="Manage Credits" />
       <h1 className="text-2xl font-semibold text-gray-700">
-        Quantum Compute Pricing
+        Purchase Credits
       </h1>
       <p className="mb-12 text-sm text-gray-600">
         Quantum-powered applications priced by runtime, priority, and outcome.

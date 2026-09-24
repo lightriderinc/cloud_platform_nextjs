@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       {
         error: "purchase_required",
         message:
-          "Entropy withdrawal requires purchasing credits first. Visit /settings/manage-credits/quantum-compute to buy credits.",
+          "Entropy withdrawal requires purchasing credits first. Visit /settings/manage-credits/purchase to buy credits.",
       },
       { status: 402 },
     );

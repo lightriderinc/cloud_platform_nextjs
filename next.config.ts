@@ -37,6 +37,11 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: '/settings/:section(purchases|credits|manage-credits)/quantum-compute',
+        destination: '/settings/manage-credits/purchase',
+        permanent: true,
+      },
+      {
         source: '/settings/purchases/:path*',
         destination: '/settings/manage-credits/:path*',
         permanent: true,

@@ -84,7 +84,7 @@ export function ProgressBar({ fraction }: { fraction: number }) {
  * display-label choice for the Pro-plan/billing context only (used on its
  * own on the Payment page and composed into UsageSummary on the Billing
  * page). The underlying CreditLedgerEntry/creditsBalanceCents fields, and
- * the Quantum Compute page's own "compute credits" copy, are unchanged.
+ * the Purchase Credits page's own "compute credits" copy, are unchanged.
  */
 export default function CreditsSummary({
   historyLink = false,
@@ -122,7 +122,7 @@ export default function CreditsSummary({
           Complete your first purchase to claim your credits.
         </p>
         <div className="flex mt-6">
-          <a href="/settings/manage-credits/quantum-compute">
+          <a href="/settings/manage-credits/purchase">
             <LRButton variant="primary">Purchase compute credits</LRButton>
           </a>
         </div>
@@ -143,7 +143,7 @@ export default function CreditsSummary({
       </p>
 
       <div className="flex w-full justify-between items-end mt-8">
-        <a href="/settings/manage-credits/quantum-compute">
+        <a href="/settings/manage-credits/purchase">
           <LRButton variant="primary">Purchase compute credits</LRButton>
         </a>
         {historyLink && (

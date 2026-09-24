@@ -5,8 +5,8 @@ import { PiCoinsFill } from "react-icons/pi";
 
 const PRICING_PAGES = [
   {
-    href: "/settings/manage-credits/quantum-compute",
-    name: "Quantum Compute",
+    href: "/settings/manage-credits/purchase",
+    name: "Purchase Credits",
     description:
       "Pay for quantum runtime by the second when your applications or workflows use quantum resources.",
   },
@@ -44,13 +44,13 @@ export default function PricingOverviewPage() {
 
       <div className="flex flex-col lg:flex-row gap-3">
         <PricingNavCard
-          href="/settings/manage-credits/quantum-compute"
+          href="/settings/manage-credits/purchase"
           title="Purchase credits"
           description="Purchase credits to pay for quantum resources."
           icon={PiCoinsFill}
         />
         <PricingNavCard
-          href="settings/share-credits"
+          href="/settings/share-credits"
           title="Share credits"
           description="Send credits to other Light Rider users."
           icon={LuHandCoins}

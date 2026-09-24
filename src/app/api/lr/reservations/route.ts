@@ -46,7 +46,7 @@ export async function POST(req: Request) {
       {
         error: "purchase_required",
         message:
-          "Booking a reservation requires purchasing credits first. Visit /settings/manage-credits/quantum-compute to buy credits.",
+          "Booking a reservation requires purchasing credits first. Visit /settings/manage-credits/purchase to buy credits.",
       },
       { status: 402 },
     );
