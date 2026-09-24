@@ -62,7 +62,7 @@ export default function SidebarGroupSettings({
       </SidebarNavGroup>
 
       {isAuthenticated && (
-        <SidebarNavGroup label="Usage & Payment">
+        <SidebarNavGroup label="Billing & Credits">
           <SidebarNavItem
             name="Balance"
             href="/settings/balance"
@@ -70,13 +70,13 @@ export default function SidebarGroupSettings({
             onNavigate={onNavigate}
           />
           <SidebarNavItem
-            name="Credits"
+            name="Manage Credits"
             href="/settings/credits"
             icon={BiSolidCoin}
             onNavigate={onNavigate}
           />
           <SidebarNavItem
-            name="Purchase History"
+            name="Payment & History"
             href="/settings/purchase-history"
             icon={MdHistory}
             onNavigate={onNavigate}
@@ -88,7 +88,7 @@ export default function SidebarGroupSettings({
             onNavigate={onNavigate}
           />
           <SidebarNavItem
-            name="Referral program"
+            name="Rewards"
             href="/settings/refer-earn"
             icon={MdGroupAdd}
             onNavigate={onNavigate}

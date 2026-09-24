@@ -34,9 +34,7 @@ export default function PricingOverviewPage() {
     <div>
       <h1 className="text-2xl font-semibold text-gray-700">Credits</h1>
       <p className="mb-12 text-sm text-gray-600">
-        Light Rider purchases are modular. <br /> Start with quantum compute
-        credits, manage platform access, then scale into quantum runtime, APIs,
-        and enterprise services as you grow.
+        Manage your credit balance or send credits to other Light Rider users.
       </p>
 
       <div className="flex flex-col lg:flex-row gap-3">
