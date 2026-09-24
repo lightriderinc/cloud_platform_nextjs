@@ -1,10 +1,12 @@
 import ShareCredits from "@/components/billing/ShareCredits";
 import TransferHistory from "@/components/billing/TransferHistory";
+import BackButton from "@/components/ui/BackButton";
 
-export default function ShareCreditsPage() {
+export default function SharePage() {
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-gray-700">Share Credits</h1>
+      <BackButton href="/settings/manage-credits" previousPageName="Manage Credits" />
+      <h1 className="text-2xl font-semibold text-gray-700">Share</h1>
       <p className="mb-12 text-sm text-gray-600">
         Send compute credits to other Light Rider users, and review every
         transfer you&apos;ve sent or received.

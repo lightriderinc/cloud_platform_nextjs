@@ -50,7 +50,7 @@ export default function PricingOverviewPage() {
           icon={PiCoinsFill}
         />
         <PricingNavCard
-          href="/settings/share-credits"
+          href="/settings/manage-credits/share"
           title="Share credits"
           description="Send credits to other Light Rider users."
           icon={LuHandCoins}

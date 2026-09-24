@@ -2,7 +2,6 @@ import { handleSignIn } from "@/app/actions/auth";
 import { BiSolidCoin } from "react-icons/bi";
 import {
   MdAccountCircle,
-  MdCardGiftcard,
   MdGroupAdd,
   MdHistory
 } from "react-icons/md";
@@ -78,12 +77,6 @@ export default function SidebarGroupSettings({
             name="Payment & History"
             href="/settings/payment-and-history"
             icon={MdHistory}
-            onNavigate={onNavigate}
-          />
-          <SidebarNavItem
-            name="Share Credits"
-            href="/settings/share-credits"
-            icon={MdCardGiftcard}
             onNavigate={onNavigate}
           />
           <SidebarNavItem
