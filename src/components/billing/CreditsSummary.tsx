@@ -122,7 +122,7 @@ export default function CreditsSummary({
           Complete your first purchase to claim your credits.
         </p>
         <div className="flex mt-6">
-          <a href="/settings/purchases/quantum-compute">
+          <a href="/settings/credits/quantum-compute">
             <LRButton variant="primary">Purchase compute credits</LRButton>
           </a>
         </div>
@@ -143,7 +143,7 @@ export default function CreditsSummary({
       </p>
 
       <div className="flex w-full justify-between items-end mt-8">
-        <a href="/settings/purchases/quantum-compute">
+        <a href="/settings/credits/quantum-compute">
           <LRButton variant="primary">Purchase compute credits</LRButton>
         </a>
         {historyLink && (

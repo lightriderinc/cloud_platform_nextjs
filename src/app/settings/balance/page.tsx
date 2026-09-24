@@ -3,13 +3,13 @@ import PaymentMethodCard from "@/components/billing/PaymentMethodCard";
 import SubscriptionsList from "@/components/billing/SubscriptionsList";
 import { ProRoleToggle } from "@/components/dev/ProRoleToggle";
 
-export default function PaymentPage() {
+export default function BalancePage() {
   const isDev = process.env.NODE_ENV === "development";
 
   return (
     <div>
       <h1 className="text-2xl font-semibold text-gray-700">
-        Usage
+        Balance
       </h1>
       <p className="mb-12 text-sm text-gray-600">
         Manage your credits, subscriptions, and payment details.

@@ -3,27 +3,27 @@ import { GiProcessor } from "react-icons/gi";
 
 const PRICING_PAGES = [
   {
-    href: "/settings/purchases/quantum-compute",
+    href: "/settings/credits/quantum-compute",
     name: "Quantum Compute",
     description:
       "Pay for quantum runtime by the second when your applications or workflows use quantum resources.",
   },
   {
-    href: "/settings/purchases/user-plans",
+    href: "/settings/credits/user-plans",
     name: "User Plans",
     description:
       "Monthly platform access for teams and individuals, with credits included.",
   },
-  // Hidden for V2 (two-tier Basic/Pro simplification) — the /settings/purchases/api
-  // and /settings/purchases/enterprise routes/pages are untouched, just not linked
+  // Hidden for V2 (two-tier Basic/Pro simplification) — the /settings/credits/api
+  // and /settings/credits/enterprise routes/pages are untouched, just not linked
   // from here for now. Uncomment to bring them back.
   // {
-  //   href: "/settings/purchases/api",
+  //   href: "/settings/credits/api",
   //   name: "API Pricing",
   //   description: "Usage-based pricing for Entropy-as-a-Service (EaaS) API calls.",
   // },
   // {
-  //   href: "/settings/purchases/enterprise",
+  //   href: "/settings/credits/enterprise",
   //   name: "Enterprise & Government",
   //   description: "Custom deployments, security, and SLAs for large organizations.",
   // },
@@ -32,7 +32,7 @@ const PRICING_PAGES = [
 export default function PricingOverviewPage() {
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-gray-700">Purchases</h1>
+      <h1 className="text-2xl font-semibold text-gray-700">Credits</h1>
       <p className="mb-12 text-sm text-gray-600">
         Light Rider purchases are modular. <br /> Start with quantum compute
         credits, manage platform access, then scale into quantum runtime, APIs,
@@ -41,13 +41,13 @@ export default function PricingOverviewPage() {
 
       <div className="flex flex-col lg:flex-row gap-3">
         <PricingNavCard
-          href="/settings/purchases/quantum-compute"
+          href="/settings/credits/quantum-compute"
           title="Quantum Compute"
           description="Pay for quantum runtime by the second when your applications or workflows use quantum resources."
           icon={GiProcessor}
         />
         {/* <PricingNavCard
-          href="/settings/purchases/user-plans"
+          href="/settings/credits/user-plans"
           title="User Plans"
           description="Monthly platform access for teams and individuals, with credits included."
           icon={PiUserFocusFill}

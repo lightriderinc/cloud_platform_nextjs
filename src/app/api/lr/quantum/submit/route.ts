@@ -63,7 +63,7 @@ export async function POST(req: Request) {
       {
         error: "purchase_required",
         message:
-          "Real QPU access requires purchasing credits first. Visit /settings/purchases/quantum-compute to buy credits.",
+          "Real QPU access requires purchasing credits first. Visit /settings/credits/quantum-compute to buy credits.",
       },
       { status: 402 },
     );

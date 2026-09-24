@@ -31,6 +31,16 @@ const nextConfig: NextConfig = {
         destination: '/settings/account',
         permanent: true,
       },
+      {
+        source: '/settings/usage',
+        destination: '/settings/balance',
+        permanent: true,
+      },
+      {
+        source: '/settings/purchases/:path*',
+        destination: '/settings/credits/:path*',
+        permanent: true,
+      },
     ];
   },
 }

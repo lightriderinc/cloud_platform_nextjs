@@ -1,11 +1,11 @@
 import { handleSignIn } from "@/app/actions/auth";
+import { BiSolidCoin } from "react-icons/bi";
 import {
   MdAccountCircle,
   MdCardGiftcard,
   MdGroupAdd,
   MdHistory,
-  MdLocalOffer,
-  MdPayments,
+  MdWallet
 } from "react-icons/md";
 import { RiLockPasswordFill } from "react-icons/ri";
 import SidebarNavGroup from "./SidebarNavGroup";
@@ -35,7 +35,7 @@ export default function SidebarGroupSettings({
               icon={RiLockPasswordFill}
               onNavigate={onNavigate}
             />
-            
+
             {/* <SidebarNavItem
           name="Platform Settings"
           href="#"
@@ -44,7 +44,6 @@ export default function SidebarGroupSettings({
         /> */}
           </>
         )}
-
 
         {!isAuthenticated && (
           <>
@@ -63,39 +62,39 @@ export default function SidebarGroupSettings({
       </SidebarNavGroup>
 
       {isAuthenticated && (
-          <SidebarNavGroup label="Usage & Payment">
-            <SidebarNavItem
-              name="Usage"
-              href="/settings/usage"
-              icon={MdPayments}
-              onNavigate={onNavigate}
-            />
-            <SidebarNavItem
-              name="Purchases"
-              href="/settings/purchases"
-              icon={MdLocalOffer}
-              onNavigate={onNavigate}
-            />
-            <SidebarNavItem
-              name="Purchase History"
-              href="/settings/purchase-history"
-              icon={MdHistory}
-              onNavigate={onNavigate}
-            />
-            <SidebarNavItem
-              name="Share Credits"
-              href="/settings/share-credits"
-              icon={MdCardGiftcard}
-              onNavigate={onNavigate}
-            />
-            <SidebarNavItem
-              name="Refer & Earn"
-              href="/settings/refer-earn"
-              icon={MdGroupAdd}
-              onNavigate={onNavigate}
-            />
-          </SidebarNavGroup>
-        )}
+        <SidebarNavGroup label="Usage & Payment">
+          <SidebarNavItem
+            name="Balance"
+            href="/settings/balance"
+            icon={MdWallet}
+            onNavigate={onNavigate}
+          />
+          <SidebarNavItem
+            name="Credits"
+            href="/settings/credits"
+            icon={BiSolidCoin}
+            onNavigate={onNavigate}
+          />
+          <SidebarNavItem
+            name="Purchase History"
+            href="/settings/purchase-history"
+            icon={MdHistory}
+            onNavigate={onNavigate}
+          />
+          <SidebarNavItem
+            name="Share Credits"
+            href="/settings/share-credits"
+            icon={MdCardGiftcard}
+            onNavigate={onNavigate}
+          />
+          <SidebarNavItem
+            name="Referral program"
+            href="/settings/refer-earn"
+            icon={MdGroupAdd}
+            onNavigate={onNavigate}
+          />
+        </SidebarNavGroup>
+      )}
     </>
   );
 }
