@@ -45,7 +45,7 @@ const RIGETTI_RUNTIME_TIERS = [
 export default function QuantumComputePricingPage() {
   return (
     <div>
-      <BackButton href="/settings/credits" previousPageName="Credits" />
+      <BackButton href="/settings/manage-credits" previousPageName="Manage Credits" />
       <h1 className="text-2xl font-semibold text-gray-700">
         Quantum Compute Pricing
       </h1>

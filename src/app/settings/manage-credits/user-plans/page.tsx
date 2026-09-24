@@ -5,7 +5,7 @@ import BackButton from "@/components/ui/BackButton";
 export default function UserPricingPage() {
   return (
     <div>
-      <BackButton href="/settings/credits" previousPageName="Credits" />
+      <BackButton href="/settings/manage-credits" previousPageName="Manage Credits" />
       <h1 className="text-2xl font-semibold text-gray-700">User Plans</h1>
       <p className="mb-6 text-sm text-gray-600">
         Monthly platform plans for teams and individuals. Quantum runtime and

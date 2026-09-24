@@ -38,7 +38,12 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/settings/purchases/:path*',
-        destination: '/settings/credits/:path*',
+        destination: '/settings/manage-credits/:path*',
+        permanent: true,
+      },
+      {
+        source: '/settings/credits/:path*',
+        destination: '/settings/manage-credits/:path*',
         permanent: true,
       },
     ];

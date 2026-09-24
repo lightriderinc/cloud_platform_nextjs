@@ -38,7 +38,7 @@ async function proxyRequest(
     return NextResponse.json(
       {
         error: "Upgrade to Pro to run jobs on real quantum hardware.",
-        upgradeUrl: "/settings/credits/user-plans",
+        upgradeUrl: "/settings/manage-credits/user-plans",
       },
       { status: 403 },
     );

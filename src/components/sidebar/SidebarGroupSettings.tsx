@@ -70,7 +70,7 @@ export default function SidebarGroupSettings({
           /> */}
           <SidebarNavItem
             name="Manage Credits"
-            href="/settings/credits"
+            href="/settings/manage-credits"
             icon={BiSolidCoin}
             onNavigate={onNavigate}
           />
