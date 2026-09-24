@@ -57,6 +57,11 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: '/settings/refer-earn',
+        destination: '/settings/rewards',
+        permanent: true,
+      },
+      {
         source: '/settings/purchase-history',
         destination: '/settings/payment-and-history',
         permanent: true,

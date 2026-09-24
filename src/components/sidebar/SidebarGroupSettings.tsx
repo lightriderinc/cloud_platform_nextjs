@@ -81,7 +81,7 @@ export default function SidebarGroupSettings({
           />
           <SidebarNavItem
             name="Rewards"
-            href="/settings/refer-earn"
+            href="/settings/rewards"
             icon={MdGroupAdd}
             onNavigate={onNavigate}
           />

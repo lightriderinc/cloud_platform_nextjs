@@ -1,10 +1,10 @@
 import InviteHistory from "@/components/billing/InviteHistory";
 import SendInvite from "@/components/billing/SendInvite";
 
-export default function ReferEarnPage() {
+export default function RewardsPage() {
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-gray-700">Refer &amp; Earn</h1>
+      <h1 className="text-2xl font-semibold text-gray-700">Rewards</h1>
       <p className="mb-12 text-sm text-gray-600">
         Invite people to Light Rider. When someone you invited runs their first
         real quantum job or buys credits, you both earn 1000 credits.
