@@ -151,7 +151,7 @@ export default function CreditsSummary({
             href="/settings/payment-and-history"
             className="text-sm font-medium text-gray-700 inline-flex items-center gap-2 hover:text-[var(--brand-primary)]"
           >
-            View payment &amp; history <MdArrowForward />
+            View payment history <MdArrowForward />
           </Link>
         )}
       </div>

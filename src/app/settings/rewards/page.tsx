@@ -10,12 +10,12 @@ export default function RewardsPage() {
         Earn rewards for inviting new people to Light Rider.
       </p>
 
-      <div className="block mb-8">
+      <div className="block mb-12">
         <RewardsBanner />
       </div>
 
       <div className="flex flex-col gap-12">
-        <div className="block lg:flex">
+        <div className="block lg:flex lg:max-w-[700px]">
           <SendInvite />
         </div>
 

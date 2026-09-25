@@ -30,7 +30,7 @@ export default function RewardsBanner() {
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,28rem)] xl:items-center">
         <div className="flex flex-col h-full items-start justify-between">
-          <span className="inline-flex items-center gap-1 rounded bg-white/10 px-3 py-1 text-xs   text-white ring-1 ring-white/30 backdrop-blur-sm">
+          <span className="inline-flex items-center gap-1 rounded bg-white/10 px-3 py-1 text-xs  text-white ring-1 ring-white/30 backdrop-blur-sm">
             Light Rider{" "}
             <span className="font-medium">Refer & Earn program</span>
           </span>

@@ -1,10 +1,12 @@
 "use client";
 
-import { useProtectedWork } from "@/lib/auth/protected-work";
+import ModalShell from "@/components/applications/ModalShell";
 import LRButton from "@/components/ui/LRButton";
+import { useProtectedWork } from "@/lib/auth/protected-work";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { MdAdd, MdClose } from "react-icons/md";
+import WarningBox from "../WarningBox";
 
 /**
  * Invite people to Light Rider by email.
@@ -135,8 +137,8 @@ export default function SendInvite() {
 
   // Holds off the silent SSO check, which reloads the whole document. The
   // DOM-level check in protected-work.ts covers the typed rows, but not the
-  // review step — that replaces the inputs with a summary, leaving nothing on
-  // the page for it to find at the exact moment the state matters most.
+  // review modal or an in-flight send — the exact moment the state matters
+  // most.
   useProtectedWork(payload.length > 0 || reviewing || send.isPending);
 
   function clearLastResult() {
@@ -179,100 +181,93 @@ export default function SendInvite() {
   const failure =
     send.error instanceof InviteError ? send.error.failure : null;
 
+  const inviteLabel = `${payload.length} ${payload.length === 1 ? "invite" : "invites"}`;
+
   return (
-    <div className="default-radius border border-gray-50 bg-gray-50 p-5">
-      <h2 className="text-lg font-bold text-gray-800">Invite people</h2>
-      <p className="mb-4 text-sm text-gray-600">
-        Send invite links by email. When someone you invited signs up and buys
-        credits or runs their first job on real hardware, you both get 1000
-        credits.
-      </p>
+    <div className="flex-1 default-radius border border-gray-50 bg-gray-50 p-5">
+      <div className="flex flex-row items-end justify-between">
+        <h2 className="text-lg font-bold text-gray-800">Send invites</h2>
+        <div className="inline-flex">
+          <span className="text-sm">Invites left today:</span>
+          {quotaQuery.isLoading ? (
+            <span className="ml-1 h-5 w-12 animate-pulse rounded bg-gray-200" />
+          ) : (
+            <span className="ml-1 text-sm font-medium">
+              {quota ? `${quota.remainingToday} of ${quota.limit}` : "—"}
+            </span>
+          )}
+        </div>
+      </div>
 
-      {quotaQuery.isLoading ? (
-        <div className="mb-4 h-5 w-40 animate-pulse rounded bg-gray-200" />
-      ) : quota ? (
-        <p className="mb-4 text-sm text-gray-700">
-          <span className="font-medium">
-            {quota.remainingToday} of {quota.limit}
-          </span>{" "}
-          invites left today
-        </p>
-      ) : null}
+      <form onSubmit={handleReview}>
+        <div className="my-8">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-600">
+              Recipients
+            </span>
+            <span className="text-xs text-gray-500">
+              {rows.length} of {MAX_ROWS}
+            </span>
+          </div>
 
-      {reviewing ? (
-        <ReviewStep
-          emails={payload}
-          remaining={remaining}
-          isPending={send.isPending}
-          onConfirm={handleConfirm}
-          onCancel={() => setReviewing(false)}
-        />
-      ) : (
-        <form onSubmit={handleReview} className="flex flex-col gap-3">
-          {rows.map((row, index) => (
-            <div key={row.id} className="flex items-end gap-2">
-              <label className="flex-1 text-sm text-gray-600">
-                {index === 0 && "Their email"}
+          <div className="flex flex-col gap-2">
+            {rows.map((row) => (
+              <div key={row.id} className="flex items-center gap-2">
                 <input
                   type="email"
                   value={row.email}
                   onChange={(e) => updateRow(row.id, e.target.value)}
                   placeholder="friend@example.com"
+                  aria-label="Recipient email"
                   disabled={outOfInvites}
-                  className="mt-1 w-full default-radius border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100"
+                  className="min-w-0 flex-1 default-radius border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100"
                 />
-              </label>
 
-              <button
-                type="button"
-                onClick={() => removeRow(row.id)}
-                disabled={rows.length === 1}
-                aria-label="Remove recipient"
-                className="mb-1 default-radius p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30"
-              >
-                <MdClose />
-              </button>
-            </div>
-          ))}
-
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={addRow}
-              disabled={rows.length >= MAX_ROWS || outOfInvites}
-              className="inline-flex cursor-pointer items-center gap-1 text-sm font-medium text-gray-700 transition-colors hover:text-[var(--brand-primary)] disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <MdAdd /> Add another
-            </button>
-            <span className="text-xs text-gray-500">
-              {payload.length} {payload.length === 1 ? "invite" : "invites"}
-            </span>
+                <button
+                  type="button"
+                  onClick={() => removeRow(row.id)}
+                  disabled={rows.length === 1}
+                  aria-label="Remove recipient"
+                  className="default-radius cursor-pointer p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  <MdClose />
+                </button>
+              </div>
+            ))}
           </div>
 
-          {overQuota && (
-            <p className="text-xs text-red-600">
-              That&apos;s {payload.length} invites but you only have {remaining}{" "}
-              left today.
-            </p>
-          )}
-
-          <LRButton
-            variant="primary"
-            type="submit"
-            disabled={!canReview}
-            className="w-full"
+          <button
+            type="button"
+            onClick={addRow}
+            disabled={rows.length >= MAX_ROWS || outOfInvites}
+            className="mt-3 inline-flex cursor-pointer items-center gap-1 text-sm font-medium text-gray-700 transition-colors hover:text-[var(--brand-primary)] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Review and send
-          </LRButton>
+            <MdAdd /> Add recipient
+          </button>
 
           {outOfInvites && (
-            <p className="text-xs text-gray-600">
+            <p className="mt-2 text-xs text-gray-600">
               You&apos;ve reached today&apos;s invite limit. Try again
-            tomorrow.
+              tomorrow.
             </p>
           )}
-        </form>
-      )}
+        </div>
+
+        {/* <div className="mb-4">
+          <WarningBox>
+            Sent invites can not be unsent.
+          </WarningBox>
+        </div> */}
+
+        <LRButton
+          variant="primary"
+          type="submit"
+          disabled={!canReview}
+          className="w-full"
+        >
+          Review and send
+        </LRButton>
+      </form>
 
       {send.isSuccess && send.data && (
         <p className="mt-3 text-sm text-green-700">
@@ -287,66 +282,114 @@ export default function SendInvite() {
       {send.data?.rows && send.data.rows.length > 0 && (
         <RowResults rows={send.data.rows} />
       )}
+
+      {reviewing && (
+        <ReviewModal
+          emails={payload}
+          inviteLabel={inviteLabel}
+          remaining={remaining}
+          isPending={send.isPending}
+          onConfirm={handleConfirm}
+          onCancel={() => setReviewing(false)}
+        />
+      )}
     </div>
   );
 }
 
 /**
  * Invites can't be unsent and the daily quota is small, so the list is read
- * back before anything goes out — the same step Share Credits uses.
+ * back before anything goes out — the same step Share Credits uses. Closing
+ * (Esc, backdrop, X) is ignored while the send is in flight so the outcome
+ * can't be dismissed unseen.
  */
-function ReviewStep({
+function ReviewModal({
   emails,
+  inviteLabel,
   remaining,
   isPending,
   onConfirm,
   onCancel,
 }: {
   emails: string[];
+  inviteLabel: string;
   remaining: number;
   isPending: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const close = useCallback(() => {
+    if (!isPending) onCancel();
+  }, [isPending, onCancel]);
+
   return (
-    <div className="default-radius border border-amber-200 bg-amber-50 p-4">
-      <p className="mb-3 text-sm font-medium text-amber-900">
-        Send {emails.length} {emails.length === 1 ? "invite" : "invites"}?
-        They&apos;ll go out straight away.
-      </p>
+    <ModalShell title="Confirm invites" onClose={close} maxWidth="max-w-lg">
+      <div className="mt-8">
+        <div className="mb-8">
+          <span className="mb-2 block text-sm font-medium text-gray-600">
+            Recipients
+          </span>
+          <ul className="mb-4 max-h-64 divide-y divide-gray-100 overflow-y-auto border-y border-gray-100">
+            {emails.map((email) => (
+              <li key={email} className="truncate py-2 text-sm text-gray-800">
+                {email}
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      <ul className="mb-3 divide-y divide-amber-200 border-y border-amber-200">
-        {emails.map((email) => (
-          <li key={email} className="truncate py-2 text-sm text-gray-800">
-            {email}
-          </li>
-        ))}
-      </ul>
+        <div className="mb-4 flex flex-col default-radius bg-gray-50 p-3">
+          <div className="flex flex-col gap-1 pb-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Invites left today</span>
+              <span className="text-sm font-medium text-gray-500">
+                {remaining}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Left after sending</span>
+              <span className="text-sm font-medium text-gray-500">
+                {Math.max(0, remaining - emails.length)}
+              </span>
+            </div>
+          </div>
+          <div className="border-t border-gray-200 pt-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-600">
+                Invites to send
+              </span>
+              <span className="text-lg font-medium text-gray-800">
+                {emails.length}
+              </span>
+            </div>
+          </div>
+        </div>
 
-      <p className="mb-4 text-xs text-gray-600">
-        You&apos;ll have {Math.max(0, remaining - emails.length)} invites left
-        today.
-      </p>
+        <div className="mb-6">
+          <WarningBox>
+            Invites are emailed straight away and can not be unsent.
+          </WarningBox>
+        </div>
 
-      <div className="flex gap-2">
-        <LRButton
-          variant="primary"
-          onClick={onConfirm}
-          disabled={isPending}
-          className="flex-1"
-        >
-          {isPending ? "Sending..." : "Send invites"}
-        </LRButton>
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={isPending}
-          className="default-radius cursor-pointer border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50"
-        >
-          Back
-        </button>
+        <div className="flex gap-2">
+          <LRButton
+            variant="secondary-outline"
+            onClick={close}
+            disabled={isPending}
+          >
+            Cancel
+          </LRButton>
+          <LRButton
+            variant="primary"
+            onClick={onConfirm}
+            disabled={isPending}
+            className="flex-1"
+          >
+            {isPending ? "Sending..." : `Send ${inviteLabel}`}
+          </LRButton>
+        </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }
 
