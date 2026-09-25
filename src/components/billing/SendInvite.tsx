@@ -128,6 +128,9 @@ export default function SendInvite() {
   const remaining = quota?.remainingToday ?? 0;
   const overQuota = quota !== undefined && payload.length > remaining;
   const outOfInvites = quota !== undefined && remaining <= 0;
+  // Once the quota is known, rows are capped by what's left today rather than
+  // the absolute daily limit.
+  const maxRows = quota ? Math.min(MAX_ROWS, remaining) : MAX_ROWS;
 
   const canReview =
     quota !== undefined &&
@@ -156,7 +159,7 @@ export default function SendInvite() {
   function addRow() {
     clearLastResult();
     setRows((current) =>
-      current.length >= MAX_ROWS ? current : [...current, blankRow()],
+      current.length >= maxRows ? current : [...current, blankRow()],
     );
   }
 
@@ -206,7 +209,7 @@ export default function SendInvite() {
               Recipients
             </span>
             <span className="text-xs text-gray-500">
-              {quota ? `${rows.length} of ${quota.remainingToday}` : `${rows.length} of ${MAX_ROWS}`}
+              {`${rows.length} of ${maxRows}`}
             </span>
           </div>
 
@@ -239,7 +242,7 @@ export default function SendInvite() {
           <button
             type="button"
             onClick={addRow}
-            disabled={rows.length >= MAX_ROWS || outOfInvites}
+            disabled={rows.length >= maxRows || outOfInvites}
             className="mt-3 inline-flex cursor-pointer items-center gap-1 text-sm font-medium text-gray-700 transition-colors hover:text-[var(--brand-primary)] disabled:cursor-not-allowed disabled:opacity-40"
           >
             <MdAdd /> Add recipient
