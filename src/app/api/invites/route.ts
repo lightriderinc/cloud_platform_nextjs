@@ -47,18 +47,22 @@ export async function GET(req: Request) {
     // before this their only trace of it was a "Referral reward" line buried
     // in Share Credits history — a page someone who joined by invite has no
     // reason to open.
-    const referrals = await db.referral.findMany({
-      where: {
-        status: "rewarded",
-        OR: [
-          { referrerCustomerId: customer.id },
-          { refereeCustomerId: customer.id },
-        ],
-      },
-      orderBy: { rewardedAt: "desc" },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE + 1,
-    });
+    const rewardsWhere = {
+      status: "rewarded",
+      OR: [
+        { referrerCustomerId: customer.id },
+        { refereeCustomerId: customer.id },
+      ],
+    };
+    const [referrals, total] = await Promise.all([
+      db.referral.findMany({
+        where: rewardsWhere,
+        orderBy: { rewardedAt: "desc" },
+        skip: (page - 1) * PAGE_SIZE,
+        take: PAGE_SIZE + 1,
+      }),
+      db.referral.count({ where: rewardsWhere }),
+    ]);
 
     const hasMore = referrals.length > PAGE_SIZE;
     const rows = referrals.slice(0, PAGE_SIZE);
@@ -84,6 +88,7 @@ export async function GET(req: Request) {
       view,
       page,
       pageSize: PAGE_SIZE,
+      total,
       hasMore,
       quota,
       rewards: rows.map((referral) => {
@@ -107,12 +112,16 @@ export async function GET(req: Request) {
     });
   }
 
-  const invites = await db.invite.findMany({
-    where: { inviterCustomerId: customer.id },
-    orderBy: { createdAt: "desc" },
-    skip: (page - 1) * PAGE_SIZE,
-    take: PAGE_SIZE + 1,
-  });
+  const invitesWhere = { inviterCustomerId: customer.id };
+  const [invites, total] = await Promise.all([
+    db.invite.findMany({
+      where: invitesWhere,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE + 1,
+    }),
+    db.invite.count({ where: invitesWhere }),
+  ]);
 
   const hasMore = invites.length > PAGE_SIZE;
   const rows = invites.slice(0, PAGE_SIZE);
@@ -130,6 +139,7 @@ export async function GET(req: Request) {
     view,
     page,
     pageSize: PAGE_SIZE,
+    total,
     hasMore,
     quota,
     invites: rows.map((invite) => {

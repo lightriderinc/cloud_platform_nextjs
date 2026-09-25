@@ -54,14 +54,17 @@ export async function GET(req: Request) {
     },
   };
 
-  // One extra row rather than a second count() query: all the page needs to
-  // know is whether a "next" button belongs on screen.
-  const entries = await db.creditLedgerEntry.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    skip: (page - 1) * PAGE_SIZE,
-    take: PAGE_SIZE + 1,
-  });
+  // The total drives the "1–10 of 34" range and "1 / 4" page count in the
+  // table footer; the extra row still decides whether "next" is enabled.
+  const [entries, total] = await Promise.all([
+    db.creditLedgerEntry.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE + 1,
+    }),
+    db.creditLedgerEntry.count({ where }),
+  ]);
 
   const hasMore = entries.length > PAGE_SIZE;
 
@@ -69,6 +72,7 @@ export async function GET(req: Request) {
     view,
     page,
     pageSize: PAGE_SIZE,
+    total,
     hasMore,
     transfers: entries.slice(0, PAGE_SIZE).map((entry) => ({
       id: entry.id,

@@ -1,6 +1,7 @@
 "use client";
 
 import { formatCredits } from "@/components/billing/CreditsSummary";
+import TablePagination from "@/components/ui/TablePagination";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -27,6 +28,7 @@ type TransfersPage = {
   view: "sent" | "received";
   page: number;
   pageSize: number;
+  total: number;
   hasMore: boolean;
   transfers: TransferRow[];
 };
@@ -162,25 +164,16 @@ export default function TransferHistory() {
             </table>
           </div>
 
-          <div className="mt-3 flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1 || isFetching}
-              className="default-radius cursor-pointer border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Previous
-            </button>
-            <span className="text-xs text-gray-500">Page {page}</span>
-            <button
-              type="button"
-              onClick={() => setPage((p) => p + 1)}
-              disabled={!data?.hasMore || isFetching}
-              className="default-radius cursor-pointer border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Next
-            </button>
-          </div>
+          {data && (
+            <TablePagination
+              page={page}
+              pageSize={data.pageSize}
+              total={data.total}
+              itemLabel="transfers"
+              onPageChange={setPage}
+              disabled={isFetching}
+            />
+          )}
         </>
       )}
     </div>
