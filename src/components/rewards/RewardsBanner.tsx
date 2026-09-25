@@ -25,7 +25,7 @@ export default function RewardsBanner() {
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-24 -left-16 h-64 w-64 rounded-full bg-white/15 blur-3xl" />
         <div className="absolute -right-10 -bottom-28 h-72 w-72 rounded-full bg-fuchsia-300/30 blur-3xl" />
-        <HiGiftTop className="absolute -right-6 -bottom-10 text-[18rem] text-white/10 rotate-12 " />
+        <HiGiftTop className="absolute -right-6 xl:right-120 -bottom-10 text-[18rem] text-white/10 rotate-12 " />
       </div>
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,28rem)] xl:items-center">

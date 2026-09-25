@@ -206,7 +206,7 @@ export default function SendInvite() {
               Recipients
             </span>
             <span className="text-xs text-gray-500">
-              {rows.length} of {MAX_ROWS}
+              {quota ? `${rows.length} of ${quota.remainingToday}` : `${rows.length} of ${MAX_ROWS}`}
             </span>
           </div>
 
