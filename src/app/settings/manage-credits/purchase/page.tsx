@@ -50,12 +50,11 @@ export default function PurchaseCreditsPage() {
         Purchase Credits
       </h1>
       <p className="mb-12 text-sm text-gray-600">
-        Quantum-powered applications priced by runtime, priority, and outcome.
-        Most jobs complete in seconds.
+        Credits are consumed when using quantum resources.
       </p>
 
       <div className="flex flex-col gap-12">
-        <div className="block lg:flex">
+        <div className="block lg:flex lg:max-w-[700px]">
           <CreditsTopUp />
         </div>
 

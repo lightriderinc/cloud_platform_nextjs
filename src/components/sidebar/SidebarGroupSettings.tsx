@@ -61,12 +61,6 @@ export default function SidebarGroupSettings({
 
       {isAuthenticated && (
         <SidebarNavGroup label="Billing & Credits">
-          {/* <SidebarNavItem
-            name="Balance"
-            href="/settings/balance"
-            icon={MdWallet}
-            onNavigate={onNavigate}
-          /> */}
           <SidebarNavItem
             name="Manage Credits"
             href="/settings/manage-credits"

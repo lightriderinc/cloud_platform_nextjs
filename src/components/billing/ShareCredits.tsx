@@ -5,11 +5,12 @@ import {
   formatCredits,
   type Credits,
 } from "@/components/billing/CreditsSummary";
-import { useProtectedWork } from "@/lib/auth/protected-work";
 import LRButton from "@/components/ui/LRButton";
+import { useProtectedWork } from "@/lib/auth/protected-work";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { MdAdd, MdClose } from "react-icons/md";
+import WarningBox from "../WarningBox";
 
 /**
  * Send credits to one or more Light Rider users by email.
@@ -32,8 +33,18 @@ type RowResult =
   | { status: "ok"; email: string; amountCents: number; recipientEmail: string }
   | { status: "recipient_not_found"; email: string; amountCents: number }
   | { status: "self_transfer"; email: string; amountCents: number }
-  | { status: "invalid_amount"; email: string; amountCents: number; message: string }
-  | { status: "lookup_failed"; email: string; amountCents: number; message: string };
+  | {
+      status: "invalid_amount";
+      email: string;
+      amountCents: number;
+      message: string;
+    }
+  | {
+      status: "lookup_failed";
+      email: string;
+      amountCents: number;
+      message: string;
+    };
 
 type BatchOk = {
   ok: true;
@@ -201,15 +212,14 @@ export default function ShareCredits() {
     <div className="default-radius border border-gray-50 bg-gray-50 p-5">
       <h2 className="text-lg font-bold text-gray-800">Send credits</h2>
       <p className="mb-4 text-sm text-gray-600">
-        Send credits to other Light Rider users by email. Transfers are
-        immediate and final. They can&apos;t be cancelled or reversed.
+        Send credits to other Light Rider users by email.
       </p>
 
       {credits.isLoading ? (
         <div className="mb-4 h-5 w-48 animate-pulse rounded bg-gray-200" />
       ) : (
         <p className="mb-4 text-sm text-gray-700">
-          Your balance:{" "}
+          Available balance:{" "}
           <span className="font-medium">
             {formatCredits(balanceCents)} credits
           </span>
@@ -279,10 +289,10 @@ export default function ShareCredits() {
             </span>
           </div>
 
-          <div className="flex items-center justify-between border-t border-gray-200 pt-3 text-sm">
-            <span className="text-gray-600">Total</span>
+          <div className="flex items-center justify-between border-t border-gray-200 pt-4 pb-1">
+            <span className="text-sm text-gray-600">Total</span>
             <span
-              className={`font-medium ${isOverBalance ? "text-red-600" : "text-gray-800"}`}
+              className={`font-medium text-md ${isOverBalance ? "text-red-600" : "text-gray-800"}`}
             >
               {formatCredits(totalCents)} credits
             </span>
@@ -294,6 +304,10 @@ export default function ShareCredits() {
               your balance of {formatCredits(balanceCents)} credits.
             </p>
           )}
+
+          <div>
+            <WarningBox>Transfers can not be cancelled or reversed.</WarningBox>
+          </div>
 
           <LRButton
             variant="primary"
@@ -318,9 +332,7 @@ export default function ShareCredits() {
         <p className="mt-3 text-sm text-red-600">{failure.message}</p>
       )}
 
-      {resultRows && resultRows.length > 0 && (
-        <RowResults rows={resultRows} />
-      )}
+      {resultRows && resultRows.length > 0 && <RowResults rows={resultRows} />}
     </div>
   );
 }
@@ -385,7 +397,9 @@ function ReviewStep({
           disabled={isPending}
           className="flex-1"
         >
-          {isPending ? "Sending..." : `Send ${formatCredits(totalCents)} credits`}
+          {isPending
+            ? "Sending..."
+            : `Send ${formatCredits(totalCents)} credits`}
         </LRButton>
         <button
           type="button"
@@ -420,8 +434,7 @@ function RowResults({ rows }: { rows: RowResult[] }) {
               key={i}
               className="default-radius border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"
             >
-              {row.email} doesn&apos;t have an account yet. Invite them
-              instead.
+              {row.email} doesn&apos;t have an account yet. Invite them instead.
               {/*
                 TODO(Send Invite): render the invite affordance
                 here, prefilled with `row.email`. Deliberately not wired up in
@@ -434,8 +447,8 @@ function RowResults({ rows }: { rows: RowResult[] }) {
         if (row.status === "self_transfer") {
           return (
             <li key={i} className="text-sm text-red-600">
-              {row.email} is your own address. You can&apos;t send credits
-              to yourself.
+              {row.email} is your own address. You can&apos;t send credits to
+              yourself.
             </li>
           );
         }

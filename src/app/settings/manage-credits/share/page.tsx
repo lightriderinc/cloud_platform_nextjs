@@ -6,10 +6,9 @@ export default function SharePage() {
   return (
     <div>
       <BackButton href="/settings/manage-credits" previousPageName="Manage Credits" />
-      <h1 className="text-2xl font-semibold text-gray-700">Share</h1>
+      <h1 className="text-2xl font-semibold text-gray-700">Share Credits</h1>
       <p className="mb-12 text-sm text-gray-600">
-        Send compute credits to other Light Rider users, and review every
-        transfer you&apos;ve sent or received.
+        Send compute credits to other Light Rider users.
       </p>
 
       <div className="flex flex-col gap-12">
