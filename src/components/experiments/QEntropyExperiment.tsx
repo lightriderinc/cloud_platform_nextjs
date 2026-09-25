@@ -329,7 +329,7 @@ export default function QEntropyExperiment({
             <h3 className="mb-1.5 text-sm font-semibold text-gray-700">
               Entropy extraction mode:
             </h3>
-            <div className="mb-1.5 inline-flex default-radius border border-gray-200 p-1 gap-1">
+            <div className="mb-1.5 inline-flex default-radius border border-gray-100 p-1 gap-1">
               <button
                 type="button"
                 onClick={() => switchMode("pool")}
