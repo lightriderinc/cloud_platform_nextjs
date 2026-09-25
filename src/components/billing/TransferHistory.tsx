@@ -90,16 +90,16 @@ export default function TransferHistory() {
 
   return (
     <div>
-      <div className="mb-4 flex gap-2">
+      <div className="mb-6 flex gap-1 border-b border-gray-100">
         {(["sent", "received"] as const).map((option) => (
           <button
             key={option}
             type="button"
             onClick={() => switchView(option)}
-            className={`default-radius cursor-pointer border px-3 py-1.5 text-sm font-medium transition-colors ${
+            className={`shrink-0 px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
               view === option
-                ? "border-[var(--brand-primary)] bg-red-50 text-[var(--brand-primary)]"
-                : "border-gray-100 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                ? "border-b-2 border-[var(--brand-primary)] text-[var(--brand-primary)]"
+                : "text-gray-500 hover:text-gray-700"
             }`}
           >
             {option === "sent" ? "Sent" : "Received"}
