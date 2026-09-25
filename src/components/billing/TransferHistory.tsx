@@ -45,12 +45,19 @@ async function fetchTransfers(
   return data;
 }
 
-const HEADERS = ["Date", "Counterparty", "Type", "Amount"];
+function headersFor(view: "sent" | "received") {
+  return [
+    "Date",
+    view === "sent" ? "Sent to" : "Received from",
+    "Type",
+    "Amount",
+  ];
+}
 
-function RowSkeleton() {
+function RowSkeleton({ headers }: { headers: string[] }) {
   return (
     <tr className="border-b border-gray-100 last:border-0">
-      {HEADERS.map((h) => (
+      {headers.map((h) => (
         <td key={h} className="px-4 py-3">
           <div className="h-4 w-20 rounded bg-gray-100" />
         </td>
@@ -89,6 +96,7 @@ export default function TransferHistory() {
   }
 
   const transfers = data?.transfers ?? [];
+  const headers = headersFor(view);
 
   return (
     <div>
@@ -125,7 +133,7 @@ export default function TransferHistory() {
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-100">
                 <tr>
-                  {HEADERS.map((h) => (
+                  {headers.map((h) => (
                     <th
                       key={h}
                       className="whitespace-nowrap px-4 py-2 font-medium text-gray-700"
@@ -137,7 +145,9 @@ export default function TransferHistory() {
               </thead>
               <tbody className={isLoading ? "animate-pulse" : undefined}>
                 {isLoading
-                  ? Array.from({ length: 5 }).map((_, i) => <RowSkeleton key={i} />)
+                  ? Array.from({ length: 5 }).map((_, i) => (
+                      <RowSkeleton key={i} headers={headers} />
+                    ))
                   : transfers.map((row) => (
                       <tr
                         key={row.id}
