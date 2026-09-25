@@ -17,7 +17,7 @@ export default function SharePage() {
         </div>
 
         <div>
-          <h2 className="mb-3 text-lg font-semibold text-gray-600">
+          <h2 className="mb-4 text-xl font-bold text-gray-600">
             Transfer history
           </h2>
           <TransferHistory />
