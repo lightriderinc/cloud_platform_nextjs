@@ -9,9 +9,9 @@ export default function DashboardDemoEntropy() {
 
   return (
     <>
-      <button onClick={() => setShowModal(true)} className="flex w-full cursor-pointer">
+      <button onClick={() => setShowModal(true)} className="flex w-full cursor-pointer group">
         <div className="flex flex-col h-full w-full bg-gray-100 p-5 border border-gray-100 default-radius card-hover-primary gap-3">
-          <FaDice className="text-5xl text-gray-200" />
+          <FaDice className="text-5xl text-gray-200 group-hover:text-[var(--brand-tertiary)] transition duration-150" />
           <h3 className="flex text-left gap-1 text-md font-medium">
             Get Entropy
           </h3>

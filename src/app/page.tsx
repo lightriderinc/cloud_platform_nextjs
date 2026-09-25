@@ -2,7 +2,6 @@ import CreditsSummary from "@/components/billing/CreditsSummary";
 import LowCreditsBanner from "@/components/billing/LowCreditsBanner";
 import DashboardClassroomLink from "@/components/dashboard/DashboardClassroomLink";
 import DashboardDemoCircuit from "@/components/dashboard/DashboardDemoCircuit";
-import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntropy";
 import DashboardLatestJobs from "@/components/dashboard/DashboardLatestJobs";
 import DashboardReservations from "@/components/dashboard/DashboardReservations";
 import DashboardUpdatesSection from "@/components/dashboard/DashboardUpdatesSection";
@@ -99,7 +98,7 @@ export default async function Home() {
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <DashboardClassroomLink />
             <DashboardDemoCircuit />
-            <DashboardDemoEntropy />
+            {/* <DashboardDemoEntropy /> */}
           </div>
           {/* <div className="mt-4 flex">
           <GettingStartedChecklist />
