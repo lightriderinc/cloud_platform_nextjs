@@ -1,14 +1,18 @@
 import InviteHistory from "@/components/billing/InviteHistory";
 import SendInvite from "@/components/billing/SendInvite";
+import RewardsBanner from "@/components/rewards/RewardsBanner";
 
 export default function RewardsPage() {
   return (
     <div>
       <h1 className="text-2xl font-semibold text-gray-700">Rewards</h1>
       <p className="mb-12 text-sm text-gray-600">
-        Invite people to Light Rider. When someone you invited runs their first
-        real quantum job or buys credits, you both earn 1000 credits.
+        Earn rewards for inviting new people to Light Rider.
       </p>
+
+      <div className="block mb-8">
+        <RewardsBanner />
+      </div>
 
       <div className="flex flex-col gap-12">
         <div className="block lg:flex">
@@ -17,7 +21,7 @@ export default function RewardsPage() {
 
         <div>
           <h2 className="mb-4 text-xl font-bold text-gray-600">
-            Invites &amp; rewards
+            Invites &amp; rewards history
           </h2>
           <InviteHistory />
         </div>
