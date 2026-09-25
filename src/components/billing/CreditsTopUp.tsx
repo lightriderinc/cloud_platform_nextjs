@@ -1,6 +1,12 @@
 "use client";
 
 import { CreditsCheckoutButton } from "@/components/billing/CheckoutButtons";
+import {
+  fetchJson,
+  formatCredits,
+  type Credits,
+} from "@/components/billing/CreditsSummary";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 const PRESETS = [5000, 10000, 25000, 100000];
@@ -14,6 +20,11 @@ const CREDIT_PRICE_USD = 0.01;
 export default function CreditsTopUp() {
   const [credits, setCredits] = useState(10000);
   const [customValue, setCustomValue] = useState("");
+
+  const balance = useQuery({
+    queryKey: ["billing", "credits"],
+    queryFn: () => fetchJson<Credits>("/api/billing/credits"),
+  });
 
   const priceUsd = credits * CREDIT_PRICE_USD;
   const customCredits = customValue === "" ? null : Number(customValue);
@@ -41,7 +52,23 @@ export default function CreditsTopUp() {
 
   return (
     <div className="flex-1 default-radius border border-gray-50 bg-gray-50 p-5">
-      <h2 className="text-lg font-bold text-gray-800">Buy compute credits</h2>
+      <div className="flex flex-row justify-between items-end">
+        <h2 className="text-lg font-bold text-gray-800">Buy compute credits</h2>
+        <div className="inline-flex">
+          <span className="text-sm">
+            Current balance:
+          </span>
+          {balance.isLoading ? (
+            <span className="ml-1 h-5 w-20 animate-pulse rounded bg-gray-200" />
+          ) : (
+            <span className="ml-1 text-sm font-medium">
+              {balance.data
+                ? `${formatCredits(balance.data.remainingCents)} credits`
+                : "—"}
+            </span>
+          )}
+        </div>
+      </div>
       {/* <p className="mb-6 text-sm text-gray-600">
         Credits are consumed at the runtime rates below as your jobs run.
       </p> */}
@@ -64,7 +91,9 @@ export default function CreditsTopUp() {
                 <span className="text-lg">{preset.toLocaleString()}</span>
 
                 <span className="text-xs opacity-75 mb-4">Credits</span>
-                <span className="text-sm">${(preset*CREDIT_PRICE_USD).toFixed(2)}</span>
+                <span className="text-sm">
+                  ${(preset * CREDIT_PRICE_USD).toFixed(2)}
+                </span>
               </div>
             </button>
           ))}
@@ -72,18 +101,23 @@ export default function CreditsTopUp() {
 
         <label className="mb-1 block text-sm text-gray-600">
           Custom amount
-          <input
-            type="number"
-            min={MIN_CREDITS}
-            max={MAX_CREDITS}
-            step={1}
-            value={customValue}
-            onChange={(e) => handleCustomChange(e.target.value)}
-            placeholder="e.g. 30000"
-            className={`mt-1 w-full default-radius border px-3 py-2 text-sm ${
-              isCustomOutOfRange ? "border-red-400" : "border-gray-300"
-            }`}
-          />
+          <div className="relative mt-1">
+            <input
+              type="number"
+              min={MIN_CREDITS}
+              max={MAX_CREDITS}
+              step={1}
+              value={customValue}
+              onChange={(e) => handleCustomChange(e.target.value)}
+              placeholder="e.g. 30000"
+              className={`w-full default-radius border py-2 pl-3 pr-16 text-sm ${
+                isCustomOutOfRange ? "border-red-400" : "border-gray-300"
+              }`}
+            />
+            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-gray-500">
+              Credits
+            </span>
+          </div>
         </label>
         <span
           className={`mb-4 text-xs ${
@@ -123,7 +157,7 @@ export default function CreditsTopUp() {
 
       <CreditsCheckoutButton
         amountUsd={priceUsd}
-        label={`Purchase for $${priceUsd.toFixed(2)}`}
+        label={`Buy for $${priceUsd.toFixed(2)}`}
         disabled={isCustomOutOfRange}
       />
     </div>

@@ -45,13 +45,18 @@ const RIGETTI_RUNTIME_TIERS = [
 export default function PurchaseCreditsPage() {
   return (
     <div>
-      <BackButton href="/settings/manage-credits" previousPageName="Manage Credits" />
-      <h1 className="text-2xl font-semibold text-gray-700">
-        Purchase Credits
-      </h1>
-      <p className="mb-12 text-sm text-gray-600">
-        Credits are consumed when using quantum resources.
-      </p>
+      <BackButton
+        href="/settings/manage-credits"
+        previousPageName="Manage Credits"
+      />
+      <div className="flex flex-col mb-12">
+        <h1 className="text-2xl font-semibold text-gray-700">
+          Purchase Credits
+        </h1>
+        <p className="text-sm text-gray-600">
+          Credits are consumed when using quantum resources.
+        </p>
+      </div>
 
       <div className="flex flex-col gap-12">
         <div className="block lg:flex lg:max-w-[700px]">
@@ -59,7 +64,7 @@ export default function PurchaseCreditsPage() {
         </div>
 
         <div className="lg:col-span-2">
-          <h2 className="mb-3 text-lg font-semibold text-gray-600">
+          <h2 className="mb-4 text-xl font-bold text-gray-600">
             Runtime pricing
           </h2>
 
