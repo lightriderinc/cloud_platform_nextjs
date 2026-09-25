@@ -59,14 +59,14 @@ const REWARD_HEADERS = ["Rewarded", "Referral", "Earned by", "Amount"];
 
 function StatusBadge({ status }: { status: InviteRow["status"] }) {
   const styles = {
-    accepted: "bg-green-50 text-green-700 border-green-200",
-    pending: "bg-amber-50 text-amber-800 border-amber-200",
+    accepted: "bg-emerald-50 text-emerald-700 border-emerald-400",
+    pending: "bg-amber-50 text-amber-800 border-amber-400",
     expired: "bg-gray-100 text-gray-500 border-gray-200",
   } as const;
 
   return (
     <span
-      className={`default-radius border px-2 py-0.5 text-xs font-medium ${styles[status]}`}
+      className={`rounded border capitalize px-2 py-0.5 text-xs font-medium ${styles[status]}`}
     >
       {status}
     </span>

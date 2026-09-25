@@ -370,7 +370,7 @@ function ReviewModal({
 
         <div className="mb-6">
           <WarningBox>
-            Invites are emailed straight away and can not be unsent.
+            Invites are sent straight away and can not be unsent.
           </WarningBox>
         </div>
 
@@ -412,8 +412,7 @@ function RowResults({ rows }: { rows: RowResult[] }) {
         if (row.status === "already_member") {
           return (
             <li key={i} className="text-sm text-gray-700">
-              {row.email} already has an account. No invite was sent, and
-              this did not use one of today&apos;s invites.
+              {row.email} already has an account.
             </li>
           );
         }
@@ -422,8 +421,7 @@ function RowResults({ rows }: { rows: RowResult[] }) {
           return (
             <li key={i} className="text-sm text-gray-700">
               {row.email} already has an invite pending until{" "}
-              {new Date(row.expiresAt).toLocaleDateString()}. It was not sent
-              again.
+              {new Date(row.expiresAt).toLocaleDateString()}.
             </li>
           );
         }
