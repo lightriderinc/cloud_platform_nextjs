@@ -128,7 +128,7 @@ export default function CreditsTopUp() {
         </span>
       </div>
 
-      <div className="flex flex-col bg-gray-100 my-4 p-3">
+      <div className="flex flex-col default-radius bg-gray-100 my-4 p-3">
         <span className="text-sm font-medium mb-4 text-gray-300">Summary</span>
         <div className="flex flex-col gap-1 pb-4">
           <div className="flex items-center justify-between">

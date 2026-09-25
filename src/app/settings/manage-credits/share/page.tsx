@@ -12,7 +12,7 @@ export default function SharePage() {
       </p>
 
       <div className="flex flex-col gap-12">
-        <div className="block lg:flex">
+        <div className="block lg:flex lg:max-w-[700px]">
           <ShareCredits />
         </div>
 
