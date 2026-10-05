@@ -42,6 +42,7 @@ model Customer {
   apiKey          ApiKey?
   quantumJobs     QuantumJobSubmission[]
   reservations    Reservation[]
+  entropyCharges  EntropyCharge[]
 }
 
 // Mirrors a Stripe Subscription (used by both User Pricing plans and API
@@ -113,6 +114,32 @@ model CreditLedgerEntry {
 // client-generated idempotency key; its primary key is the whole guard, so a
 // double-click or retry loses the insert race inside the transaction rather
 // than being filtered by application logic that could itself race.
+/// One entropy-platform draw's charge (lib/billing/entropyCharges.ts).
+///
+/// `id` is the draw id the entropy site generates per click, so the primary
+/// key IS the idempotency guard: a retried request can never charge twice.
+/// `status` only ever moves charged -> settled (bytes delivered) or
+/// charged -> refunded (draw failed, or never settled - see the sweep), and
+/// every move is a conditional update, so a draw can't be both.
+model EntropyCharge {
+  id              String    @id
+  customerId      String
+  customer        Customer  @relation(fields: [customerId], references: [id])
+  mode            String    // pool | custom | source | card
+  bytes           Int
+  amountCents     Int
+  status          String    @default("charged") // charged | settled | refunded
+  egressRequestId String?   // EMS receipt request_id, set on settle
+  refundReason    String?
+  createdAt       DateTime  @default(now())
+  settledAt       DateTime?
+  refundedAt      DateTime?
+
+  // The sweep reads stale `charged` rows oldest-first.
+  @@index([status, createdAt])
+  @@index([customerId, createdAt])
+}
+
 model ProcessedTransferBatch {
   id         String   @id // client-supplied idempotency key
   customerId String // the sender, so one user's key can never block another's
