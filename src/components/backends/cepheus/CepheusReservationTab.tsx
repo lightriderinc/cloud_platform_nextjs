@@ -51,7 +51,7 @@ export default function CepheusReservationTab({
       </p>
 
       <div>
-        <h3 className="mb-4 text-xl font-bold text-gray-600">
+        <h3 className="mb-4 text-xl font-semibold text-gray-600">
           My reservations
         </h3>
         <MyReservationsList />
@@ -59,7 +59,7 @@ export default function CepheusReservationTab({
 
       <div className="block lg:flex">
         <div className="default-radius border border-gray-100 bg-gray-100 p-5">
-          <h2 className="text-lg font-bold text-gray-800">Book a slot</h2>
+          <h2 className="text-lg font-semibold text-gray-800">Book a slot</h2>
           {justBooked ? (
             <p className="text-sm text-gray-600">
               Reservation confirmed — see it under &quot;My reservations&quot;.

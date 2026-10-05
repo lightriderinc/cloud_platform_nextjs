@@ -38,7 +38,7 @@ export default function DashboardReservations() {
   return (
     <div className="mb-8">
       <div className="mb-3 flex flex-row justify-between">
-        <h2 className="text-xl font-bold text-gray-600">Reservations</h2>
+        <h2 className="text-xl font-semibold text-gray-600">Reservations</h2>
         <div className="mt-3 flex justify-end">
           <Link
             href="/backends/rigetti-cepheus-1-108q?tab=reservation"

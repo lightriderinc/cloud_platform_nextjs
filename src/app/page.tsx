@@ -55,7 +55,7 @@ export default async function Home() {
           <div className="flex flex-col xl:flex-row xl:gap-8">
             <div className="flex flex-col order-2 xl:order-none xl:w-auto xl:flex-1 min-w-0">
               <div className="mb-8">
-                <h2 className="mb-4 text-xl font-bold text-gray-600">
+                <h2 className="mb-4 text-xl font-semibold text-gray-600">
                   Compute credits
                 </h2>
                 <div>
@@ -67,7 +67,7 @@ export default async function Home() {
 
               <div className="mb-8">
                 <div className="flex flex-row justify-between">
-                  <h2 className="text-xl font-bold text-gray-600">
+                  <h2 className="text-xl font-semibold text-gray-600">
                     Latest jobs
                   </h2>
                   <div className="mt-3 flex justify-end">
@@ -91,7 +91,7 @@ export default async function Home() {
           </div>
 
           <div>
-            <h2 className="mb-4 text-xl font-bold text-gray-600">
+            <h2 className="mb-4 text-xl font-semibold text-gray-600">
               Getting started
             </h2>
           </div>

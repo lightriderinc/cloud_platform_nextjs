@@ -6,10 +6,10 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       <h1 className="text-2xl font-semibold text-gray-700" {...props} />
     ),
     h2: (props) => (
-      <h2 className="mb-3 text-xl font-bold text-gray-600" {...props} />
+      <h2 className="mb-3 text-xl font-semibold text-gray-600" {...props} />
     ),
     h3: (props) => (
-      <h3 className="mb-3 text-lg font-bold text-gray-600" {...props} />
+      <h3 className="mb-3 text-lg font-semibold text-gray-600" {...props} />
     ),
     a: (props) => (
       <a className="brand-link font-medium" {...props} />

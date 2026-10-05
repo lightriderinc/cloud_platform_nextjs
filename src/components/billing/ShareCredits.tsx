@@ -213,7 +213,7 @@ export default function ShareCredits() {
   return (
     <div className="flex-1 default-radius border border-gray-50 bg-gray-50 p-5">
       <div className="flex flex-row items-end justify-between">
-        <h2 className="text-lg font-bold text-gray-800">Send credits</h2>
+        <h2 className="text-lg font-semibold text-gray-800">Send credits</h2>
         <div className="inline-flex">
           <span className="text-sm">Current balance:</span>
           {credits.isLoading ? (

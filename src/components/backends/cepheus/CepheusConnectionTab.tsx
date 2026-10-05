@@ -35,7 +35,7 @@ export default function CepheusConnectionTab({
   return (
     <div className="flex flex-col gap-10">
       <div>
-        <h2 className="mb-4 text-xl font-bold text-gray-600">Connect to {backend.name}</h2>
+        <h2 className="mb-4 text-xl font-semibold text-gray-600">Connect to {backend.name}</h2>
         <BackendConnectSection
           backend={backend}
           isAuthenticated={isAuthenticated}

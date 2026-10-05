@@ -64,7 +64,7 @@ export default function PurchaseCreditsPage() {
         </div>
 
         <div className="lg:col-span-2">
-          <h2 className="mb-4 text-xl font-bold text-gray-600">
+          <h2 className="mb-4 text-xl font-semibold text-gray-600">
             Runtime pricing
           </h2>
 

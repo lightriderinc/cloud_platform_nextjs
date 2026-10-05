@@ -84,7 +84,7 @@ export default function CircuitSchematic({
     <div
       className={`flex flex-col items-center gap-3 border border-gray-100 bg-gray-100 p-4 ${className}`}
     >
-      <p className="text-sm font-bold text-gray-700">Circuit Diagram</p>
+      <p className="text-sm font-semibold text-gray-700">Circuit Diagram</p>
       {diagram}
       <div className="text-center">
         <p className="text-sm font-semibold text-gray-700">{meta.title}</p>

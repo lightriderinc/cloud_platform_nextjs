@@ -17,7 +17,7 @@ export default function WelcomePage() {
           <div className="flex flex-col xl:flex-row xl:gap-8 xl:mb-2 mb-12">
             <div className="flex flex-col xl:justify-center w-full">
               <div className="flex flex-col mb-8">
-                <h2 className="font-bold text-gray-500 text-2xl mb-2">
+                <h2 className="font-semibold text-gray-500 text-2xl mb-2">
                   Start using quantum, today.
                 </h2>
                 <p>

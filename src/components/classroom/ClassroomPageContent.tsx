@@ -16,12 +16,12 @@ export default function ClassroomPageContent({
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-xl font-bold text-gray-600 mb-4">For beginners</h2>
+        <h2 className="text-xl font-semibold text-gray-600 mb-4">For beginners</h2>
         <ClassroomBoardBeginnerPanel />
       </div>
 
       <div className="mb-8">
-        <h2 className="text-xl font-bold text-gray-600 mb-4">
+        <h2 className="text-xl font-semibold text-gray-600 mb-4">
           Beyond the basics
         </h2>
 

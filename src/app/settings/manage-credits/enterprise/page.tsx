@@ -23,21 +23,21 @@ export default function EnterprisePricingPage() {
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="flex flex-col gap-4">
           <div className="default-radius border border-gray-200 p-4">
-            <h2 className="font-bold text-gray-800">Reserved QPU access</h2>
+            <h2 className="font-semibold text-gray-800">Reserved QPU access</h2>
             <p className="text-sm text-gray-600">
               Guaranteed compute capacity with priority scheduling, higher
               limits, and predictable performance.
             </p>
           </div>
           <div className="default-radius border border-gray-200 p-4">
-            <h2 className="font-bold text-gray-800">Dedicated entropy pools</h2>
+            <h2 className="font-semibold text-gray-800">Dedicated entropy pools</h2>
             <p className="text-sm text-gray-600">
               Isolated, high-throughput entropy sources with custom
               configurations and guaranteed availability.
             </p>
           </div>
           <div className="default-radius border border-gray-200 p-4">
-            <h2 className="font-bold text-gray-800">Secure deployments</h2>
+            <h2 className="font-semibold text-gray-800">Secure deployments</h2>
             <p className="text-sm text-gray-600">
               On-prem, air-gapped, or hybrid deployment for the most
               sensitive environments.

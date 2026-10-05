@@ -83,7 +83,7 @@ export default function GettingStartedChecklist() {
 
   return (
     <div className="default-radius bg-gray-50 pl-5 pr-8 pt-4 pb-6 mb-6">
-      <h2 className="mb-3 font-bold text-gray-600">First steps</h2>
+      <h2 className="mb-3 font-semibold text-gray-600">First steps</h2>
       <ul className="flex flex-col gap-2">
         {steps.map((step) => (
           <li key={step.key} className="flex items-center gap-2 text-xs">

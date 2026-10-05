@@ -28,7 +28,7 @@ export default function ServiceCard({
         <div className="flex h-full w-full cursor-pointer flex-col justify-between default-radius bg-gray-100 border border-gray-100 p-4 pt-5 card-hover-primary">
           <div>
             <div className="flex flex-col mb-3">
-              <h2 className="text-lg font-bold">{title}</h2>
+              <h2 className="text-lg font-semibold">{title}</h2>
               <span className="text-sm text-gray-300">{providerName}</span>
             </div>
             <p className="text-sm text-gray-600">{description}</p>

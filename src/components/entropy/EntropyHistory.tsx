@@ -27,7 +27,7 @@ export default function EntropyHistory({
   return (
     <section>
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-bold text-gray-600">Recent generations</h2>
+        <h2 className="text-sm font-semibold text-gray-600">Recent generations</h2>
         {items.length > 0 && onClear && (
           <button
             type="button"

@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { MdArrowForward } from "react-icons/md";
 import EntropySourceSelector, {
   SOURCES,
 } from "@/components/applications/EntropySourceSelector";
@@ -15,6 +13,8 @@ import {
   requestEntropy,
   type EntropyResult,
 } from "@/lib/entropy/generate";
+import { useState } from "react";
+import { MdArrowForward } from "react-icons/md";
 import EntropyHistory from "./EntropyHistory";
 import EntropyOutput from "./EntropyOutput";
 
@@ -106,7 +106,7 @@ export default function EntropyConsole() {
 
         {/* Output */}
         <section className="flex flex-col default-radius border border-gray-100 bg-white p-5">
-          <h2 className="mb-3 text-sm font-bold text-gray-600">Output</h2>
+          <h2 className="mb-3 text-sm font-semibold text-gray-600">Output</h2>
           <div className="flex-1">
             <EntropyOutput result={result} />
           </div>

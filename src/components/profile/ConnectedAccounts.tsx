@@ -21,7 +21,7 @@ export default function ConnectedAccounts({ identities }: Props) {
   return (
     <div className="flex flex-col mb-5">
       <div className="flex w-full mb-5">
-        <h2 className="text-xl font-bold text-gray-500">Connected accounts</h2>
+        <h2 className="text-xl font-semibold text-gray-500">Connected accounts</h2>
       </div>
       <div className="flex flex-col default-radius divide-y divide-gray-100 mb-8 max-w-3xl bg-gray-50 px-4 py-1">
         {identities.map(({ target, handle }) => {
@@ -35,7 +35,7 @@ export default function ConnectedAccounts({ identities }: Props) {
                 <Icon aria-hidden className="text-lg" />
               </span>
               <div className="flex flex-col min-w-0">
-                <span className="text-sm font-bold text-gray-700">{label}</span>
+                <span className="text-sm font-semibold text-gray-700">{label}</span>
                 {handle && (
                   <span className="text-sm text-gray-400 truncate">{handle}</span>
                 )}

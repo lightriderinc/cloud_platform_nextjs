@@ -53,7 +53,7 @@ export default function CreditsTopUp() {
   return (
     <div className="flex-1 default-radius border border-gray-50 bg-gray-50 p-5">
       <div className="flex flex-row justify-between items-end">
-        <h2 className="text-lg font-bold text-gray-800">Buy compute credits</h2>
+        <h2 className="text-lg font-semibold text-gray-800">Buy compute credits</h2>
         <div className="inline-flex">
           <span className="text-sm">
             Current balance:

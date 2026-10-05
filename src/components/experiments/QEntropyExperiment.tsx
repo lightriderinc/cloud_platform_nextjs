@@ -377,7 +377,7 @@ export default function QEntropyExperiment({
         </div>
 
         <div className="flex w-full flex-col gap-4 default-radius border border-gray-50 bg-gray-50 p-4 lg:sticky lg:top-0 lg:w-[320px] lg:shrink-0">
-          <h3 className="text-lg font-bold text-gray-800">
+          <h3 className="text-lg font-semibold text-gray-800">
             {mode === "pool" ? "Configure withdrawal" : "Configure run"}
           </h3>
 
