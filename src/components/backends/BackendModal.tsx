@@ -187,7 +187,7 @@ export default function BackendModal({
                 For accurate and more detailed information, please visit the device&apos;s{" "}
                 <Link
                   href="/backends/rigetti-cepheus-1-108q?tab=topology"
-                  className="underline text-blue-700 hover:text-[var(--brand-primary)]"
+                  className="underline text-blue-700 font-medium hover:text-[var(--brand-primary)]"
                 >
                   Topology & Calibration page
                 </Link>

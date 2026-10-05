@@ -234,7 +234,7 @@ export default function BackendConnectSection({
           To view free slots and book a reservation, visit the{" "}
           <Link
             href="/backends/rigetti-cepheus-1-108q?tab=reservation"
-            className="underline text-blue-700 hover:text-[var(--brand-primary)]"
+            className="underline font-medium text-blue-700 hover:text-[var(--brand-primary)]"
           >
             reservation page
           </Link>
