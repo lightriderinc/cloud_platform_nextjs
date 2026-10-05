@@ -1,5 +1,6 @@
 import { Customer } from "@prisma/client";
 import { db } from "@/lib/billing/db";
+import { ENTROPY_REFUND_PREFIX } from "@/lib/billing/ledgerReasons";
 import { REFERRAL_REWARD_PREFIX } from "@/lib/billing/referrals";
 
 /**
@@ -64,7 +65,15 @@ export async function hasUnlockedCredits(customerId: string): Promise<boolean> {
       // Policy: a referral reward adds to balance but never unlocks. Without
       // this, inviting one person who pays would unlock the inviter's own
       // signup grant for real hardware without them ever paying.
-      NOT: { reason: { startsWith: REFERRAL_REWARD_PREFIX } },
+      //
+      // Same for an entropy refund: it only returns credits a draw had
+      // already spent, so it is not new money and must never unlock.
+      NOT: {
+        OR: [
+          { reason: { startsWith: REFERRAL_REWARD_PREFIX } },
+          { reason: { startsWith: ENTROPY_REFUND_PREFIX } },
+        ],
+      },
     },
     _sum: { amountCents: true },
   });

@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import type { Customer, EntropyCharge } from "@prisma/client";
 import { db } from "@/lib/billing/db";
+import { ENTROPY_DRAW_PREFIX, ENTROPY_REFUND_PREFIX } from "@/lib/billing/ledgerReasons";
 import { hasUnlockedCredits } from "@/lib/billing/planCheck";
 
 /**
@@ -31,8 +32,7 @@ export const ENTROPY_MODES = ["pool", "custom", "source", "card"] as const;
 export type EntropyMode = (typeof ENTROPY_MODES)[number];
 
 /** Ledger `reason` prefixes ("namespace:detail"), suffixed with the mode. */
-export const ENTROPY_DRAW_PREFIX = "entropy:draw:";
-export const ENTROPY_REFUND_PREFIX = "entropy:refund:";
+export { ENTROPY_DRAW_PREFIX, ENTROPY_REFUND_PREFIX };
 
 /** A charge left in `charged` this long is treated as abandoned and refunded. */
 export const STALE_CHARGE_MS = 10 * 60 * 1000;
@@ -134,6 +134,7 @@ export async function chargeEntropyDraw(
           customerId: customer.id,
           amountCents: -amountCents,
           reason: `${ENTROPY_DRAW_PREFIX}${input.mode}`,
+          entropyChargeId: input.drawId,
         },
       });
 
@@ -251,6 +252,7 @@ export async function refundEntropyDraw(
         customerId: row.customerId,
         amountCents: row.amountCents,
         reason: `${ENTROPY_REFUND_PREFIX}${row.mode}`,
+        entropyChargeId: row.id,
       },
     });
     return after.creditsBalanceCents;

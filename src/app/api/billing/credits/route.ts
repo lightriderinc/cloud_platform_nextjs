@@ -2,6 +2,7 @@ import { requireLogtoUser } from "@/lib/auth/session";
 import { db } from "@/lib/billing/db";
 import { getOrCreateCustomer } from "@/lib/billing/customer";
 import { REFERRAL_REWARD_PREFIX } from "@/lib/billing/referrals";
+import { ENTROPY_REFUND_PREFIX } from "@/lib/billing/ledgerReasons";
 import { TRANSFER_RECEIVED_PREFIX } from "@/lib/billing/transferCredits";
 import { NextResponse } from "next/server";
 
@@ -36,7 +37,7 @@ export async function GET() {
 
   const customer = await getOrCreateCustomer(user.sub, user.email);
 
-  const [purchased, used, receivedTransfers] = await Promise.all([
+  const [purchased, used, receivedTransfers, entropyRefunds] = await Promise.all([
     db.creditLedgerEntry.aggregate({
       where: {
         customerId: customer.id,
@@ -48,6 +49,8 @@ export async function GET() {
           OR: [
             { reason: { startsWith: TRANSFER_RECEIVED_PREFIX } },
             { reason: { startsWith: REFERRAL_REWARD_PREFIX } },
+            // An entropy refund returns spent credits; it was never bought.
+            { reason: { startsWith: ENTROPY_REFUND_PREFIX } },
           ],
         },
       },
@@ -66,10 +69,19 @@ export async function GET() {
       },
       _sum: { amountCents: true },
     }),
+    // Refunds of undelivered entropy draws, netted out of "used" below: a
+    // draw that was refunded did not use anything.
+    db.creditLedgerEntry.aggregate({
+      where: { customerId: customer.id, reason: { startsWith: ENTROPY_REFUND_PREFIX } },
+      _sum: { amountCents: true },
+    }),
   ]);
 
   const purchasedCents = purchased._sum.amountCents ?? 0;
-  const usedCents = Math.abs(used._sum.amountCents ?? 0);
+  const usedCents = Math.max(
+    0,
+    Math.abs(used._sum.amountCents ?? 0) - (entropyRefunds._sum.amountCents ?? 0),
+  );
   const receivedTransferCents = receivedTransfers._sum.amountCents ?? 0;
 
   return NextResponse.json({

@@ -2,6 +2,7 @@ import { requireLogtoUser } from "@/lib/auth/session";
 import { db } from "@/lib/billing/db";
 import { getOrCreateCustomer } from "@/lib/billing/customer";
 import { REFERRAL_REWARD_PREFIX } from "@/lib/billing/referrals";
+import { ENTROPY_REFUND_PREFIX } from "@/lib/billing/ledgerReasons";
 import { TRANSFER_RECEIVED_PREFIX } from "@/lib/billing/transferCredits";
 import { NextResponse } from "next/server";
 
@@ -35,6 +36,9 @@ export async function GET() {
         OR: [
           { reason: { startsWith: TRANSFER_RECEIVED_PREFIX } },
           { reason: { startsWith: REFERRAL_REWARD_PREFIX } },
+          // Entropy refunds return credits an undelivered draw had spent;
+          // they would otherwise render as "Compute credit purchase".
+          { reason: { startsWith: ENTROPY_REFUND_PREFIX } },
         ],
       },
     },
