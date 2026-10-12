@@ -141,6 +141,12 @@ model EntropyCharge {
   createdAt       DateTime  @default(now())
   settledAt       DateTime?
   refundedAt      DateTime?
+  /// "web" (a signed-in click on the entropy site) or "api" (the customer's
+  /// Light Rider API key, used on the entropy developer API).
+  channel         String    @default("web")
+  /// keyPrefix of the API key an "api" charge was made with. A prefix, not a
+  /// foreign key: revoking a key deletes its ApiKey row.
+  apiKeyPrefix    String?
   // The draw's debit row, and its refund row if any.
   ledgerEntries   CreditLedgerEntry[]
 
@@ -148,6 +154,7 @@ model EntropyCharge {
   @@index([status, createdAt])
   @@index([customerId, createdAt])
 }
+
 
 model ProcessedTransferBatch {
   id         String   @id // client-supplied idempotency key
@@ -231,6 +238,11 @@ model ApiKey {
   createdAt  DateTime  @default(now())
   lastUsedAt DateTime?
   rotatedAt  DateTime?
+  // Per-key request window for the entropy developer API (60 a minute),
+  // reset or incremented in one statement by
+  // /api/internal/entropy/api-key/resolve.
+  rateWindowStart DateTime?
+  rateWindowCount Int       @default(0)
 }
 
 // Records which Customer submitted which iqm-proxy job. This app always

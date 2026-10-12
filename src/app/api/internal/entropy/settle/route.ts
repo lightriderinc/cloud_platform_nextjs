@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(request: Request) {
   const body = await readJson(request);
-  return withEntropyCustomer(request, { create: false }, async (customer) => {
+  return withEntropyCustomer(request, { create: false, allowApiKey: true }, async (customer) => {
     const r = await settleEntropyDraw(customer, String(body.drawId ?? ""), String(body.egressRequestId ?? ""));
     if (r.status === "settled") return NextResponse.json(r);
     if (r.status === "not_found") return NextResponse.json({ error: "not_found" }, { status: 404 });

@@ -46,6 +46,9 @@ export function entropyDrawCostCents(bytes: number): number {
 
 export type ChargeInput = { drawId: string; mode: string; bytes: number };
 
+/** How a draw was requested: a signed-in click ("web") or the customer's API key ("api"). */
+export type ChargeChannel = { channel: "web" } | { channel: "api"; apiKeyPrefix: string };
+
 export type ChargeResult =
   | {
       status: "charged";
@@ -86,6 +89,7 @@ export function validateChargeInput(input: ChargeInput): string | null {
 export async function chargeEntropyDraw(
   customer: Customer,
   input: ChargeInput,
+  via: ChargeChannel = { channel: "web" },
 ): Promise<ChargeResult> {
   const invalid = validateChargeInput(input);
   if (invalid) return { status: "invalid", message: invalid };
@@ -110,6 +114,8 @@ export async function chargeEntropyDraw(
           mode: input.mode,
           bytes: input.bytes,
           amountCents,
+          channel: via.channel,
+          apiKeyPrefix: via.channel === "api" ? via.apiKeyPrefix : null,
         },
       });
 

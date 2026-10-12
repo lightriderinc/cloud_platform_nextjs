@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(request: Request) {
   const body = await readJson(request);
-  return withEntropyCustomer(request, { create: false }, async (customer) => {
+  return withEntropyCustomer(request, { create: false, allowApiKey: true }, async (customer) => {
     const reason = String(body.reason ?? "draw_failed").slice(0, 120);
     const r = await refundEntropyDraw(String(body.drawId ?? ""), `entropy_site:${reason}`, customer.id);
     if (r.status === "refunded") return NextResponse.json(r);

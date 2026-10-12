@@ -1,5 +1,6 @@
 import { createHash, timingSafeEqual } from "crypto";
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "jose";
+import { API_KEY_RE } from "@/lib/auth/apiKeys";
 
 /**
  * Server-to-server auth for /api/internal/* - calls from other Light Rider
@@ -99,6 +100,8 @@ function bearer(value: string | null): string | null {
 export type ServiceCaller = {
   /** Logto user id of the user the call acts for (= Customer.logtoUserId). */
   userSub: string;
+  /** Set when the call was made with the customer's API key (no user token). */
+  apiKeyPrefix?: string;
 };
 
 /**
@@ -124,4 +127,29 @@ export async function authenticateServiceCall(request: Request): Promise<Service
   }
 
   return { userSub };
+}
+
+/**
+ * Entropy developer-API calls carry no user token (there is no browser).
+ * Instead the entropy server forwards the developer's own Light Rider API key
+ * (the same one cloud's /api/lr/* accepts), and the wallet is resolved from
+ * that key (lib/billing/entropyInternal.ts) - never from an id the caller
+ * asserts. The shared secret is still checked first, so the secret alone
+ * charges no one, and neither does a key without the secret.
+ */
+export const API_KEY_HEADER = "x-lr-api-key";
+
+/** True when the request carries a forwarded API key rather than a user token. */
+export function hasForwardedApiKey(request: Request): boolean {
+  return request.headers.has(API_KEY_HEADER);
+}
+
+/** Checks the secret, then returns the well-formed API key the call forwards. */
+export function authenticateApiKeyCall(request: Request): string {
+  if (!billingSecretMatches(request.headers.get(BILLING_SECRET_HEADER))) {
+    throw new ServiceAuthError("This caller may not use the billing API.", 403);
+  }
+  const key = (request.headers.get(API_KEY_HEADER) ?? "").trim();
+  if (!API_KEY_RE.test(key)) throw new ServiceAuthError("Invalid API key.");
+  return key;
 }

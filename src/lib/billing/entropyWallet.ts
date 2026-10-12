@@ -4,8 +4,13 @@ import { hasUnlockedCredits } from "@/lib/billing/planCheck";
 
 export const WALLET_PAGE_SIZE = 50;
 
-/** What an entropy row was for, so history can say e.g. "single source, 256 B". */
-export type EntropyEntryDetail = { mode: string; bytes: number | null };
+/** What an entropy row was for, so history can say e.g. "single source, 256 B, API". */
+export type EntropyEntryDetail = {
+  mode: string;
+  bytes: number | null;
+  /** "web" or "api"; null on rows that predate the link. */
+  channel: string | null;
+};
 
 export type WalletEntry = {
   id: string;
@@ -26,11 +31,11 @@ export type WalletPage = {
 
 function entropyDetail(
   reason: string,
-  charge: { mode: string; bytes: number } | null,
+  charge: { mode: string; bytes: number; channel: string } | null,
 ): EntropyEntryDetail | null {
-  if (charge) return { mode: charge.mode, bytes: charge.bytes };
+  if (charge) return { mode: charge.mode, bytes: charge.bytes, channel: charge.channel };
   for (const prefix of [ENTROPY_DRAW_PREFIX, ENTROPY_REFUND_PREFIX]) {
-    if (reason.startsWith(prefix)) return { mode: reason.slice(prefix.length), bytes: null };
+    if (reason.startsWith(prefix)) return { mode: reason.slice(prefix.length), bytes: null, channel: null };
   }
   return null;
 }
@@ -55,7 +60,7 @@ export async function getWalletPage(customerId: string, cursor?: string | null):
         reason: true,
         createdAt: true,
         counterpartyEmailSnapshot: true,
-        entropyCharge: { select: { mode: true, bytes: true } },
+        entropyCharge: { select: { mode: true, bytes: true, channel: true } },
       },
     }),
   ]);
