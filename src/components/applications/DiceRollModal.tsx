@@ -213,7 +213,7 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
                   />
                   <span
                     className={[
-                      "text-lg font-bold leading-tight mt-2",
+                      "text-lg font-semibold leading-tight mt-2",
                       selectedSides === die.sides
                         ? "text-[var(--brand-primary)]"
                         : "text-gray-700",
@@ -303,7 +303,7 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
             </div>
 
             <div className="flex flex-col items-center justify-center py-4 gap-2">
-              <p className="text-sm font-bold text-gray-500">Result</p>
+              <p className="text-sm font-semibold text-gray-500">Result</p>
 
               <div
                 className="relative flex w-32 h-32 default-radius border-2 bg-red-50 items-center justify-center"
@@ -321,7 +321,7 @@ export default function DiceRollModal({ onClose }: { onClose: () => void }) {
                   <span className="text-xs font-semibold" style={{ color: "var(--brand-primary)" }}>d{result.sides}</span>
                 </div>
                 <span
-                  className="text-5xl font-bold"
+                  className="text-5xl font-semibold"
                   style={{ color: "var(--brand-primary)" }}
                 >
                   {result.value}

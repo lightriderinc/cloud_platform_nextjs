@@ -5,7 +5,9 @@ import {
   consentRetryCookieName,
   sanitizeReturnTo,
 } from '@/lib/auth/silent-sso';
-import { handleSignIn } from '@logto/next/server-actions';
+import { linkInviteOnSignIn } from '@/lib/billing/acceptInvite';
+import { INVITE_TOKEN_COOKIE } from '@/lib/billing/inviteCookie';
+import { getLogtoContext, handleSignIn } from '@logto/next/server-actions';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { NextRequest, NextResponse } from 'next/server';
@@ -80,6 +82,44 @@ export async function GET(request: NextRequest) {
   }
 
   await handleSignIn(logtoConfig, searchParams);
+
+  // Link any invite this sign-in completes. Runs after handleSignIn so the
+  // session exists and the Logto subject is readable.
+  //
+  // Runs on EVERY sign-in, not only when the /invite cookie survived. The
+  // cookie is the precise signal but a fragile one — it has to survive a round
+  // trip to Logto — and when it is lost the referral is silently dropped.
+  // linkInviteOnSignIn falls back to matching a pending invite by email, but
+  // only for a brand-new account, so a returning user is never retro-linked.
+  //
+  // Best-effort: it swallows its own errors, and the cookie is cleared either
+  // way so a failed link can never wedge every later sign-in.
+  const cookieStore = await cookies();
+  const inviteToken = cookieStore.get(INVITE_TOKEN_COOKIE)?.value;
+  if (inviteToken) {
+    cookieStore.delete({ name: INVITE_TOKEN_COOKIE, path: '/' });
+  }
+  try {
+    const { claims } = await getLogtoContext(logtoConfig);
+    if (claims?.sub) {
+      await linkInviteOnSignIn({
+        token: inviteToken,
+        logtoUserId: claims.sub,
+        email: claims.email as string | undefined,
+      });
+    } else {
+      // Reading the session in the same request that just created it. If it
+      // comes back empty the invite silently never links, which is the single
+      // most likely explanation for a referral that vanished without a trace.
+      // Never diagnosable before, because this branch said nothing.
+      console.error(
+        `[callback] session not readable immediately after sign-in; invite linking skipped ` +
+          `(token present: ${Boolean(inviteToken)}). If an invite is stuck pending, this is why.`,
+      );
+    }
+  } catch (err) {
+    console.error('[callback] invite linking failed; sign-in unaffected:', err);
+  }
 
   redirect('/');
 }

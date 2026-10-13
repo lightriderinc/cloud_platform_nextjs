@@ -1,7 +1,7 @@
 import CreditsSummary from "@/components/billing/CreditsSummary";
 import LowCreditsBanner from "@/components/billing/LowCreditsBanner";
+import DashboardClassroomLink from "@/components/dashboard/DashboardClassroomLink";
 import DashboardDemoCircuit from "@/components/dashboard/DashboardDemoCircuit";
-import DashboardDemoEntropy from "@/components/dashboard/DashboardDemoEntropy";
 import DashboardLatestJobs from "@/components/dashboard/DashboardLatestJobs";
 import DashboardReservations from "@/components/dashboard/DashboardReservations";
 import DashboardUpdatesSection from "@/components/dashboard/DashboardUpdatesSection";
@@ -55,7 +55,7 @@ export default async function Home() {
           <div className="flex flex-col xl:flex-row xl:gap-8">
             <div className="flex flex-col order-2 xl:order-none xl:w-auto xl:flex-1 min-w-0">
               <div className="mb-8">
-                <h2 className="mb-4 text-xl font-bold text-gray-600">
+                <h2 className="mb-4 text-xl font-semibold text-gray-600">
                   Compute credits
                 </h2>
                 <div>
@@ -67,7 +67,7 @@ export default async function Home() {
 
               <div className="mb-8">
                 <div className="flex flex-row justify-between">
-                  <h2 className="text-xl font-bold text-gray-600">
+                  <h2 className="text-xl font-semibold text-gray-600">
                     Latest jobs
                   </h2>
                   <div className="mt-3 flex justify-end">
@@ -91,13 +91,14 @@ export default async function Home() {
           </div>
 
           <div>
-            <h2 className="mb-4 text-xl font-bold text-gray-600">
+            <h2 className="mb-4 text-xl font-semibold text-gray-600">
               Getting started
             </h2>
           </div>
-          <div className="flex flex-row gap-4">
+          <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <DashboardClassroomLink />
             <DashboardDemoCircuit />
-            <DashboardDemoEntropy />
+            {/* <DashboardDemoEntropy /> */}
           </div>
           {/* <div className="mt-4 flex">
           <GettingStartedChecklist />

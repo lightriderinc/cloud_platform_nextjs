@@ -1,0 +1,195 @@
+import CreditsTopUp from "@/components/billing/CreditsTopUp";
+import InfoBox from "@/components/InfoBox";
+import BackButton from "@/components/ui/BackButton";
+
+// Current pricing metric: $0.002/shot ($2 per 1,000 shots) = 0.2 credits/shot.
+const IQM_RUNTIME_TIERS = [
+  { range: "5K shots", rate: "1K credits" },
+  { range: "5M shots", rate: "1M credits" },
+  { range: "5B shots", rate: "1B credits" },
+];
+
+const RIGETTI_RUNTIME_TIERS = [
+  { range: "15 minutes", rate: "112.5K credits" },
+  { range: "30 minutes", rate: "225K credits" },
+  { range: "60 minutes", rate: "450K credits" },
+];
+/*
+ * NOTE: Legacy runtime pricing chart data. Temporarily commented out because
+ * these rates no longer match our current metrics. Do NOT delete — this will be
+ * reused as our pricing metric in the future.
+ */
+// const RUNTIME_TIERS = [
+//   {
+//     range: "0 to 10 minutes",
+//     rate: "$5/sec",
+//     use: "Interactive apps, APIs, synthetic data, password generation, quantum randomness",
+//   },
+//   {
+//     range: "11 to 20 minutes",
+//     rate: "$4/sec",
+//     use: "Research, calibration, QEC testing, model exploration",
+//   },
+//   {
+//     range: "21 to 60 minutes",
+//     rate: "$3/sec",
+//     use: "Optimization, simulation, AI workflows, larger experiments",
+//   },
+//   {
+//     range: "1+ hour",
+//     rate: "Contact Sales",
+//     use: "Enterprise workloads, dedicated research, government use",
+//   },
+// ];
+
+export default function PurchaseCreditsPage() {
+  return (
+    <div>
+      <BackButton
+        href="/settings/manage-credits"
+        previousPageName="Manage Credits"
+      />
+      <div className="flex flex-col mb-12">
+        <h1 className="text-2xl font-semibold text-gray-700">
+          Purchase Credits
+        </h1>
+        <p className="text-sm text-gray-600">
+          Credits are consumed when using quantum resources.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-12">
+        <div className="block lg:flex lg:max-w-[700px]">
+          <CreditsTopUp />
+        </div>
+
+        <div className="lg:col-span-2">
+          <h2 className="mb-4 text-xl font-semibold text-gray-600">
+            Runtime pricing
+          </h2>
+
+          <h3 className="text-sm font-semibold text-gray-400 mb-3 mt-3">
+            IQM Runtime
+          </h3>
+
+          <div className="mb-3">
+            <InfoBox>
+              <span className="font-semibold text-blue-700">IQM QPUs</span>
+              <br />
+              Runtime is priced at $0.002 per shot ($2 per 1,000 shots)
+              submitted to a QPU — 0.2 credits per shot.
+              <br />
+              <br />
+              <span className="font-semibold text-blue-700">
+                IQM Simulators
+              </span>
+              <br />
+              Submitting jobs to simulators does not consume credits.
+            </InfoBox>
+          </div>
+
+          <div className="overflow-hidden default-radius border border-gray-100 bg-gray-50 mb-3">
+            <table className="w-full text-left text-sm">
+              <tbody>
+                {IQM_RUNTIME_TIERS.map((tier) => (
+                  <tr
+                    key={tier.range}
+                    className="border-b border-gray-100 last:border-0"
+                  >
+                    <td className="whitespace-nowrap px-4 py-3 font-medium text-gray-800">
+                      {tier.range}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                      {tier.rate}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <h3 className="text-sm font-semibold text-gray-400 mb-3 mt-5">
+            Rigetti Runtime
+          </h3>
+          <div className="mb-3">
+            <InfoBox>
+              <span className="font-semibold text-blue-700">Rigetti QPUs</span>
+              <br />
+              Runtime is priced at $1,125 per 15-minute time slot — 112,500
+              credits per 15-minutes.
+              <br />
+              <br />
+              <span className="font-semibold text-blue-700">
+                Rigetti Simulators
+              </span>
+              <br />
+              Submitting jobs to simulators does not consume credits.
+            </InfoBox>
+          </div>
+
+          <div className="overflow-hidden default-radius border border-gray-100 bg-gray-50">
+            <table className="w-full text-left text-sm">
+              <tbody>
+                {RIGETTI_RUNTIME_TIERS.map((tier) => (
+                  <tr
+                    key={tier.range}
+                    className="border-b border-gray-100 last:border-0"
+                  >
+                    <td className="whitespace-nowrap px-4 py-3 font-medium text-gray-800">
+                      {tier.range}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                      {tier.rate}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/*
+          NOTE: Legacy runtime pricing chart. Temporarily commented out because
+          these rates no longer match our current metrics. Do NOT delete — this
+          will be reused as our pricing metric in the future. The new pricing
+          chart is rendered above via RUNTIME_TIERS.
+        */}
+        {/*
+        <div className="lg:col-span-2">
+          <h2 className="mb-3 text-lg font-semibold text-gray-600">
+            Runtime pricing
+          </h2>
+          <div className="mb-3">
+            <InfoBox>
+              Underlying QPU provider costs may be included or quoted separately
+              depending on workload, backend, reservation type, and enterprise
+              requirements.
+            </InfoBox>
+          </div>
+
+          <div className="overflow-hidden default-radius border border-gray-100 bg-gray-50">
+            <table className="w-full text-left text-sm">
+              <tbody>
+                {RUNTIME_TIERS.map((tier) => (
+                  <tr
+                    key={tier.range}
+                    className="border-b border-gray-100 last:border-0"
+                  >
+                    <td className="whitespace-nowrap px-4 py-3 font-medium text-gray-800">
+                      {tier.range}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                      {tier.rate}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{tier.use}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        */}
+      </div>
+    </div>
+  );
+}

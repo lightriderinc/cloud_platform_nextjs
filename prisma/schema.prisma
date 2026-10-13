@@ -32,10 +32,17 @@ model Customer {
 
   subscriptions   Subscription[]
   ledgerEntries   CreditLedgerEntry[]
+  // Ledger rows belonging to *someone else* that name this customer as the
+  // other side of a credit transfer. Only populated for transfer rows.
+  counterpartyLedgerEntries CreditLedgerEntry[] @relation("LedgerCounterparty")
+  invitesSent       Invite[]   @relation("InvitesSent")
+  referralsSent     Referral[] @relation("ReferralsSent")
+  referralsReceived Referral[] @relation("ReferralsReceived")
   usageEvents     ApiUsageEvent[]
   apiKey          ApiKey?
   quantumJobs     QuantumJobSubmission[]
   reservations    Reservation[]
+  entropyCharges  EntropyCharge[]
 }
 
 // Mirrors a Stripe Subscription (used by both User Pricing plans and API
@@ -69,9 +76,143 @@ model CreditLedgerEntry {
   customerId   String
   customer     Customer @relation(fields: [customerId], references: [id])
   amountCents  Int      // signed
-  reason       String   // e.g. "checkout:cs_123", "job:job_456", "manual_adjustment"
+  reason       String   // e.g. "checkout:cs_123", "job:job_456", "manual_adjustment", "transfer_sent:<transferId>"
   stripeEventId String? @unique // idempotency guard for webhook replays
+  // Customer-to-customer credit transfers (see lib/billing/transferCredits.ts)
+  // write exactly two rows sharing one transferId: the sender's debit and the
+  // recipient's credit. Both nullable — every pre-transfer row, and every
+  // non-transfer row written since, leaves them null. `reason` still carries
+  // the same `namespace:detail` convention ("transfer_sent:<transferId>" /
+  // "transfer_received:<transferId>") so anything parsing reason strings keeps
+  // working; these columns are the joinable version of the same fact.
+  transferId             String?
+  // The *other* party to the transfer: the recipient on a sender's debit row,
+  // the sender on a recipient's credit row. One column rather than two
+  // mutually-exclusive ones — direction is already unambiguous from the sign
+  // of amountCents.
+  counterpartyCustomerId String?
+  counterpartyCustomer   Customer? @relation("LedgerCounterparty", fields: [counterpartyCustomerId], references: [id])
+  // Groups every row written by one multi-recipient submit. A single-recipient
+  // send is just a batch of one, so this is set on those too; only pre-batch
+  // and non-transfer rows leave it null.
+  batchId                String?
+  // The counterparty's email as it stood when the transfer happened, captured
+  // from the Logto lookup the transfer already performs. History renders from
+  // this instead of calling Logto per row, and a later email change on their
+  // side never rewrites what this transfer actually was.
+  counterpartyEmailSnapshot String?
+  // Entropy draws and refunds (lib/billing/entropyCharges.ts) link the row to
+  // its EntropyCharge, so history can say WHAT was drawn (mode, bytes). Null
+  // on every other row, and on draws written before this column existed that
+  // the migration could not match unambiguously.
+  entropyChargeId        String?
+  entropyCharge          EntropyCharge? @relation(fields: [entropyChargeId], references: [id])
   createdAt    DateTime @default(now())
+
+  @@index([transferId])
+  @@index([counterpartyCustomerId])
+  @@index([batchId])
+  @@index([entropyChargeId])
+  // History pages read one customer's rows newest-first.
+  @@index([customerId, createdAt])
+}
+
+// Guards a batch transfer submit against double execution. The id is the
+// client-generated idempotency key; its primary key is the whole guard, so a
+// double-click or retry loses the insert race inside the transaction rather
+// than being filtered by application logic that could itself race.
+/// One entropy-platform draw's charge (lib/billing/entropyCharges.ts).
+///
+/// `id` is the draw id the entropy site generates per click, so the primary
+/// key IS the idempotency guard: a retried request can never charge twice.
+/// `status` only ever moves charged -> settled (bytes delivered) or
+/// charged -> refunded (draw failed, or never settled - see the sweep), and
+/// every move is a conditional update, so a draw can't be both.
+model EntropyCharge {
+  id              String    @id
+  customerId      String
+  customer        Customer  @relation(fields: [customerId], references: [id])
+  mode            String    // pool | custom | source | card
+  bytes           Int
+  amountCents     Int
+  status          String    @default("charged") // charged | settled | refunded
+  egressRequestId String?   // EMS receipt request_id, set on settle
+  refundReason    String?
+  createdAt       DateTime  @default(now())
+  settledAt       DateTime?
+  refundedAt      DateTime?
+  /// "web" (a signed-in click on the entropy site) or "api" (the customer's
+  /// Light Rider API key, used on the entropy developer API).
+  channel         String    @default("web")
+  /// keyPrefix of the API key an "api" charge was made with. A prefix, not a
+  /// foreign key: revoking a key deletes its ApiKey row.
+  apiKeyPrefix    String?
+  // The draw's debit row, and its refund row if any.
+  ledgerEntries   CreditLedgerEntry[]
+
+  // The sweep reads stale `charged` rows oldest-first.
+  @@index([status, createdAt])
+  @@index([customerId, createdAt])
+}
+
+
+model ProcessedTransferBatch {
+  id         String   @id // client-supplied idempotency key
+  customerId String // the sender, so one user's key can never block another's
+  batchId    String   @unique // the batch actually written for this key
+  createdAt  DateTime @default(now())
+
+  @@index([customerId])
+}
+
+// An emailed invitation to join Light Rider. One row per invite actually
+// sent; an address that already has an account never gets a row (so it can
+// never consume the sender's daily quota).
+model Invite {
+  id                String   @id @default(cuid())
+  inviterCustomerId String
+  inviter           Customer @relation("InvitesSent", fields: [inviterCustomerId], references: [id])
+  email             String
+  token             String   @unique // the ?token= in the invite link
+  status            String   @default("pending") // pending | accepted | expired
+  expiresAt         DateTime // INVITE_TTL_DAYS out from createdAt
+  acceptedAt        DateTime?
+  // The Customer the invitee became, once they sign up.
+  acceptedByCustomerId String?
+  createdAt         DateTime @default(now())
+
+  // The daily rate limit counts this inviter's rows inside a rolling window.
+  @@index([inviterCustomerId, createdAt])
+  @@index([email])
+}
+
+// Refer & Earn. A row is created alongside every Invite (linked by
+// inviteToken); refereeCustomerId is filled in at signup by
+// markRefereeSignedUp(), and the reward fires on the referee's first
+// qualifying event — see lib/billing/referrals.ts.
+//
+// status: pending -> rewarded. "qualified" and "expired" remain in the
+// vocabulary but nothing sets them today: the reward is granted in the same
+// transaction that recognises qualification, so there is no window in which a
+// referral is qualified-but-unrewarded.
+model Referral {
+  id                    String   @id @default(cuid())
+  referrerCustomerId    String
+  referrer              Customer @relation("ReferralsSent", fields: [referrerCustomerId], references: [id])
+  refereeCustomerId     String? // null until the invited person actually signs up
+  referee               Customer? @relation("ReferralsReceived", fields: [refereeCustomerId], references: [id])
+  inviteToken           String?  @unique // links to the eventual Send Invite token, nullable so
+                                         // this table can exist before Send Invite ships
+  status                String   @default("pending") // pending | qualified | rewarded | expired
+  qualifyingEventReason String? // set once the reward trigger fires later, e.g. "first_qpu_job"
+                                // or "first_purchase" — free text, decided when built
+  rewardCents           Int? // set once a reward amount is decided; null = not yet rewarded
+  createdAt             DateTime @default(now())
+  qualifiedAt           DateTime?
+  rewardedAt            DateTime?
+
+  @@index([referrerCustomerId])
+  @@index([refereeCustomerId])
 }
 
 // Mirror of Stripe meter events we report for EaaS API usage, kept for our
@@ -97,6 +238,11 @@ model ApiKey {
   createdAt  DateTime  @default(now())
   lastUsedAt DateTime?
   rotatedAt  DateTime?
+  // Per-key request window for the entropy developer API (60 a minute),
+  // reset or incremented in one statement by
+  // /api/internal/entropy/api-key/resolve.
+  rateWindowStart DateTime?
+  rateWindowCount Int       @default(0)
 }
 
 // Records which Customer submitted which iqm-proxy job. This app always

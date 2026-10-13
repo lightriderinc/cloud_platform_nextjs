@@ -34,9 +34,12 @@ export default function LowCreditsBanner() {
     queryFn: () => fetchJson<Credits>("/api/billing/credits"),
   });
 
+  // Gated on `hasUnlocked`, not on purchases: a transfer-only recipient can
+  // now run real-hardware jobs, so they need the same running-low warning as
+  // anyone who bought. A locked account has nothing to run low on.
   const isLow =
     !!data &&
-    data.purchasedCents > 0 &&
+    !!data.hasUnlocked &&
     data.remainingCents <= LOW_CREDIT_THRESHOLD_CENTS;
 
   if (!isLow || dismissed) {
@@ -56,7 +59,7 @@ export default function LowCreditsBanner() {
         to keep running jobs on real hardware.
       </p>
       <Link
-        href="/settings/purchases/quantum-compute"
+        href="/settings/manage-credits/purchase"
         className="shrink-0 default-radius bg-amber-500 px-3 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-90"
       >
         Buy more credits

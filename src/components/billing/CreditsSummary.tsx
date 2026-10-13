@@ -10,6 +10,21 @@ export type Credits = {
   purchasedCents: number;
   usedCents: number;
   remainingCents: number;
+  /**
+   * Credits received from other customers via Share Credits. Display only —
+   * use `hasUnlocked` to decide whether anything is locked.
+   */
+  receivedTransferCents?: number;
+  /**
+   * Whether this account's credits are usable on real hardware: a purchase
+   * OR a received transfer. The single signal every gate and banner reads,
+   * mirroring hasUnlockedCredits() on the server.
+   *
+   * Optional, and callers must treat `undefined` as LOCKED: a response
+   * cached from before this field existed would otherwise read as unlocked
+   * and briefly offer real-hardware actions the server will refuse.
+   */
+  hasUnlocked?: boolean;
 };
 
 export async function fetchJson<T>(url: string): Promise<T> {
@@ -69,7 +84,7 @@ export function ProgressBar({ fraction }: { fraction: number }) {
  * display-label choice for the Pro-plan/billing context only (used on its
  * own on the Payment page and composed into UsageSummary on the Billing
  * page). The underlying CreditLedgerEntry/creditsBalanceCents fields, and
- * the Quantum Compute page's own "compute credits" copy, are unchanged.
+ * the Purchase Credits page's own "compute credits" copy, are unchanged.
  */
 export default function CreditsSummary({
   historyLink = false,
@@ -93,11 +108,10 @@ export default function CreditsSummary({
     );
   }
 
-  // Same purchasedCents <= 0 check BackendSubmitModal uses to gate real QPU
-  // access — this is purely cosmetic (nothing here blocks anything), just
-  // making it visible that the signup grant shown below isn't spendable on
-  // real hardware yet.
-  if (credits.data.purchasedCents <= 0) {
+  // The signup grant is locked until the account is unlocked by a purchase
+  // or by receiving a transfer — the same `hasUnlocked` signal every gate
+  // reads, so this banner can never disagree with what the server allows.
+  if (!credits.data.hasUnlocked) {
     return (
       <div className="default-radius border border-gray-50 bg-gray-50 p-4">
         <p className="mb-1 flex items-center gap-1.5 font-medium text-gray-800 opacity-80">
@@ -108,7 +122,7 @@ export default function CreditsSummary({
           Complete your first purchase to claim your credits.
         </p>
         <div className="flex mt-6">
-          <a href="/settings/purchases/quantum-compute">
+          <a href="/settings/manage-credits/purchase">
             <LRButton variant="primary">Purchase compute credits</LRButton>
           </a>
         </div>
@@ -129,15 +143,15 @@ export default function CreditsSummary({
       </p>
 
       <div className="flex w-full justify-between items-end mt-8">
-        <a href="/settings/purchases/quantum-compute">
+        <a href="/settings/manage-credits/purchase">
           <LRButton variant="primary">Purchase compute credits</LRButton>
         </a>
         {historyLink && (
           <Link
-            href="/settings/purchase-history"
+            href="/settings/payment-and-history"
             className="text-sm font-medium text-gray-700 inline-flex items-center gap-2 hover:text-[var(--brand-primary)]"
           >
-            View purchase history <MdArrowForward />
+            View payment history <MdArrowForward />
           </Link>
         )}
       </div>

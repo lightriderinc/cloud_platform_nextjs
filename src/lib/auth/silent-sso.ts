@@ -107,6 +107,20 @@ export const CONSENT_RETRY_PARAM = "consent";
 export const SILENT_SSO_STORAGE_KEY = "lr:silent-sso:last-attempt";
 
 /**
+ * sessionStorage key holding the scroll position from just before a silent
+ * check navigated the document away, so returning lands where the user was
+ * rather than at the top of the page.
+ */
+export const SILENT_SSO_SCROLL_KEY = "lr:silent-sso:scroll";
+
+/**
+ * How long a stored scroll position stays valid. Only ever meant to survive
+ * one redirect round-trip (about a second); anything older is a stale entry
+ * from an abandoned check and restoring it would yank the page unexpectedly.
+ */
+export const SCROLL_RESTORE_MAX_AGE_MS = 60_000;
+
+/**
  * Server-side guard window. This is a LOOP breaker, not a rate limit: an
  * automatic redirect cycle completes in well under a second, so a short window
  * is enough to stop one dead, while staying out of the way of a legitimate
@@ -125,26 +139,42 @@ export const SERVER_COOLDOWN_SECONDS = 15;
 export const SIGNED_OUT_LOAD_COOLDOWN_SECONDS = 30;
 
 /**
- * Automatic (page-load) checks for signed-in visitors. Rare by design: here a
- * redirect interrupts real work. On Cloud, back-channel logout already catches
- * sign-out instantly; this is the backstop for apps with no revocation store.
+ * Automatic (page-load) checks for signed-in visitors.
+ *
+ * NO LONGER USED BY THIS APP. SessionSync now refuses to redirect a signed-in
+ * visitor under any trigger, because back-channel logout
+ * (RevokedLogtoSession + /api/webhooks/logto) already catches a sign-out here
+ * instantly and the poll catches a rejected token on its own.
+ *
+ * Kept exported for apps that share this module but have NO revocation store,
+ * where the page-load redirect is still the only sign-out backstop. Deleting
+ * it would break their build; using it here would reintroduce a reload the
+ * user cannot predict.
  */
 export const SIGNED_IN_LOAD_COOLDOWN_SECONDS = 600;
 
 /**
- * How long the tab must have been hidden/blurred before returning to it counts
- * as "you may have been doing something on another platform". Long enough that
- * a redirect round-trip returning to this tab never qualifies, short enough
- * that genuinely switching apps always does.
+ * How long the tab must have been hidden before returning to it counts as "you
+ * may have been doing something on another platform".
+ *
+ * This was 3 seconds, which is not an absence — it is a glance at an editor, a
+ * terminal, or a notification. Every such flick triggered a full-document
+ * round trip through Logto, so the page was perpetually reloading and clicks
+ * made during it went nowhere. Signing in on another platform and coming back
+ * takes far longer than this; a tab flick takes less.
  */
-export const RETURN_FROM_AWAY_MIN_SECONDS = 3;
+export const RETURN_FROM_AWAY_MIN_SECONDS = 30;
 
 /**
- * Floor between return-from-away checks. Nearly free, because this trigger
- * cannot spin on its own — it takes a deliberate tab switch each time. It
- * exists only so focus and visibilitychange firing together count once.
+ * Floor between return-from-away checks.
+ *
+ * Was 5 seconds, on the reasoning that this trigger "cannot spin on its own
+ * because it takes a deliberate tab switch". True, but people switch tabs
+ * constantly, so in practice it spun anyway. This only ever needs to be short
+ * enough that someone who just signed in elsewhere is recognised on their next
+ * return — two minutes is well inside that, and stops the bouncing.
  */
-export const RETURN_CHECK_COOLDOWN_SECONDS = 5;
+export const RETURN_CHECK_COOLDOWN_SECONDS = 120;
 
 /** Route prefixes the silent check must never fire on, to keep redirects acyclic. */
 export const SILENT_SSO_EXCLUDED_PREFIXES = ["/callback", "/api/"];

@@ -1,5 +1,6 @@
 "use client";
 
+import LRButton from "@/components/ui/LRButton";
 import { useState } from "react";
 import {
   MdArrowBack,
@@ -8,7 +9,6 @@ import {
   MdContentCopy,
   MdRefresh,
 } from "react-icons/md";
-import LRButton from "@/components/ui/LRButton";
 import EntropySourceSelector, { SOURCES } from "./EntropySourceSelector";
 import ModalShell from "./ModalShell";
 import StepIndicator from "./StepIndicator";
@@ -211,7 +211,7 @@ export default function PasswordModal({ onClose }: { onClose: () => void }) {
 
             {/* Overview */}
             <div className="default-radius border border-gray-100 bg-gray-50 p-4">
-              <p className="text-sm font-bold text-gray-500 mb-3">Overview</p>
+              <p className="text-sm font-semibold text-gray-500 mb-3">Overview</p>
               <div className="grid grid-cols-2 gap-y-3 gap-x-6 text-sm">
                 <div>
                   <p className="text-xs text-gray-400 mb-0.5">Source</p>
@@ -259,7 +259,7 @@ export default function PasswordModal({ onClose }: { onClose: () => void }) {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-bold text-gray-700">
+                <p className="text-sm font-semibold text-gray-700">
                   Generated Password
                 </p>
                 <LRButton

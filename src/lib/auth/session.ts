@@ -21,13 +21,38 @@ import { cache } from "react";
  * tokens, so without this check a stale session here would otherwise keep
  * reading as authenticated until its token's own expiry.
  */
-export const getSession = cache(async (): Promise<LogtoContext> => {
+export type SessionOutcome = {
+  isAuthenticated: boolean;
+  /**
+   * True when the session state could NOT be determined — Logto was
+   * unreachable, timed out, or answered with something unrecognisable. It is
+   * NOT set when Logto positively tells us there is no session, or when the
+   * stored token is rejected; those are real, known sign-outs.
+   *
+   * The difference matters to anything that would DESTROY work on a false
+   * negative. `getLogtoContext(..., { fetchUserInfo: true })` makes a live
+   * network call on every render, so one blip used to read as "signed out",
+   * which unmounted whatever was on screen — including a half-typed form.
+   *
+   * Server-side authorization must still fail CLOSED: every API route keeps
+   * using requireLogtoUser(), which treats any failure as unauthenticated.
+   * This flag exists only so the UI shell can fail SOFT and keep rendering
+   * what is already there. Nothing is exposed by doing so, because no route
+   * trusts the shell for authorization.
+   */
+  indeterminate: boolean;
+};
+
+const loadSession = cache(async (): Promise<{
+  context: LogtoContext;
+  indeterminate: boolean;
+}> => {
   try {
     const context = await getLogtoContext(logtoConfig, { fetchUserInfo: true });
     if (context.isAuthenticated && (await isSessionRevoked(context.claims?.sid as string | undefined))) {
-      return { isAuthenticated: false };
+      return { context: { isAuthenticated: false }, indeterminate: false };
     }
-    return context;
+    return { context, indeterminate: false };
   } catch (err) {
     // Never swallowed silently — an unlogged failure here presents as "signed
     // out" with no other symptom and is very expensive to diagnose.
@@ -38,11 +63,26 @@ export const getSession = cache(async (): Promise<LogtoContext> => {
     // not spam the dev error overlay with a condition we already handle.
     if (isStaleTokenError(err)) {
       console.warn("[auth] stored token rejected by Logto; treating as signed out.");
-    } else {
-      console.error("[auth] session lookup failed; treating as signed out:", err);
+      return { context: { isAuthenticated: false }, indeterminate: false };
     }
-    return { isAuthenticated: false };
+
+    console.error("[auth] session lookup failed; treating as signed out:", err);
+    return { context: { isAuthenticated: false }, indeterminate: true };
   }
+});
+
+export const getSession = cache(async (): Promise<LogtoContext> => {
+  return (await loadSession()).context;
+});
+
+/**
+ * Same lookup as getSession(), plus whether the answer is trustworthy. Use
+ * this instead of getSession() anywhere a false "signed out" would tear down
+ * UI the user is actively working in.
+ */
+export const getSessionOutcome = cache(async (): Promise<SessionOutcome> => {
+  const { context, indeterminate } = await loadSession();
+  return { isAuthenticated: context.isAuthenticated, indeterminate };
 });
 
 /**

@@ -44,7 +44,7 @@ export default function ReservationBookingModal({
     queryFn: () => fetchJson<Credits>("/api/billing/credits"),
   });
   const blockedByCredits =
-    credits !== undefined && (credits.purchasedCents <= 0 || credits.remainingCents <= 0);
+    credits !== undefined && (!credits.hasUnlocked || credits.remainingCents <= 0);
 
   // Based on the slot's own date (not "now") so it reflects the right side
   // of a DST transition if the slot falls on the other side of one. Same

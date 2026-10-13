@@ -47,14 +47,19 @@ function toCircuitType(gate: string | undefined): CircuitType | null {
 export default function BackendSubmitModal({
   backend,
   title = "Submit Sample Circuit",
+  initialCircuit = "h",
+  successMessage,
   onClose,
 }: {
   backend: QuantumBackendId;
   title?: string;
+  initialCircuit?: CircuitType;
+  /** Extra content shown above the result once the job has been submitted — e.g. course-specific next steps. */
+  successMessage?: React.ReactNode;
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
-  const [circuit, setCircuit] = useState<CircuitType>("h");
+  const [circuit, setCircuit] = useState<CircuitType>(initialCircuit);
   const [shots, setShots] = useState(1000);
   const [submittedJob, setSubmittedJob] = useState<Job | null>(null);
 
@@ -65,12 +70,13 @@ export default function BackendSubmitModal({
     queryFn: () => fetchJson<Credits>("/api/billing/credits"),
     enabled: needsCredits,
   });
-  // Real QPU access requires having purchased credits at least once — the
-  // free signup grant alone doesn't unlock it, even if remainingCents > 0.
+  // Real QPU access requires an unlocked account — a purchase or credits
+  // received from another user. The free signup grant alone doesn't unlock
+  // it, even if remainingCents > 0. Mirrors hasUnlockedCredits() server-side.
   const blockedByCredits =
     needsCredits &&
     credits !== undefined &&
-    (credits.purchasedCents <= 0 || credits.remainingCents <= 0);
+    (!credits.hasUnlocked || credits.remainingCents <= 0);
   const stillCheckingCredits = needsCredits && credits === undefined;
 
   useEffect(() => {
@@ -191,20 +197,23 @@ export default function BackendSubmitModal({
             {/* Left: form or results */}
             <div className="min-w-0">
               {displayedJob ? (
-                <JobResultView
-                  job={displayedJob}
-                  footer={
-                    <LRButton
-                      variant="secondary-outline"
-                      icon={<MdArrowLeft className="text-lg" />}
-                      iconPosition="left"
-                      onClick={handleTryAnother}
-                      className="mt-1 w-fit"
-                    >
-                      Try Another
-                    </LRButton>
-                  }
-                />
+                <div className="flex flex-col gap-5">
+                  {successMessage}
+                  <JobResultView
+                    job={displayedJob}
+                    footer={
+                      <LRButton
+                        variant="secondary-outline"
+                        icon={<MdArrowLeft className="text-lg" />}
+                        iconPosition="left"
+                        onClick={handleTryAnother}
+                        className="mt-1 w-fit"
+                      >
+                        Try Another
+                      </LRButton>
+                    }
+                  />
+                </div>
               ) : stillCheckingCredits ? null : blockedByCredits ? (
                 <CreditsSummary />
               ) : (

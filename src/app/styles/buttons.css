@@ -22,3 +22,24 @@
     text-decoration: underline !important;
   }
 }
+
+.chalkboard-bg {
+  background-image:
+    radial-gradient(
+      circle at left 30%,
+      rgba(0, 122, 85, 0.2),
+      rgba(0, 122, 85, 0.2) 80px,
+      rgba(0, 122, 85, 0.2) 100px,
+      rgba(0, 79, 59, 0.2) 160px,
+      rgba(0, 122, 85, 1)
+    ),
+    linear-gradient(
+      215deg,
+      transparent,
+      transparent 100px,
+      rgba(0, 96, 69, 1) 260px,
+      rgba(0, 96, 69, 0.5)320px,
+      transparent
+    ),
+    radial-gradient(circle at right, rgb(0, 79, 59), rgba(0, 96, 69, 0.5));
+}

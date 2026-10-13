@@ -1,13 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import {
-  MdArrowBack,
-  MdArrowForward,
-  MdExpandLess,
-  MdExpandMore,
-  MdRefresh,
-} from "react-icons/md";
 import EntropySourceSelector, {
   SOURCES,
 } from "@/components/applications/EntropySourceSelector";
@@ -24,6 +16,14 @@ import {
   requestEntropy,
   type EntropyResult,
 } from "@/lib/entropy/generate";
+import { useState } from "react";
+import {
+  MdArrowBack,
+  MdArrowForward,
+  MdExpandLess,
+  MdExpandMore,
+  MdRefresh,
+} from "react-icons/md";
 
 const STEPS = ["Source", "Bytes", "Result"];
 
@@ -185,7 +185,7 @@ export default function EntropyRequestModal({ onClose }: { onClose: () => void }
 
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <p className="text-sm font-bold text-gray-700">
+                <p className="text-sm font-semibold text-gray-700">
                   Entropy Output (hex)
                 </p>
                 <CopyButton value={result.value} />

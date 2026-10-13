@@ -1,16 +1,17 @@
 'use client';
 
+import { unwrap, type ActionResult } from "@/lib/actionResult";
 import { useState } from 'react';
 
 import LRButton from '@/components/ui/LRButton';
 
 type Props = {
   currentEmail: string;
-  onVerifyPassword: (password: string) => Promise<string>;
-  onCheckEmailAvailable: (email: string) => Promise<void>;
-  onSendCode: (email: string) => Promise<string>;
-  onVerifyCode: (email: string, code: string, verificationRecordId: string) => Promise<string>;
-  onUpdateEmail: (currentVerifId: string, newVerifId: string, email: string) => Promise<void>;
+  onVerifyPassword: (password: string) => Promise<ActionResult<string>>;
+  onCheckEmailAvailable: (email: string) => Promise<ActionResult<void>>;
+  onSendCode: (email: string) => Promise<ActionResult<string>>;
+  onVerifyCode: (email: string, code: string, verificationRecordId: string) => Promise<ActionResult<string>>;
+  onUpdateEmail: (currentVerifId: string, newVerifId: string, email: string) => Promise<ActionResult<void>>;
   onClose: () => void;
 };
 
@@ -40,7 +41,7 @@ export default function EditEmailModal({
     setError('');
     setLoading(true);
     try {
-      const id = await onVerifyPassword(password);
+      const id = unwrap(await onVerifyPassword(password));
       setCurrentVerifId(id);
       setStep('enter-new');
     } catch (e) {
@@ -59,8 +60,8 @@ export default function EditEmailModal({
     try {
       // Warn about a duplicate/existing address BEFORE sending a code, so the
       // user isn't asked to verify an email they can't actually claim (EM-02).
-      await onCheckEmailAvailable(email);
-      const id = await onSendCode(email);
+      unwrap(await onCheckEmailAvailable(email));
+      const id = unwrap(await onSendCode(email));
       setNewVerifId(id);
       setStep('verify-new');
     } catch (e) {
@@ -74,8 +75,8 @@ export default function EditEmailModal({
     setError('');
     setLoading(true);
     try {
-      const verifiedRecordId = await onVerifyCode(newEmail, newCode, newVerifId);
-      await onUpdateEmail(currentVerifId, verifiedRecordId, newEmail);
+      const verifiedRecordId = unwrap(await onVerifyCode(newEmail, newCode, newVerifId));
+      unwrap(await onUpdateEmail(currentVerifId, verifiedRecordId, newEmail));
       setStep('done');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to update email');

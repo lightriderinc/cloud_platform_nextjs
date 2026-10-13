@@ -1,8 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
 import CopyButton from "@/components/ui/CopyButton";
 import type { EntropyResult } from "@/lib/entropy/generate";
+import type { ReactNode } from "react";
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -107,7 +107,7 @@ export default function EntropyOutput({
       <ReceiptDetails result={result} />
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <p className="text-sm font-bold text-gray-700">Entropy Output</p>
+          <p className="text-sm font-semibold text-gray-700">Entropy Output</p>
           <CopyButton value={result.value} />
         </div>
         <div className="default-radius overflow-x-auto border border-gray-800 bg-gray-800 p-4">

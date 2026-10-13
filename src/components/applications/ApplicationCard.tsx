@@ -27,7 +27,7 @@ export default function ApplicationCard({
                 })()}
             </div>
             <div className="flex flex-col gap-0">
-              <h2 className="text-l font-bold">{title}</h2>
+              <h2 className="text-l font-semibold">{title}</h2>
               <p className="text-sm text-gray-600 mb-4">{description}</p>
             </div>
           </div>

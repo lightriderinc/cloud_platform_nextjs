@@ -2,6 +2,7 @@
 
 import DashboardJobRowSkeleton from "@/components/jobs/DashboardJobRowSkeleton";
 import JobDetailModal from "@/components/jobs/JobDetailModal";
+import { COLAB_NOTEBOOKS_BASE_URL } from "@/lib/colab";
 import { fetchJobs, JobRowStatus } from "@/components/jobs/JobsList";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -10,9 +11,6 @@ import { SiGooglecolab } from "react-icons/si";
 import { TbAtom2Filled } from "react-icons/tb";
 
 const LATEST_JOBS_LIMIT = 3;
-const COLAB_NOTEBOOKS_BASE_URL =
-  "https://colab.research.google.com/github/lightriderinc/cloud_platform_nextjs/blob/main/docs/notebooks";
-
 export default function DashboardLatestJobs() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 

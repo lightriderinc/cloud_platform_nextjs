@@ -1,0 +1,35 @@
+import UserPlansGrid from "@/components/billing/UserPlansGrid";
+import InfoBox from "@/components/InfoBox";
+import BackButton from "@/components/ui/BackButton";
+
+export default function UserPricingPage() {
+  return (
+    <div>
+      <BackButton href="/settings/manage-credits" previousPageName="Manage Credits" />
+      <h1 className="text-2xl font-semibold text-gray-700">User Plans</h1>
+      <p className="mb-6 text-sm text-gray-600">
+        Monthly platform plans for teams and individuals. Quantum runtime and
+        API usage are billed separately when used.
+      </p>
+
+      <InfoBox>
+        Compute seconds and EaaS API usage are billed separately from your plan.
+        See Purchase Credits and API Pricing for those rates.
+      </InfoBox>
+
+      <div className="mt-6">
+        <UserPlansGrid />
+      </div>
+
+      {/* <div className="mt-8 flex flex-col gap-3 default-radius p-4">
+        <p className="text-sm text-gray-600">
+          Already on a plan? Update your payment method, view invoices, or
+          change plans in the billing portal.
+        </p>
+        <div className="flex">
+          <ManageBillingButton />
+        </div>
+      </div> */}
+    </div>
+  );
+}

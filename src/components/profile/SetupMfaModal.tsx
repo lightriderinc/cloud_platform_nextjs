@@ -1,5 +1,6 @@
 'use client';
 
+import type { ActionResult } from "@/lib/actionResult";
 import { useState } from 'react';
 
 import VerifyIdentity from '@/components/profile/VerifyIdentity';
@@ -13,13 +14,13 @@ type Props = {
   issuer: string;
   /** Whether the user has a password; false for connected-account users. */
   hasPassword?: boolean;
-  onVerifyPassword: (password: string) => Promise<string>;
-  onSendEmailCode: (email: string) => Promise<string>;
+  onVerifyPassword: (password: string) => Promise<ActionResult<string>>;
+  onSendEmailCode: (email: string) => Promise<ActionResult<string>>;
   onVerifyEmailCode: (
     email: string,
     code: string,
     verificationRecordId: string,
-  ) => Promise<string>;
+  ) => Promise<ActionResult<string>>;
   onGenerateSecret: () => Promise<string>;
   onBind: (verificationRecordId: string, secret: string, code: string) => Promise<void>;
   onSuccess: () => void;

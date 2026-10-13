@@ -1,5 +1,6 @@
 'use client';
 
+import { unwrap, type ActionResult } from "@/lib/actionResult";
 import { useState } from 'react';
 
 import VerifyIdentity from '@/components/profile/VerifyIdentity';
@@ -14,8 +15,8 @@ type Props = {
    * with an emailed code instead.
    */
   mode?: 'change' | 'set';
-  onVerifyPassword: (password: string) => Promise<string>;
-  onUpdatePassword: (verificationId: string, newPassword: string) => Promise<void>;
+  onVerifyPassword: (password: string) => Promise<ActionResult<string>>;
+  onUpdatePassword: (verificationId: string, newPassword: string) => Promise<ActionResult<void>>;
   onClose: () => void;
   /**
    * Called once the password has been successfully set/changed. Used by the
@@ -26,13 +27,13 @@ type Props = {
   /** Current email, required in `set` mode for the email-code verification. */
   email?: string;
   /** Required in `set` mode: send a one-time code to the user's email. */
-  onSendEmailCode?: (email: string) => Promise<string>;
+  onSendEmailCode?: (email: string) => Promise<ActionResult<string>>;
   /** Required in `set` mode: verify the emailed code. */
   onVerifyEmailCode?: (
     email: string,
     code: string,
     verificationRecordId: string,
-  ) => Promise<string>;
+  ) => Promise<ActionResult<string>>;
 };
 
 type Step = 'verify' | 'set' | 'done';
@@ -62,7 +63,7 @@ export default function EditPasswordModal({
     setError('');
     setLoading(true);
     try {
-      const id = await onVerifyPassword(currentPwd);
+      const id = unwrap(await onVerifyPassword(currentPwd));
       setVerificationId(id);
       setStep('set');
     } catch (e) {
@@ -87,7 +88,7 @@ export default function EditPasswordModal({
     setError('');
     setLoading(true);
     try {
-      await onUpdatePassword(verificationId, newPwd);
+      unwrap(await onUpdatePassword(verificationId, newPwd));
       setStep('done');
       onSuccess?.();
     } catch (e) {
@@ -123,8 +124,8 @@ export default function EditPasswordModal({
               email={email}
               allowPassword={false}
               onVerifyPassword={onVerifyPassword}
-              onSendEmailCode={onSendEmailCode ?? (async () => '')}
-              onVerifyEmailCode={onVerifyEmailCode ?? (async () => '')}
+              onSendEmailCode={onSendEmailCode ?? (async () => ({ ok: true as const, value: '' }))}
+              onVerifyEmailCode={onVerifyEmailCode ?? (async () => ({ ok: true as const, value: '' }))}
               onVerified={handleIdentityVerified}
               submitLabel="Continue"
             />

@@ -1,6 +1,6 @@
 import { requireLogtoUser } from "@/lib/auth/session";
 import { resolveCustomerFromRequest } from "@/lib/auth/resolveCustomer";
-import { hasEnoughCredits, hasPurchasedCredits } from "@/lib/billing/planCheck";
+import { hasEnoughCredits, hasUnlockedCredits } from "@/lib/billing/planCheck";
 import { db } from "@/lib/billing/db";
 import { NextResponse } from "next/server";
 
@@ -41,12 +41,12 @@ export async function POST(req: Request) {
 
   // Same gate as real-hardware job submission (submit/route.ts): the free
   // signup grant alone doesn't unlock real QPU access, reservations included.
-  if (!(await hasPurchasedCredits(customer.id))) {
+  if (!(await hasUnlockedCredits(customer.id))) {
     return NextResponse.json(
       {
         error: "purchase_required",
         message:
-          "Booking a reservation requires purchasing credits first. Visit /settings/purchases/quantum-compute to buy credits.",
+          "Booking a reservation requires purchasing credits first. Visit /settings/manage-credits/purchase to buy credits.",
       },
       { status: 402 },
     );

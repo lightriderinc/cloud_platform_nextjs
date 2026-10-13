@@ -37,13 +37,13 @@ export default function PlanCard({
         </span>
       )}
       <div>
-        <h3 className="text-lg font-bold text-gray-800">{name}</h3>
+        <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
         {description && (
           <p className="mt-1 text-sm text-gray-600">{description}</p>
         )}
       </div>
       <div>
-        <span className="text-3xl font-bold text-gray-900">{price}</span>
+        <span className="text-3xl font-semibold text-gray-900">{price}</span>
         {billedNote && (
           <span className="ml-1 text-sm text-gray-500">{billedNote}</span>
         )}

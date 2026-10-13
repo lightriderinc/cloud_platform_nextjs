@@ -5,6 +5,8 @@ import EditEmailModal from "@/components/profile/EditEmailModal";
 import EditPasswordModal from "@/components/profile/EditPasswordModal";
 import SetupMfaModal from "@/components/profile/SetupMfaModal";
 import LRButton from "@/components/ui/LRButton";
+import { unwrap, type ActionResult } from "@/lib/actionResult";
+import { birthdateBounds, validateBirthdate } from "@/lib/birthdate";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MdEditSquare } from "react-icons/md";
@@ -24,24 +26,24 @@ type Props = {
    * render itself.
    */
   connectedAccounts?: React.ReactNode;
-  onVerifyPassword: (password: string) => Promise<string>;
+  onVerifyPassword: (password: string) => Promise<ActionResult<string>>;
   onUpdatePassword: (
     verificationId: string,
     newPassword: string,
-  ) => Promise<void>;
-  onSendEmailCode: (email: string) => Promise<string>;
+  ) => Promise<ActionResult<void>>;
+  onSendEmailCode: (email: string) => Promise<ActionResult<string>>;
   onVerifyEmailCode: (
     email: string,
     code: string,
     verificationRecordId: string,
-  ) => Promise<string>;
-  onCheckEmailAvailable: (email: string) => Promise<void>;
+  ) => Promise<ActionResult<string>>;
+  onCheckEmailAvailable: (email: string) => Promise<ActionResult<void>>;
   onUpdateEmail: (
     currentVerifId: string,
     newVerifId: string,
     email: string,
-  ) => Promise<void>;
-  onUpdateBirthdate: (birthdate: string) => Promise<void>;
+  ) => Promise<ActionResult<void>>;
+  onUpdateBirthdate: (birthdate: string) => Promise<ActionResult<void>>;
   onGenerateTotpSecret: () => Promise<string>;
   onBindTotp: (
     verificationRecordId: string,
@@ -100,7 +102,7 @@ export default function ProfileActions({
     <>
       <div className="flex flex-col mb-5">
         <div className="flex w-full mb-5">
-          <h2 className="text-xl font-bold text-gray-500">Profile</h2>
+          <h2 className="text-xl font-semibold text-gray-500">Profile</h2>
         </div>
         <div className="flex flex-col default-radius divide-y divide-gray-100 mb-8 max-w-3xl bg-gray-50 px-4 py-1">
           <InfoRow label="Full Name" value={name ?? "—"} />
@@ -128,7 +130,7 @@ export default function ProfileActions({
 
       <div className="flex flex-col mb-5">
         <div className="flex w-full mb-5">
-          <h2 className="text-xl font-bold text-gray-500">Security</h2>
+          <h2 className="text-xl font-semibold text-gray-500">Security</h2>
         </div>
         <div className="flex flex-col default-radius divide-y divide-gray-100 mb-8 max-w-3xl bg-gray-50 px-4 py-1">
           <div className="flex flex-row justify-between items-center">
@@ -140,7 +142,7 @@ export default function ProfileActions({
           </div>
           <div className="flex flex-row justify-between items-center py-3">
             <div className="flex flex-col gap-0.5">
-              <span className="text-sm font-bold text-gray-700">
+              <span className="text-sm font-semibold text-gray-700">
                 Two-Factor Auth
               </span>
               <span className="text-sm text-gray-400">
@@ -181,7 +183,7 @@ export default function ProfileActions({
       {open === "birthdate" && (
         <AddBirthdateModal
           onSave={async (date) => {
-            await onUpdateBirthdate(date);
+            unwrap(await onUpdateBirthdate(date));
             setCurrentBirthdate(date);
             setOpen(null);
           }}
@@ -221,7 +223,7 @@ export default function ProfileActions({
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center py-3 gap-6 min-w-0">
-      <dt className="text-sm font-bold text-gray-700 flex-shrink-0 w-24">
+      <dt className="text-sm font-semibold text-gray-700 flex-shrink-0 w-24">
         {label}
       </dt>
       <dd className="text-base text-gray-400 truncate flex-1">{value}</dd>
@@ -258,9 +260,20 @@ function AddBirthdateModal({
   const [date, setDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // Computed once per open: "today" only matters to the day, and recomputing
+  // each render would change the max mid-session at midnight.
+  const [bounds] = useState(() => birthdateBounds());
 
   async function handleSave() {
     if (!date) return;
+    // Checked before the request so an obviously wrong year is rejected
+    // immediately; the server repeats the same check for callers that skip
+    // this form entirely.
+    const problem = validateBirthdate(date);
+    if (problem) {
+      setError(problem);
+      return;
+    }
     setError("");
     setLoading(true);
     try {
@@ -294,6 +307,8 @@ function AddBirthdateModal({
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          min={bounds.min}
+          max={bounds.max}
           autoFocus
           className="w-full default-radius border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-gray-400 mb-4"
         />

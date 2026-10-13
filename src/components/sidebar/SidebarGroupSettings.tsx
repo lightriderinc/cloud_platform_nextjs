@@ -1,5 +1,10 @@
 import { handleSignIn } from "@/app/actions/auth";
-import { MdAccountCircle, MdHistory, MdLocalOffer, MdPayments } from "react-icons/md";
+import { BiSolidCoin } from "react-icons/bi";
+import {
+  MdAccountCircle,
+  MdGroupAdd,
+  MdHistory
+} from "react-icons/md";
 import { RiLockPasswordFill } from "react-icons/ri";
 import SidebarNavGroup from "./SidebarNavGroup";
 import SidebarNavItem from "./SidebarNavItem";
@@ -28,7 +33,7 @@ export default function SidebarGroupSettings({
               icon={RiLockPasswordFill}
               onNavigate={onNavigate}
             />
-            
+
             {/* <SidebarNavItem
           name="Platform Settings"
           href="#"
@@ -37,7 +42,6 @@ export default function SidebarGroupSettings({
         /> */}
           </>
         )}
-
 
         {!isAuthenticated && (
           <>
@@ -56,27 +60,27 @@ export default function SidebarGroupSettings({
       </SidebarNavGroup>
 
       {isAuthenticated && (
-          <SidebarNavGroup label="Usage & Payment">
-            <SidebarNavItem
-              name="Usage"
-              href="/settings/usage"
-              icon={MdPayments}
-              onNavigate={onNavigate}
-            />
-            <SidebarNavItem
-              name="Purchases"
-              href="/settings/purchases"
-              icon={MdLocalOffer}
-              onNavigate={onNavigate}
-            />
-            <SidebarNavItem
-              name="Purchase History"
-              href="/settings/purchase-history"
-              icon={MdHistory}
-              onNavigate={onNavigate}
-            />
-          </SidebarNavGroup>
-        )}
+        <SidebarNavGroup label="Billing & Credits">
+          <SidebarNavItem
+            name="Manage Credits"
+            href="/settings/manage-credits"
+            icon={BiSolidCoin}
+            onNavigate={onNavigate}
+          />
+          <SidebarNavItem
+            name="Payment & History"
+            href="/settings/payment-and-history"
+            icon={MdHistory}
+            onNavigate={onNavigate}
+          />
+          <SidebarNavItem
+            name="Rewards"
+            href="/settings/rewards"
+            icon={MdGroupAdd}
+            onNavigate={onNavigate}
+          />
+        </SidebarNavGroup>
+      )}
     </>
   );
 }

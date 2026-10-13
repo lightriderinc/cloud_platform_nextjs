@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import LRButton from "@/components/ui/LRButton";
+import { useState } from "react";
 
 export default function EnterpriseLeadForm() {
   const [status, setStatus] = useState<"idle" | "submitting" | "sent" | "error">("idle");
@@ -39,7 +39,7 @@ export default function EnterpriseLeadForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 default-radius border border-gray-200 bg-gray-100 p-5">
-      <h2 className="text-lg font-bold text-gray-800">Custom pricing estimator</h2>
+      <h2 className="text-lg font-semibold text-gray-800">Custom pricing estimator</h2>
       <p className="text-sm text-gray-600">
         Share a few details and our team will provide a tailored solution.
       </p>

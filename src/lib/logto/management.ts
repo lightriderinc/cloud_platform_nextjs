@@ -67,8 +67,13 @@ async function getAccessToken(): Promise<string> {
 
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
+    // The endpoint is named in the error because the usual cause of a 400 here
+    // is LOGTO_MANAGEMENT_ENDPOINT pointing at the sign-in custom domain rather
+    // than the tenant's *.logto.app domain — which also makes `resource` wrong.
+    // It is a hostname, not a credential, and the var is often flagged
+    // Sensitive in hosting config and so cannot be read back any other way.
     throw new Error(
-      `Failed to fetch Logto Management API token (${res.status}): ${detail}`,
+      `Failed to fetch Logto Management API token (${res.status}) from ${endpoint}/oidc/token (resource=${endpoint}/api): ${detail}`,
     );
   }
 
@@ -222,7 +227,7 @@ export async function findUserByPrimaryEmail(
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
     throw new Error(
-      `Failed to search Logto users by email (${res.status}): ${detail}`,
+      `Failed to search Logto users by email (${res.status}) at ${endpointBase()}: ${detail}`,
     );
   }
 

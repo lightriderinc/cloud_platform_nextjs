@@ -161,14 +161,14 @@ export default function QEntropyExperiment({
     pricingShown &&
     credits.data !== undefined &&
     credits.data.remainingCents < withdrawCostCents;
-  // purchasedCents <= 0 means any remaining balance is just the signup
-  // bonus, which isn't spendable until a first purchase unlocks it -- same
-  // gate CreditsSummary uses.
+  // Not unlocked means any remaining balance is just the signup bonus, which
+  // isn't spendable until a purchase or a received transfer unlocks it --
+  // same gate CreditsSummary uses.
   const creditsLocked =
     pricingShown &&
     credits.data !== undefined &&
     !insufficientCredits &&
-    credits.data.purchasedCents <= 0;
+    !credits.data.hasUnlocked;
 
   function switchMode(next: Mode) {
     setMode(next);
@@ -329,7 +329,7 @@ export default function QEntropyExperiment({
             <h3 className="mb-1.5 text-sm font-semibold text-gray-700">
               Entropy extraction mode:
             </h3>
-            <div className="mb-1.5 inline-flex default-radius border border-gray-200 p-1 gap-1">
+            <div className="mb-1.5 inline-flex default-radius border border-gray-100 p-1 gap-1">
               <button
                 type="button"
                 onClick={() => switchMode("pool")}
@@ -377,7 +377,7 @@ export default function QEntropyExperiment({
         </div>
 
         <div className="flex w-full flex-col gap-4 default-radius border border-gray-50 bg-gray-50 p-4 lg:sticky lg:top-0 lg:w-[320px] lg:shrink-0">
-          <h3 className="text-lg font-bold text-gray-800">
+          <h3 className="text-lg font-semibold text-gray-800">
             {mode === "pool" ? "Configure withdrawal" : "Configure run"}
           </h3>
 
@@ -451,7 +451,7 @@ export default function QEntropyExperiment({
           )}
 
           {creditsLocked || insufficientCredits ? (
-            <Link href="/settings/purchases/quantum-compute">
+            <Link href="/settings/manage-credits/purchase">
               <LRButton variant="primary" className="w-full">
                 {creditsLocked
                   ? "Make your first credit purchase"

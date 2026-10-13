@@ -1,19 +1,34 @@
 "use client";
 
-import { isProtectedWorkInProgress } from "@/lib/auth/protected-work";
+import {
+  hasUnsavedInput,
+  isProtectedWorkInProgress,
+} from "@/lib/auth/protected-work";
 import {
   RETURN_CHECK_COOLDOWN_SECONDS,
+  SCROLL_RESTORE_MAX_AGE_MS,
+  SILENT_SSO_SCROLL_KEY,
   RETURN_FROM_AWAY_MIN_SECONDS,
-  SIGNED_IN_LOAD_COOLDOWN_SECONDS,
   SIGNED_OUT_LOAD_COOLDOWN_SECONDS,
   SILENT_SSO_STORAGE_KEY,
   isSilentSsoAllowedPath,
 } from "@/lib/auth/silent-sso";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 
 /** How often to re-check auth state while a tab is open and visible. */
 const POLL_INTERVAL_MS = 30_000;
+
+/**
+ * How long to wait before re-reading auth state to confirm an apparent change.
+ * /api/auth/session goes all the way to Logto's userinfo endpoint and reports
+ * signed-out on ANY failure, so one dropped request looks identical to a real
+ * sign-out. Acting on a single read made a transient blip trigger
+ * router.refresh(), and the next poll flip it back — a visible refresh loop
+ * during ordinary use. Long enough to outlast a blip, short enough that a
+ * genuine sign-out still propagates in about a second.
+ */
+const CHANGE_CONFIRM_DELAY_MS = 1_500;
 
 type Props = {
   /** Auth state as of the server render, used as the baseline to diff against. */
@@ -49,6 +64,15 @@ export default function SessionSync({ initialAuthenticated }: Props) {
   // When the tab was last hidden, so we can tell "came back from another app"
   // apart from "clicked around in this tab".
   const awaySince = useRef<number | null>(null);
+  // Read through a ref, never a dependency. Depending on `pathname` directly
+  // made the sync effect tear down and re-run on every client-side navigation,
+  // so each link click cost a userinfo round-trip and could fire the silent
+  // check — which reloads the document and lands the user back where they
+  // started. Route changes are not a reason to re-check the session.
+  const pathnameRef = useRef(pathname);
+  useEffect(() => {
+    pathnameRef.current = pathname;
+  }, [pathname]);
 
   /**
    * Guard 1 of the loop protection: only redirect if we can *prove* we
@@ -67,7 +91,13 @@ export default function SessionSync({ initialAuthenticated }: Props) {
       // file or a finished scan; the session is re-checked when that work is
       // submitted instead. See @/lib/auth/protected-work.
       if (isProtectedWorkInProgress()) return;
-      if (!isSilentSsoAllowedPath(pathname)) return;
+      // Blanket guard for every ordinary form that never opted in above. A
+      // half-typed transfer, lead form or search box is exactly the work this
+      // redirect used to destroy, and the cheap /api/auth/session poll keeps
+      // running regardless — so all that is deferred here is cross-app
+      // propagation, until the field is submitted or cleared.
+      if (hasUnsavedInput()) return;
+      if (!isSilentSsoAllowedPath(pathnameRef.current)) return;
 
       let storage: Storage;
       try {
@@ -88,6 +118,20 @@ export default function SessionSync({ initialAuthenticated }: Props) {
       }
 
       const returnTo = `${window.location.pathname}${window.location.search}`;
+
+      // The redirect reloads the document, so the browser lands at the top of
+      // the page. Record where the user actually was and restore it on the way
+      // back — the check is supposed to be invisible, and being thrown to the
+      // top of a long page is the most visible thing it did.
+      try {
+        storage.setItem(
+          SILENT_SSO_SCROLL_KEY,
+          JSON.stringify({ path: returnTo, y: window.scrollY, at: Date.now() }),
+        );
+      } catch {
+        // Non-fatal: losing the scroll position is better than losing the check.
+      }
+
       // Must be a real document navigation, not router.push(): this route
       // answers with a redirect to Logto (a different origin), and a
       // client-side RSC transition cannot follow that. The OIDC flow also
@@ -102,20 +146,45 @@ export default function SessionSync({ initialAuthenticated }: Props) {
         `/api/auth/silent-check?returnTo=${encodeURIComponent(returnTo)}`,
       );
     },
-    [pathname],
+    [],
   );
 
+  /** One read of server-side auth state; null when it could not be determined. */
+  const readAuthState = useCallback(async (): Promise<boolean | null> => {
+    try {
+      const response = await fetch("/api/auth/session", { cache: "no-store" });
+      if (!response.ok) return null;
+      const { isAuthenticated, indeterminate } = (await response.json()) as {
+        isAuthenticated: boolean;
+        indeterminate?: boolean;
+      };
+      // The server could not reach Logto. That is not a sign-out, and acting
+      // on it would re-render the tree under a user who is still signed in.
+      if (indeterminate) return null;
+      return Boolean(isAuthenticated);
+    } catch {
+      return null; // Offline or transient — indistinguishable from unknown.
+    }
+  }, []);
+
   const syncNow = useCallback(
-    async (options: { silentCheckCooldownSeconds: number | null }) => {
+    async (options: { allowSilentCheck: boolean; cooldownSeconds: number }) => {
       if (inFlight.current) return;
       inFlight.current = true;
       try {
-        const response = await fetch("/api/auth/session", { cache: "no-store" });
-        if (!response.ok) return;
-        const { isAuthenticated } = (await response.json()) as { isAuthenticated: boolean };
+        const observed = await readAuthState();
+        if (observed === null) return;
 
-        if (isAuthenticated !== knownAuthenticated.current) {
-          knownAuthenticated.current = isAuthenticated;
+        if (observed !== knownAuthenticated.current) {
+          // Confirm before acting: router.refresh() re-renders the entire
+          // server tree, which the user sees. Never pay that for one blip.
+          await new Promise((resolve) =>
+            window.setTimeout(resolve, CHANGE_CONFIRM_DELAY_MS),
+          );
+          const confirmed = await readAuthState();
+          if (confirmed !== observed) return; // Disagreed — treat as noise.
+
+          knownAuthenticated.current = observed;
           // Re-render the server tree, layouts included, so the header and
           // sidebars stop disagreeing with the page body.
           router.refresh();
@@ -123,25 +192,69 @@ export default function SessionSync({ initialAuthenticated }: Props) {
           return;
         }
 
-        if (options.silentCheckCooldownSeconds !== null) {
-          attemptSilentCheck(options.silentCheckCooldownSeconds);
+        // THE RULE: only a signed-OUT visitor is ever sent on the redirect.
+        //
+        // Its one unique power is signing someone IN from a session created on
+        // another Light Rider app; for a signed-in user it can only confirm
+        // what we already know. This app does not need it to — back-channel
+        // logout (RevokedLogtoSession + /api/webhooks/logto) catches a
+        // sign-out instantly, and the poll above catches a rejected token on
+        // its own.
+        //
+        // Decided from `observed` — the reading we JUST took — not from
+        // knownAuthenticated, which is the server render's answer and can be
+        // stale on the very first page after signing in. That staleness is
+        // what used to reload the dashboard out from under a first-time user
+        // mid-click.
+        //
+        // Consequence worth stating plainly: while signed in, SessionSync
+        // NEVER navigates the document. No reloads, no lost form state, no
+        // swallowed clicks. Those were all one behaviour, not four bugs.
+        if (observed) return;
+
+        if (options.allowSilentCheck) {
+          attemptSilentCheck(options.cooldownSeconds);
         }
-      } catch {
-        // Offline or transient — leave the UI as-is and try again next tick.
       } finally {
         inFlight.current = false;
       }
     },
-    [router, attemptSilentCheck],
+    [router, attemptSilentCheck, readAuthState],
   );
 
+  // Runs before the first paint so the page never visibly starts at the top
+  // and jump afterwards.
+  useLayoutEffect(() => {
+    let raw: string | null = null;
+    try {
+      raw = window.sessionStorage.getItem(SILENT_SSO_SCROLL_KEY);
+      if (raw) window.sessionStorage.removeItem(SILENT_SSO_SCROLL_KEY);
+    } catch {
+      return; // Storage unreadable — nothing to restore.
+    }
+    if (!raw) return;
+
+    try {
+      const saved = JSON.parse(raw) as { path: string; y: number; at: number };
+      const here = `${window.location.pathname}${window.location.search}`;
+      // Only restore onto the same page, and only for a position saved by the
+      // round-trip we just completed.
+      if (saved.path !== here) return;
+      if (Date.now() - saved.at > SCROLL_RESTORE_MAX_AGE_MS) return;
+      if (typeof saved.y !== "number" || saved.y <= 0) return;
+      window.scrollTo(0, saved.y);
+    } catch {
+      // Malformed entry — already cleared above.
+    }
+  }, []);
+
   useEffect(() => {
-    // Automatic page-load check: the strict-cooldown path, since this is the
-    // only trigger that could re-fire without the user doing anything.
+    // Page-load check. On a brand-new session sessionStorage holds no marker,
+    // so the cooldown below can never block the first attempt however long it
+    // is — which is exactly why this must not be reachable while signed in.
     void syncNow({
-      silentCheckCooldownSeconds: knownAuthenticated.current
-        ? SIGNED_IN_LOAD_COOLDOWN_SECONDS
-        : SIGNED_OUT_LOAD_COOLDOWN_SECONDS,
+      allowSilentCheck: true,
+      cooldownSeconds: SIGNED_OUT_LOAD_COOLDOWN_SECONDS,
     });
 
     // Only a genuine visibility change counts as being away. Window blur must
@@ -160,19 +273,16 @@ export default function SessionSync({ initialAuthenticated }: Props) {
       const awayMs = awaySince.current ? Date.now() - awaySince.current : 0;
       awaySince.current = null;
 
-      // Coming back after being away is the strongest available hint that the
-      // user just did something on another platform, so it earns an immediate
-      // check. It cannot spin: each one costs a deliberate tab switch, and a
-      // redirect round-trip returning here never leaves the tab hidden long
-      // enough to qualify.
+      // Coming back after a REAL absence hints the user may have signed in on
+      // another platform. A quick glance at another window does not.
       const returnedFromAway = awayMs >= RETURN_FROM_AWAY_MIN_SECONDS * 1000;
 
+      // Whether a redirect is worth it is decided inside syncNow, against the
+      // freshly read auth state. All this decides is whether the absence was
+      // long enough to suggest the user did something on another platform.
       void syncNow({
-        silentCheckCooldownSeconds: returnedFromAway
-          ? RETURN_CHECK_COOLDOWN_SECONDS
-          : // Same-tab focus with no real absence: refresh state, but never
-            // redirect a user who is actively working here.
-            null,
+        allowSilentCheck: returnedFromAway,
+        cooldownSeconds: RETURN_CHECK_COOLDOWN_SECONDS,
       });
     };
 
@@ -191,7 +301,7 @@ export default function SessionSync({ initialAuthenticated }: Props) {
       if (document.visibilityState === "visible") {
         // Polling never redirects — it only detects locally-visible changes
         // (e.g. back-channel logout). Redirects stay tied to load and return.
-        void syncNow({ silentCheckCooldownSeconds: null });
+        void syncNow({ allowSilentCheck: false, cooldownSeconds: 0 });
       }
     }, POLL_INTERVAL_MS);
 
