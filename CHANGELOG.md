@@ -1,3 +1,62 @@
+# [2.3.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v2.2.1...v2.3.0) (2026-10-13)
+
+
+### Bug Fixes
+
+* added rewards banner ([3c54e9b](https://github.com/lightriderinc/cloud_platform_nextjs/commit/3c54e9b6fe07736e7458fc575bdc03c99afe5558))
+* board card active styles added ([5a96259](https://github.com/lightriderinc/cloud_platform_nextjs/commit/5a962599e928973ac0330e777bf86d03142e9b39))
+* classroom card badges div ([b20546d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b20546d512195d85f673d6d9668f88f2107d0842))
+* classroom link added to dashboard getting started ([50c5c59](https://github.com/lightriderinc/cloud_platform_nextjs/commit/50c5c5957d094f293ab26b744c8b80a905bc0337))
+* course navigation mobile ([7b67935](https://github.com/lightriderinc/cloud_platform_nextjs/commit/7b67935b22b8090721d25907e6910e5a23c6ce79))
+* course page layout ([629403e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/629403eac8607b3f6be74c136a2699c2217a9691))
+* courses coming soon section ([05a50c6](https://github.com/lightriderinc/cloud_platform_nextjs/commit/05a50c69d872935d78cc2afb31b608b625aed7b0))
+* dashboard cards updated + entropy card removed ([0463550](https://github.com/lightriderinc/cloud_platform_nextjs/commit/04635503aea350d86017d0af58b02348233fe4c0))
+* dashboard getting started layout fixed ([3598a4a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/3598a4a47233b20768e8ce11727b059aad33229f))
+* gate shapes fixed ([e0d77f6](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e0d77f6ffdf27fc77635f22fb65d6c1f1ff683b9))
+* half adder interactive schematic added ([c3d3d8f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/c3d3d8fd96272e42777556ad57b73eb323df6481))
+* infobox link weight updated ([0413ceb](https://github.com/lightriderinc/cloud_platform_nextjs/commit/0413ceb186d57a1cb085e58223de58708e434aaa))
+* invite count in panel updated ([ec51c9a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/ec51c9aa8aae09b03c4eb748e04140da6e6dca2e))
+* invite status badges updated ([af0750b](https://github.com/lightriderinc/cloud_platform_nextjs/commit/af0750bbeabdfe934fb31c866b1f02ef350c5747))
+* link invites by email when the invite cookie is lost; bound date of birth ([d3dc528](https://github.com/lightriderinc/cloud_platform_nextjs/commit/d3dc5283ed59232d78847f7dadc27cd20dafe80a))
+* logical gate explorer cleaned up ([bf9e23a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/bf9e23ae2ec21de60d5afed1f7b86a76b412fdba))
+* payment history updated to payment & history ([8d21d5f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/8d21d5f8dfb0556e7d66a078d829667feeb73d03))
+* plain transactional invite email so Gmail files it in Primary ([ba25f4a](https://github.com/lightriderinc/cloud_platform_nextjs/commit/ba25f4aed1758b00823d002144940f2ad7422e6c))
+* quantum 101 coming soon ([c17ff89](https://github.com/lightriderinc/cloud_platform_nextjs/commit/c17ff895d8f253fb9dd5f3f1f8ef77c2d7c6583d))
+* quantum-compute page renamed to purchase ([a2c5b93](https://github.com/lightriderinc/cloud_platform_nextjs/commit/a2c5b9399f0620d47f73c4755af0c35ceff748ab))
+* refer-earn updated to rewards ([b863b32](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b863b324a5931bd6b1d39e2fd35e0c0ff156486e))
+* removed balance page + credit balance moved to credit management page + payment method moved to payment & history ([21be330](https://github.com/lightriderinc/cloud_platform_nextjs/commit/21be3305aed21f6d9c11a090b37ab476538e4148))
+* return expected failures from account server actions; stop signed-in SSO redirects ([eb4a088](https://github.com/lightriderinc/cloud_platform_nextjs/commit/eb4a088c8213d69143c80b8305d4c5f32a7bb8c4))
+* send credits panel updated ([c512822](https://github.com/lightriderinc/cloud_platform_nextjs/commit/c51282245fda10629ee327cc7f67c9eac1373a97))
+* share and rewards tabs style updated ([3d502f4](https://github.com/lightriderinc/cloud_platform_nextjs/commit/3d502f4ec89e0b309677519f5ca9dd0cddbfad36))
+* share credits page moved under credit management ([6bee385](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6bee3858dbe9e79fa93d9b64ce144621ca754050))
+* show only transfers in Share Credits history, not referral rewards ([9525f51](https://github.com/lightriderinc/cloud_platform_nextjs/commit/9525f512c1d7ad1cc581fe2af8b86b417953a18f))
+* stop session sync from re-running on every navigation ([40d9577](https://github.com/lightriderinc/cloud_platform_nextjs/commit/40d9577cc1c36a5ab5ec79769ddd0c6fe48630c4))
+* stop silent SSO check from destroying in-progress form input ([219d977](https://github.com/lightriderinc/cloud_platform_nextjs/commit/219d977173ea0c1523ac4d45b50f3d9a2f6b585c))
+* tab section titles updated ([4bb7463](https://github.com/lightriderinc/cloud_platform_nextjs/commit/4bb7463586ad999ab0570442e5e14048c3813dc2))
+* title font weight updated ([e57f92d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/e57f92d3c692a7edad879c084ee6cfbff89562de))
+* update send invites ([857f0da](https://github.com/lightriderinc/cloud_platform_nextjs/commit/857f0da78de18ebfa6ef39d44c9f8d4d50014466))
+* updated  buy credits panel ([66fb995](https://github.com/lightriderinc/cloud_platform_nextjs/commit/66fb99593fe80933a193e93ce875917f76805aac))
+* updated "counterparty" in send credits tables ([4bed71f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/4bed71ffdaf8a9bcece147cd3680efb061e5e4cd))
+* updated buy credits card ([b19099f](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b19099f2c6316c6f4f15a1208cfac97d91782ab5))
+* updated changes in routes ([304c5e0](https://github.com/lightriderinc/cloud_platform_nextjs/commit/304c5e0a1148852cc31951717b110abe98a8fcf0))
+* updated credits page to manage credits ([c5a165d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/c5a165de437623bbc48e6c30116b746b1f84eb71))
+* updated max rows to match quota if available ([bb565aa](https://github.com/lightriderinc/cloud_platform_nextjs/commit/bb565aa40e0f3583fd170b9f9e9bec7e09b98c3f))
+* updated quantum course ([2cf3bcf](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2cf3bcfe56f8d9889f7456a2dc42e8d7dea1cbc4))
+* updated sign in required panel style ([6ed0283](https://github.com/lightriderinc/cloud_platform_nextjs/commit/6ed02836eb22ff4d6e6ab6552a6f710340285779))
+* updated table navigation for share credits and rewards ([b85559c](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b85559c2be781652774c1534a0c08fc98430746e))
+* usage updated to balance + purchases updated to credits ([3d7483e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/3d7483e3d134c9bc0f9bd208f91f2e4cb4595c5d))
+* welcome page cards updated ([314ac65](https://github.com/lightriderinc/cloud_platform_nextjs/commit/314ac65e1de97951310d41e16683ce33a9c6abf2))
+
+
+### Features
+
+* added classical computing course ([629f974](https://github.com/lightriderinc/cloud_platform_nextjs/commit/629f9746dd2b6d28d0d61e71323c0648191d6b2d))
+* classroom page init + beginner blackboard ([66d9f10](https://github.com/lightriderinc/cloud_platform_nextjs/commit/66d9f10487104afd618bc605c82925accf0eef19))
+* derive Colab branch from deployment, uv installs, SDK 1.5.2 ([0484ad7](https://github.com/lightriderinc/cloud_platform_nextjs/commit/0484ad700939a865ac08661ece2d01bbfac9c8c1))
+* quantum 101 course ([b1327ba](https://github.com/lightriderinc/cloud_platform_nextjs/commit/b1327bab996ccba5dccce2062d10f0ba95037a8b))
+* referral reward 1000 credits each side; link invites by email fallback; bound date of birth ([bf56a66](https://github.com/lightriderinc/cloud_platform_nextjs/commit/bf56a6613c9d5677630882a530380628791da34d))
+* share credits between users by email ([2d1d5df](https://github.com/lightriderinc/cloud_platform_nextjs/commit/2d1d5dff93294ecc502472bb26ac57cfd146311b))
+
 ## [2.2.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v2.2.0...v2.2.1) (2026-09-15)
 
 
