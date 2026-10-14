@@ -46,3 +46,57 @@ export async function findApiKey(bearerToken: string) {
 
   return apiKey;
 }
+
+// ---------------------------------------------------------------------------
+// Key management for one Customer - the single implementation behind cloud's
+// own /api/settings/tokens routes AND the entropy platform's
+// /api/internal/entropy/api-key routes, so both sites manage the very same
+// key (one per Customer) with the same rules.
+// ---------------------------------------------------------------------------
+
+export type ApiKeyInfo = {
+  keyPrefix: string;
+  createdAt: Date;
+  lastUsedAt: Date | null;
+  rotatedAt: Date | null;
+};
+
+/** The customer's key metadata (never the key or its hash), or null. */
+export async function getApiKeyInfo(customerId: string): Promise<ApiKeyInfo | null> {
+  return db.apiKey.findUnique({
+    where: { customerId },
+    select: { keyPrefix: true, createdAt: true, lastUsedAt: true, rotatedAt: true },
+  });
+}
+
+/**
+ * Creates the customer's key. Returns the full key ONCE, or null when one
+ * already exists (rotate instead).
+ */
+export async function createApiKeyFor(customerId: string): Promise<{ key: string; keyPrefix: string } | null> {
+  const existing = await db.apiKey.findUnique({ where: { customerId } });
+  if (existing) return null;
+  const { fullKey, keyHash, keyPrefix } = generateApiKey();
+  await db.apiKey.create({ data: { customerId, keyHash, keyPrefix } });
+  return { key: fullKey, keyPrefix };
+}
+
+/**
+ * Overwrites the stored key hash in place - the old key's hash is gone the
+ * instant this write commits, so any request already in flight with the old
+ * key fails lookup immediately. No grace period, no dual-valid window.
+ */
+export async function rotateApiKeyFor(customerId: string): Promise<{ key: string; keyPrefix: string }> {
+  const { fullKey, keyHash, keyPrefix } = generateApiKey();
+  await db.apiKey.upsert({
+    where: { customerId },
+    update: { keyHash, keyPrefix, rotatedAt: new Date() },
+    create: { customerId, keyHash, keyPrefix },
+  });
+  return { key: fullKey, keyPrefix };
+}
+
+/** Deletes the customer's key (if any); it stops working immediately. */
+export async function revokeApiKeyFor(customerId: string): Promise<void> {
+  await db.apiKey.delete({ where: { customerId } }).catch(() => {});
+}
