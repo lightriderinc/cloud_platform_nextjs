@@ -1,7 +1,6 @@
-import { generateApiKey } from "@/lib/auth/apiKeys";
+import { createApiKeyFor, getApiKeyInfo, revokeApiKeyFor } from "@/lib/auth/apiKeys";
 import { requireLogtoUser } from "@/lib/auth/session";
 import { getOrCreateCustomer } from "@/lib/billing/customer";
-import { db } from "@/lib/billing/db";
 import { NextResponse } from "next/server";
 
 /**
@@ -9,7 +8,9 @@ import { NextResponse } from "next/server";
  *
  * One API key per Customer (enforced by the `customerId` unique constraint).
  * The full key is only ever returned once, at creation — everywhere else it
- * resolves to just the stored keyPrefix.
+ * resolves to just the stored keyPrefix. The logic lives in
+ * @/lib/auth/apiKeys, shared with the entropy platform's
+ * /api/internal/entropy/api-key routes (same key, managed from either site).
  */
 export async function GET() {
   let user;
@@ -20,13 +21,7 @@ export async function GET() {
   }
 
   const customer = await getOrCreateCustomer(user.sub, user.email);
-
-  const apiKey = await db.apiKey.findUnique({
-    where: { customerId: customer.id },
-    select: { keyPrefix: true, createdAt: true, lastUsedAt: true, rotatedAt: true },
-  });
-
-  return NextResponse.json({ apiKey: apiKey ?? null });
+  return NextResponse.json({ apiKey: await getApiKeyInfo(customer.id) });
 }
 
 export async function POST() {
@@ -39,22 +34,15 @@ export async function POST() {
 
   const customer = await getOrCreateCustomer(user.sub, user.email);
 
-  const existing = await db.apiKey.findUnique({
-    where: { customerId: customer.id },
-  });
-  if (existing) {
+  const created = await createApiKeyFor(customer.id);
+  if (!created) {
     return NextResponse.json(
       { error: "Key already exists. Rotate instead of generating a new one." },
       { status: 409 },
     );
   }
 
-  const { fullKey, keyHash, keyPrefix } = generateApiKey();
-  await db.apiKey.create({
-    data: { customerId: customer.id, keyHash, keyPrefix },
-  });
-
-  return NextResponse.json({ key: fullKey, keyPrefix });
+  return NextResponse.json(created);
 }
 
 export async function DELETE() {
@@ -67,6 +55,6 @@ export async function DELETE() {
 
   const customer = await getOrCreateCustomer(user.sub, user.email);
 
-  await db.apiKey.delete({ where: { customerId: customer.id } }).catch(() => {});
+  await revokeApiKeyFor(customer.id);
   return NextResponse.json({ revoked: true });
 }
