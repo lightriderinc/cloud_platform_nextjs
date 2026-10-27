@@ -64,17 +64,22 @@ export default function CorridorRankingCard({
       </h2>
       {corridors && (
         <>
-          <div className="grid grid-cols-[64px_1fr_64px_44px_120px] gap-3 border-b border-gray-100 pb-1.5 text-xs font-medium tracking-wide text-gray-700">
-            <span>Corridor</span>
-            <span>Score</span>
-            <span className="text-right">Score %</span>
-            <span className="text-right">Cov.</span>
-            <span className="text-right">Best link</span>
-          </div>
-          <div className="flex flex-col divide-y divide-gray-50">
-            {corridors.ranked.map((c) => (
-              <RankRow key={c.corridorId} corridor={c} scoreRange={scoreRange} onSelect={onSelect} />
-            ))}
+          {/* Fixed-width columns: scroll sideways on narrow screens rather than clip "Best link". */}
+          <div className="overflow-x-auto">
+            <div className="min-w-[440px]">
+              <div className="grid grid-cols-[64px_1fr_64px_44px_120px] gap-3 border-b border-gray-100 pb-1.5 text-xs font-medium tracking-wide text-gray-700">
+                <span>Corridor</span>
+                <span>Score</span>
+                <span className="text-right">Score %</span>
+                <span className="text-right">Cov.</span>
+                <span className="text-right">Best link</span>
+              </div>
+              <div className="flex flex-col divide-y divide-gray-50">
+                {corridors.ranked.map((c) => (
+                  <RankRow key={c.corridorId} corridor={c} scoreRange={scoreRange} onSelect={onSelect} />
+                ))}
+              </div>
+            </div>
           </div>
 
           {corridors.unranked.length > 0 && (

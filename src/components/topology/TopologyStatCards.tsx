@@ -6,6 +6,7 @@ import {
   formatEtaShort,
   formatFidelityPct,
   formatProvenance,
+  formatUtcShort,
 } from "@/lib/topology/format";
 
 // TOP STRIP — the answer, most important element on the page.
@@ -26,6 +27,11 @@ export default function TopologyStatCards({
   pollerUnhealthy: boolean;
   pollStatus: TopologyStatusData | undefined;
 }) {
+  // Same rule as the poller's own STALLED_SOURCE_POLL_THRESHOLD check.
+  const sourceStalled =
+    pollStatus?.consecutiveStalledSourcePolls != null &&
+    pollStatus.stalledSourcePollThreshold != null &&
+    pollStatus.consecutiveStalledSourcePolls >= pollStatus.stalledSourcePollThreshold;
   return (
     <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-5">
       <div className="default-radius relative overflow-hidden bg-gray-50 p-4">
@@ -70,6 +76,26 @@ export default function TopologyStatCards({
         <p className="mt-1 block text-sm text-gray-500">
           {nextPollEtaSeconds !== null ? formatEtaShort(nextPollEtaSeconds) : "—"}
         </p>
+        {/* The source time the poller last saw, and how many polls in a row
+            it hasn't moved: an unchanged calibration looks the same whether
+            the chip is quiet or the feed is stuck — this tells them apart. */}
+        <p className="mt-1 block text-xs text-gray-500" data-status="source">
+          Source data: {formatUtcShort(pollStatus?.lastSourceTimestamp ?? null)}
+        </p>
+        {pollStatus?.consecutiveStalledSourcePolls != null && (
+          <p
+            className={`block text-xs ${pollStatus.consecutiveStalledSourcePolls > 0 ? "text-amber-700" : "text-gray-500"}`}
+            data-status="stalled"
+          >
+            Unchanged source: {pollStatus.consecutiveStalledSourcePolls}
+            {pollStatus.stalledSourcePollThreshold != null && ` / ${pollStatus.stalledSourcePollThreshold}`} polls
+          </p>
+        )}
+        {sourceStalled && (
+          <span className="mt-1 inline-block rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-600">
+            Source feed stalled
+          </span>
+        )}
         {pollerUnhealthy && (
           <span
             className="mt-1 inline-block cursor-help rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-600"

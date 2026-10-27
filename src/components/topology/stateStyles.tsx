@@ -1,5 +1,6 @@
 import type { MetricState } from "@/lib/topology/client";
 import { stateLabel } from "@/lib/topology/format";
+import type { CouplerBand } from "@/lib/topology/thresholds";
 
 // Green/amber/red-ish semantics reused from JobStatusBadge's existing
 // active/warning/failed convention elsewhere in this app, rather than
@@ -22,6 +23,18 @@ export const STATE_CLASSES: Record<MetricState, { badge: string; cell: string }>
     badge: "bg-gray-50 text-gray-400 border-gray-200 border-dashed",
     cell: "bg-transparent border-dashed border-gray-300 hover:bg-white transition-colors",
   },
+};
+
+// Coupler line styles on the processor map, keyed by thresholds.ts's
+// couplerBand(). Same green/amber/red semantics as STATE_CLASSES (Tailwind
+// green-500 / amber-500 / red-500 as raw hex, since these are SVG strokes);
+// uncalibrated is dashed gray — "unknown", never a point on the scale.
+// gray-500, not lighter: it has to stay visible on a chiplet's gray-100.
+export const COUPLER_STYLES: Record<CouplerBand, { stroke: string; dash?: string }> = {
+  good: { stroke: "#22c55e" },
+  warn: { stroke: "#f59e0b" },
+  bad: { stroke: "#ef4444" },
+  uncalibrated: { stroke: "#6b7280", dash: "3 2" },
 };
 
 export function StateBadge({ state }: { state: MetricState }) {

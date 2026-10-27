@@ -63,6 +63,8 @@ export interface Metric {
   value: number | null;
   error: number | null;
   state: MetricState;
+  /** When the vendor measured this metric (ISO-8601) — its own time, not the snapshot-wide max. null on snapshots that predate per-metric timestamps, or when the ISA had no record. */
+  measuredAt: string | null;
 }
 
 export interface QubitEntry {
@@ -71,6 +73,9 @@ export interface QubitEntry {
   presence: MetricState;
   /** Present even for an absent qubit (q8 still has chiplet_id "C3") — position is physical even when the qubit isn't exposed. */
   chipletId: string | null;
+  /** Physical lattice position (0-indexed), derived server-side from the snapshot's descriptor. Like chipletId, present for absent qubits too; null only when the snapshot has no descriptor. */
+  latticeRow: number | null;
+  latticeCol: number | null;
   t1: Metric;
   t2: Metric;
   readout: Metric;
@@ -82,6 +87,21 @@ export interface QubitEntry {
   hasCalibration: boolean;
   /** Vendor's original record, including the sentinel placeholder (e.g. {value:0.5,error:1.0}) — informational only, NEVER read as a fidelity. Rendered verbatim in the detail view, never parsed into a displayed number. */
   rawValues: Record<string, unknown>;
+}
+
+/** The descriptor's shape: a width x height qubit lattice, cut into chipletSize x chipletSize blocks. */
+export interface LatticeShape {
+  width: number;
+  height: number;
+  chipletSize: number;
+  chipletArrayCols: number;
+  chipletArrayRows: number;
+}
+
+export interface QubitsData {
+  qubits: QubitEntry[];
+  /** null when the snapshot has no descriptor — callers fall back to index order. */
+  lattice: LatticeShape | null;
 }
 
 export interface EdgeEntry {
@@ -137,6 +157,12 @@ export interface TopologyStatusData {
    * since that would misread "absent" as "disabled".
    */
   pollingEnabled?: boolean;
+  /** The QCS calibration time the poller last fetched — null before its first poll. */
+  lastSourceTimestamp: string | null;
+  /** Consecutive polls whose source timestamp didn't advance (a stuck feed looks identical to a quiet chip by calibration_id alone). */
+  consecutiveStalledSourcePolls: number | null;
+  /** The poller's own threshold for calling the feed stalled. */
+  stalledSourcePollThreshold: number | null;
 }
 
 interface RawEnvelope<T> {
@@ -173,6 +199,8 @@ interface RawQubitEntry {
   qubit_index: number;
   presence: MetricState;
   chiplet_id: string | null;
+  lattice_row?: number | null;
+  lattice_col?: number | null;
   t1_seconds: number | null;
   t1_error: number | null;
   t1_state: MetricState;
@@ -191,10 +219,25 @@ interface RawQubitEntry {
   rx_duration_ns: number | null;
   has_calibration: boolean;
   raw_values: Record<string, unknown>;
+  // Optional: absent from a rigetti-proxy deployed before per-metric timestamps.
+  t1_measured_at?: string | null;
+  t2_measured_at?: string | null;
+  readout_measured_at?: string | null;
+  frb_isolated_measured_at?: string | null;
+  frb_simultaneous_measured_at?: string | null;
+}
+
+interface RawLatticeShape {
+  width: number;
+  height: number;
+  chiplet_size: number;
+  chiplet_array_cols: number;
+  chiplet_array_rows: number;
 }
 
 interface RawQubitsData {
   qubits: RawQubitEntry[];
+  lattice?: RawLatticeShape | null;
 }
 
 interface RawEdgeEntry {
@@ -211,6 +254,7 @@ interface RawEdgeEntry {
   is_inter_chiplet: boolean | null;
   corridor_id: string | null;
   raw_values: Record<string, unknown>;
+  cz_measured_at?: string | null;
 }
 
 interface RawEdgesData {
@@ -254,18 +298,29 @@ function normalizeQubitEntry(raw: RawQubitEntry): QubitEntry {
     qubitIndex: raw.qubit_index,
     presence: raw.presence,
     chipletId: raw.chiplet_id,
-    t1: { value: raw.t1_seconds, error: raw.t1_error, state: raw.t1_state },
-    t2: { value: raw.t2_seconds, error: raw.t2_error, state: raw.t2_state },
-    readout: { value: raw.readout_fidelity, error: raw.readout_error, state: raw.readout_state },
+    // `?? null`: a rigetti-proxy deployed before lattice positions existed
+    // omits these, which reads as "no descriptor" (index-order layout).
+    latticeRow: raw.lattice_row ?? null,
+    latticeCol: raw.lattice_col ?? null,
+    t1: { value: raw.t1_seconds, error: raw.t1_error, state: raw.t1_state, measuredAt: raw.t1_measured_at ?? null },
+    t2: { value: raw.t2_seconds, error: raw.t2_error, state: raw.t2_state, measuredAt: raw.t2_measured_at ?? null },
+    readout: {
+      value: raw.readout_fidelity,
+      error: raw.readout_error,
+      state: raw.readout_state,
+      measuredAt: raw.readout_measured_at ?? null,
+    },
     frbIsolated: {
       value: raw.frb_isolated,
       error: raw.frb_isolated_error,
       state: raw.frb_isolated_state,
+      measuredAt: raw.frb_isolated_measured_at ?? null,
     },
     frbSimultaneous: {
       value: raw.frb_simultaneous,
       error: raw.frb_simultaneous_error,
       state: raw.frb_simultaneous_state,
+      measuredAt: raw.frb_simultaneous_measured_at ?? null,
     },
     rxDurationNs: raw.rx_duration_ns,
     hasCalibration: raw.has_calibration,
@@ -278,7 +333,7 @@ function normalizeEdgeEntry(raw: RawEdgeEntry): EdgeEntry {
     nodeA: raw.node_a,
     nodeB: raw.node_b,
     presence: raw.presence,
-    cz: { value: raw.cz_fidelity, error: raw.cz_error, state: raw.cz_state },
+    cz: { value: raw.cz_fidelity, error: raw.cz_error, state: raw.cz_state, measuredAt: raw.cz_measured_at ?? null },
     czDurationNs: raw.cz_duration_ns,
     hasCalibration: raw.has_calibration,
     chipletA: raw.chiplet_a,
@@ -311,9 +366,20 @@ export async function fetchCorridors(
 
 export async function fetchQubits(
   backendId: string = DEFAULT_TOPOLOGY_BACKEND_ID,
-): Promise<TopologyEnvelope<QubitEntry[]>> {
+): Promise<TopologyEnvelope<QubitsData>> {
   const raw = await fetchTopologyJson<RawQubitsData>("qubits", backendId);
-  return normalizeEnvelope(raw, (data) => (data.qubits ?? []).map(normalizeQubitEntry));
+  return normalizeEnvelope(raw, (data) => ({
+    qubits: (data.qubits ?? []).map(normalizeQubitEntry),
+    lattice: data.lattice
+      ? {
+          width: data.lattice.width,
+          height: data.lattice.height,
+          chipletSize: data.lattice.chiplet_size,
+          chipletArrayCols: data.lattice.chiplet_array_cols,
+          chipletArrayRows: data.lattice.chiplet_array_rows,
+        }
+      : null,
+  }));
 }
 
 export async function fetchEdges(
@@ -334,6 +400,9 @@ interface RawTopologyStatusData {
   snapshot_age_seconds: number;
   is_stale: boolean;
   polling_enabled?: boolean;
+  last_source_timestamp?: string | null;
+  consecutive_stalled_source_polls?: number | null;
+  stalled_source_poll_threshold?: number | null;
 }
 
 // /topology/status is flat; corridors/qubits/edges are wrapped in
@@ -361,5 +430,8 @@ export async function fetchTopologyStatus(
     snapshotAgeSeconds: raw.snapshot_age_seconds,
     isStale: raw.is_stale,
     pollingEnabled: raw.polling_enabled,
+    lastSourceTimestamp: raw.last_source_timestamp ?? null,
+    consecutiveStalledSourcePolls: raw.consecutive_stalled_source_polls ?? null,
+    stalledSourcePollThreshold: raw.stalled_source_poll_threshold ?? null,
   };
 }

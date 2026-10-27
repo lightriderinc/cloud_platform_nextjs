@@ -11,6 +11,10 @@ import type { CSSProperties, MouseEvent, ReactNode } from "react";
 
 export interface ChipletBoxCell {
   key: string | number;
+  /** DOM id for the cell, for a caller that anchors overlay geometry (e.g. coupler lines) to it. */
+  id?: string;
+  /** 0-indexed position in the box's grid. When given, the cell is pinned there (physical layout); when omitted, cells flow in array order. */
+  position?: { row: number; col: number } | null;
   className?: string;
   style?: CSSProperties;
   onClick?: (e: MouseEvent) => void;
@@ -25,6 +29,7 @@ export default function ChipletBox({
   countLabel,
   cells,
   gridCols = 3,
+  cellGapClassName = "gap-1",
   selected,
   disabled,
   boxClassName,
@@ -41,6 +46,8 @@ export default function ChipletBox({
   countLabel?: ReactNode;
   cells: ChipletBoxCell[];
   gridCols?: number;
+  /** Tailwind gap class between cells — ProcessorMapCard widens it so coupler lines have room to be drawn between cells. */
+  cellGapClassName?: string;
   /** Outer-box selection ring, for a multi-select caller (ProcessorMapCard doesn't use this — it selects individual qubits, not the whole chiplet). */
   selected?: boolean;
   disabled?: boolean;
@@ -82,12 +89,17 @@ export default function ChipletBox({
           <span className={countLabelClassName ?? "text-xs text-gray-400"}>{countLabel}</span>
         )}
       </div>
-      <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${gridCols}, 1fr)` }}>
+      <div className={`grid ${cellGapClassName}`} style={{ gridTemplateColumns: `repeat(${gridCols}, 1fr)` }}>
         {cells.map((cell) => (
           <div
             key={cell.key}
+            id={cell.id}
             className={`aspect-square default-radius border ${cell.className ?? ""}`}
-            style={cell.style}
+            style={
+              cell.position
+                ? { ...cell.style, gridRow: cell.position.row + 1, gridColumn: cell.position.col + 1 }
+                : cell.style
+            }
             onClick={cell.onClick}
             onMouseEnter={cell.onMouseEnter}
             onMouseMove={cell.onMouseMove}

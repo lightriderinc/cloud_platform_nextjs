@@ -82,3 +82,28 @@ export function formatEtaShort(seconds: number): string {
 export function formatCalibrationShort(calibrationId: string): string {
   return calibrationId.replace(/^sha256:/, "").slice(0, 8);
 }
+
+/** "measured 12m ago" / "measured 5h ago" / "measured 2d ago" — one metric's own age. null age reads as not recorded, never as "just now". */
+export function formatMeasuredAge(seconds: number | null): string {
+  if (seconds === null) return "measured time not recorded";
+  const s = Math.max(0, seconds);
+  if (s < 3600) return `measured ${Math.floor(s / 60)}m ago`;
+  if (s < 48 * 3600) return `measured ${Math.floor(s / 3600)}h ago`;
+  return `measured ${Math.floor(s / 86400)}d ago`;
+}
+
+/** "36h" — a threshold duration in the units people think of it in. */
+export function formatHours(seconds: number): string {
+  return `${+(seconds / 3600).toFixed(1)}h`;
+}
+
+/** "Oct 27, 15:33 UTC" — an absolute timestamp, no client-clock arithmetic. */
+export function formatUtcShort(iso: string | null): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const month = d.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const mm = String(d.getUTCMinutes()).padStart(2, "0");
+  return `${month} ${d.getUTCDate()}, ${hh}:${mm} UTC`;
+}
