@@ -1,15 +1,11 @@
-import type { CorridorEntry, TopologyEnvelope, TopologyStatusData } from "@/lib/topology/client";
-import {
-  formatAgeShort,
-  formatAgoShort,
-  formatCalibrationShort,
-  formatEtaShort,
-  formatFidelityPct,
-  formatProvenance,
-  formatUtcShort,
-} from "@/lib/topology/format";
+import type { CorridorEntry, EdgeEntry, TopologyEnvelope, TopologyStatusData } from "@/lib/topology/client";
+import { formatAgo, formatCalibrationShort, formatNextCheck, formatPct } from "@/lib/topology/format";
 
-// TOP STRIP — the answer, most important element on the page.
+const card = "default-radius relative overflow-hidden bg-gray-50 p-4";
+const title = "block text-sm font-semibold text-gray-300";
+const badge = "mt-1 inline-block rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-600";
+
+// TOP STRIP: the answer, most important element on the page.
 export default function TopologyStatCards({
   topCorridor,
   bestCoupler,
@@ -20,102 +16,79 @@ export default function TopologyStatCards({
   pollStatus,
 }: {
   topCorridor: CorridorEntry | null;
-  bestCoupler: CorridorEntry | null;
+  /** Lowest CZ error among all measured couplers, inside chiplets and between them. */
+  bestCoupler: EdgeEntry | null;
   envelope: TopologyEnvelope<unknown> | undefined;
   lastPollAgoSeconds: number | null;
   nextPollEtaSeconds: number | null;
   pollerUnhealthy: boolean;
   pollStatus: TopologyStatusData | undefined;
 }) {
-  // Same rule as the poller's own STALLED_SOURCE_POLL_THRESHOLD check.
-  const sourceStalled =
+  // Same rule as the poller's own STALLED_SOURCE_POLL_THRESHOLD check: the
+  // calibration data hasn't changed for that many checks in a row.
+  const feedPaused =
     pollStatus?.consecutiveStalledSourcePolls != null &&
     pollStatus.stalledSourcePollThreshold != null &&
     pollStatus.consecutiveStalledSourcePolls >= pollStatus.stalledSourcePollThreshold;
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-5">
-      <div className="default-radius relative overflow-hidden bg-gray-50 p-4">
-        <p className="block text-sm font-semibold text-gray-300">Best corridor</p>
-        <p className="mt-2 block text-xl font-semibold">{topCorridor?.corridorId ?? "—"}</p>
-        <p className="mt-1 block text-sm text-gray-500">
-          {topCorridor ? `score ${((topCorridor.score as number) * 100).toFixed(2)}%` : "—"}
-        </p>
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className={card}>
+        <p className={title}>Best chiplet link</p>
+        <p className="mt-2 block text-xl font-semibold">{topCorridor?.corridorId ?? "None"}</p>
+        <p className="mt-1 block text-sm text-gray-500">{topCorridor ? `Score ${formatPct(topCorridor.score)}` : ""}</p>
       </div>
-      <div className="default-radius relative overflow-hidden bg-gray-50 p-4">
-        <p className="block text-sm font-semibold text-gray-300">Best coupler</p>
+      <div className={card}>
+        <p className={title}>Best coupler</p>
         <p className="mt-2 block text-xl font-semibold">
-          {bestCoupler?.bestLink ? `q${bestCoupler.bestLink[0]}-q${bestCoupler.bestLink[1]}` : "—"}
+          {bestCoupler ? `q${bestCoupler.nodeA}-q${bestCoupler.nodeB}` : "None"}
         </p>
         <p className="mt-1 block text-sm text-gray-500">
-          {bestCoupler ? `${formatFidelityPct(bestCoupler.bestLinkFcz, 2)} fCZ` : "—"}
+          {bestCoupler?.cz.value != null ? `${formatPct(1 - bestCoupler.cz.value)} CZ error` : ""}
         </p>
       </div>
-      <div className="default-radius relative overflow-hidden bg-gray-50 p-4">
-        {/* Rigetti's calibration age — not ours. See "Last poll" below for
-            our own poller's health; the two answer different questions. */}
-        <p className="block text-sm font-semibold text-gray-300">Calibration</p>
+      <div className={card}>
+        {/* When Rigetti last calibrated the chip. "Last checked" below is
+            when we last fetched it; the two answer different questions. */}
+        <p className={title}>Last calibrated</p>
         <p className="mt-2 block text-xl font-semibold text-gray-900">
-          {envelope ? formatAgeShort(envelope.snapshotAgeSeconds) : "—"}
+          {envelope ? formatAgo(envelope.snapshotAgeSeconds) : "Unknown"}
         </p>
-        <p className="mt-1 block text-sm text-gray-500">
-          {envelope ? `Rigetti's data · ${formatCalibrationShort(envelope.calibrationId)}` : "—"}
+        <p className="mt-1 block text-sm text-gray-500" title="Use this ID to match downloads and runs to this calibration.">
+          {envelope ? `Calibration ID ${formatCalibrationShort(envelope.calibrationId)}` : ""}
         </p>
-        {envelope?.isStale && (
-          <span className="mt-1 inline-block rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-600">
-            Stale snapshot
-          </span>
-        )}
+        {envelope?.isStale && <span className={badge}>Out of date</span>}
       </div>
-      <div className="default-radius relative overflow-hidden bg-gray-50 p-4">
-        {/* Our own poller. A stopped poller looks identical to a healthy
-            one via calibration age alone — this is the actual signal. */}
-        <p className="block text-sm font-semibold text-gray-300">Last poll</p>
+      <div className={card}>
+        {/* Our own check of Rigetti's data. A stopped check looks the same
+            as a healthy one by calibration age alone; this is the signal. */}
+        <p className={title}>Last checked</p>
         <p className="mt-2 block text-xl font-semibold text-gray-900">
-          {lastPollAgoSeconds !== null ? formatAgoShort(lastPollAgoSeconds) : "—"}
+          {lastPollAgoSeconds !== null ? formatAgo(lastPollAgoSeconds) : "Unknown"}
         </p>
         <p className="mt-1 block text-sm text-gray-500">
-          {nextPollEtaSeconds !== null ? formatEtaShort(nextPollEtaSeconds) : "—"}
+          {nextPollEtaSeconds !== null ? formatNextCheck(nextPollEtaSeconds) : ""}
         </p>
-        {/* The source time the poller last saw, and how many polls in a row
-            it hasn't moved: an unchanged calibration looks the same whether
-            the chip is quiet or the feed is stuck — this tells them apart. */}
-        <p className="mt-1 block text-xs text-gray-500" data-status="source">
-          Source data: {formatUtcShort(pollStatus?.lastSourceTimestamp ?? null)}
-        </p>
-        {pollStatus?.consecutiveStalledSourcePolls != null && (
-          <p
-            className={`block text-xs ${pollStatus.consecutiveStalledSourcePolls > 0 ? "text-amber-700" : "text-gray-500"}`}
-            data-status="stalled"
+        {feedPaused && (
+          <span
+            className={`${badge} cursor-help`}
+            data-status="feed-paused"
+            title={`Rigetti's calibration data has not changed in the last ${pollStatus?.consecutiveStalledSourcePolls} checks.`}
           >
-            Unchanged source: {pollStatus.consecutiveStalledSourcePolls}
-            {pollStatus.stalledSourcePollThreshold != null && ` / ${pollStatus.stalledSourcePollThreshold}`} polls
-          </p>
-        )}
-        {sourceStalled && (
-          <span className="mt-1 inline-block rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-600">
-            Source feed stalled
+            Data feed paused
           </span>
         )}
         {pollerUnhealthy && (
           <span
-            className="mt-1 inline-block cursor-help rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-600"
+            className={`${badge} ml-1 cursor-help`}
             title={
-              pollStatus?.lastError
-                ? pollStatus.lastError
-                : pollStatus?.pollingEnabled === false
-                  ? "Polling is disabled"
-                  : "Poll ran but did not succeed — no error message recorded"
+              pollStatus?.pollingEnabled === false
+                ? "Automatic checks are turned off."
+                : pollStatus?.lastError ?? "The last check did not finish."
             }
           >
-            {pollStatus?.pollingEnabled === false ? "Polling disabled" : "Poll failures"}
+            {pollStatus?.pollingEnabled === false ? "Checks off" : "Last check failed"}
           </span>
         )}
-      </div>
-      <div className="default-radius relative overflow-hidden bg-gray-50 p-4">
-        <p className="block text-sm font-semibold text-gray-300">Provenance</p>
-        <p className="mt-2 block text-xl font-semibold text-gray-900">
-          {envelope ? formatProvenance(envelope.topologyProvenance) : "—"}
-        </p>
       </div>
     </div>
   );

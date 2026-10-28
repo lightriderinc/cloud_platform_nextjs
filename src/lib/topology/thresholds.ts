@@ -1,5 +1,5 @@
 import type { EdgeEntry, Metric, QubitEntry } from "./client";
-import { formatFidelityPct, formatSeconds } from "./format";
+import { formatPct, formatSeconds } from "./format";
 
 // Every quality threshold the topology views color or flag by lives here —
 // change a number in this file, not in a component.
@@ -72,7 +72,7 @@ export interface QubitMapMetric {
   /** The number the map colors by and displays (e.g. readout error = 1 - fRO). null when not a number. */
   displayValue: (m: Metric) => number | null;
   format: (v: number | null) => string;
-  /** null = no threshold defined for this metric. */
+  /** null = no threshold defined for this metric. `label` is the legend text for the ring, e.g. "Below 99.5%". */
   threshold: { value: number; label: string } | null;
   /** On the source Metric's value — true when measured and below the §3 threshold. */
   belowThreshold: (m: Metric) => boolean;
@@ -87,12 +87,13 @@ function measuredBelow(limit: number | null) {
 export const QUBIT_MAP_METRICS: QubitMapMetric[] = [
   {
     id: "frbSimultaneous",
-    label: "fRB (simultaneous)",
+    // fRB measured with every qubit driven at once (crosstalk included).
+    label: "1Q fidelity",
     better: "higher",
     source: (q) => q.frbSimultaneous,
     displayValue: (m) => m.value,
-    format: (v) => formatFidelityPct(v, 2),
-    threshold: { value: DEGRADED_THRESHOLDS.singleQubitFidelity, label: `fRB < ${pct(DEGRADED_THRESHOLDS.singleQubitFidelity)}` },
+    format: (v) => formatPct(v),
+    threshold: { value: DEGRADED_THRESHOLDS.singleQubitFidelity, label: `Below ${pct(DEGRADED_THRESHOLDS.singleQubitFidelity)}` },
     belowThreshold: measuredBelow(DEGRADED_THRESHOLDS.singleQubitFidelity),
   },
   {
@@ -101,11 +102,9 @@ export const QUBIT_MAP_METRICS: QubitMapMetric[] = [
     better: "lower",
     source: (q) => q.readout,
     displayValue: (m) => (m.value === null ? null : 1 - m.value),
-    format: (v) => formatFidelityPct(v, 2),
-    threshold: {
-      value: DEGRADED_THRESHOLDS.readoutFidelity,
-      label: `error > ${pct(1 - DEGRADED_THRESHOLDS.readoutFidelity)} (fRO < ${pct(DEGRADED_THRESHOLDS.readoutFidelity)})`,
-    },
+    format: (v) => formatPct(v),
+    // The limit is on readout fidelity (below 90%), shown as the error it means.
+    threshold: { value: DEGRADED_THRESHOLDS.readoutFidelity, label: `Over ${pct(1 - DEGRADED_THRESHOLDS.readoutFidelity)}` },
     belowThreshold: measuredBelow(DEGRADED_THRESHOLDS.readoutFidelity),
   },
   {

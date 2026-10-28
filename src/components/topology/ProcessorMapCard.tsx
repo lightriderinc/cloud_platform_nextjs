@@ -2,12 +2,12 @@
 
 import type { CorridorEntry, EdgeEntry, LatticeShape, Metric, QubitEntry } from "@/lib/topology/client";
 import {
-  formatFidelityPct,
-  formatMetricValue,
-  formatScore,
   formatHours,
   formatMeasuredAge,
-  stateLabel,
+  formatMetricValue,
+  formatPct,
+  formatPctErrorBar,
+  NOT_MEASURED,
 } from "@/lib/topology/format";
 import { cellPositionInChiplet } from "@/lib/topology/layout";
 import {
@@ -15,14 +15,14 @@ import {
   CZ_ERROR_BANDS,
   couplerBand,
   isDegraded,
-  QUBIT_MAP_METRICS,
-  type CouplerBand,
-  type QubitMapMetric,
-  type QubitMapMetricId,
   isStaleAge,
   METRIC_STALE_AFTER_SECONDS,
   metricAgeSeconds,
+  QUBIT_MAP_METRICS,
   type AgeReference,
+  type CouplerBand,
+  type QubitMapMetric,
+  type QubitMapMetricId,
 } from "@/lib/topology/thresholds";
 import {
   useCallback,
@@ -31,14 +31,14 @@ import {
   useRef,
   useState,
   type Dispatch,
+  type MouseEvent,
   type ReactNode,
   type SetStateAction,
 } from "react";
-import { MdArrowLeft, MdArrowRight } from "react-icons/md";
 import ChipletBox from "./ChipletBox";
 import { clampedRange, qualityRgb, scoreColor, toCss } from "./errorGradient";
 import { couplerSegment, gapBand, type Rect, type Segment } from "./mapGeometry";
-import { COUPLER_STYLES, STATE_CLASSES } from "./stateStyles";
+import { COUPLER_STYLES, fittedDash, STATE_CLASSES } from "./stateStyles";
 import type { Selection, TooltipState } from "./types";
 
 // Layout comes from the snapshot's descriptor (`lattice`): chiplets per row
@@ -52,16 +52,18 @@ const FALLBACK_CHIPLET_SIZE = 3;
 // Wider than ChipletBox's default gap-1 so a coupler segment between two
 // cells is long enough to see and hover.
 const CELL_GAP_CLASS = "gap-2.5";
-const COUPLER_WIDTH = 2.5;
 const COUPLER_HIT_WIDTH = 10;
 const CORRIDOR_INSET = 1;
 const CORRIDOR_FILL_OPACITY = 0.35;
 const UNSCORED_CORRIDOR_COLOR = "#a78bfa";
 const SELECTED_STROKE = "#111827";
-// Below-threshold ring on a qubit cell — amber, the same warning color as
-// the coupler warn band and the "Degraded" state badge.
+// Below-threshold ring on a qubit cell: amber, the same warning color as
+// the coupler warn band.
 const DEGRADED_RING = "0 0 0 2px #f59e0b";
 const GRADIENT_CSS = "linear-gradient(90deg, #00E494, #27728B, #4E0082)";
+// Stale (older than METRIC_STALE_AFTER_SECONDS) is shown, never hidden:
+// faded on the map, with a note in the tooltip and detail panel.
+const STALE_OPACITY = 0.35;
 
 interface Overlay {
   width: number;
@@ -75,61 +77,82 @@ function edgeKey(e: EdgeEntry): string {
   return `${e.nodeA}-${e.nodeB}`;
 }
 
-// Stale (older than METRIC_STALE_AFTER_SECONDS) is shown, never hidden:
-// faded on the map, greyed with a note in the tooltip and detail panel.
-const STALE_OPACITY = 0.35;
+function isMeasured(m: Metric): boolean {
+  return m.state === "active" || m.state === "degraded";
+}
 
-/** "<br/>measured 5h ago" for a measured value; nothing for sentinel/absent (no measurement to date) or when no time was recorded. */
+/** "<br/>Measured 5 hours ago", for a measured value with a recorded time; nothing otherwise. */
 function measuredLine(m: Metric, ageRef: AgeReference | null): string {
-  if ((m.state !== "active" && m.state !== "degraded") || !m.measuredAt) return "";
+  if (!isMeasured(m) || !m.measuredAt) return "";
   const age = metricAgeSeconds(m.measuredAt, ageRef);
   if (age === null) return "";
   return isStaleAge(age)
-    ? `<br/><span style="color:#9ca3af">${formatMeasuredAge(age)} — older than ${formatHours(METRIC_STALE_AFTER_SECONDS)}</span>`
+    ? `<br/><span style="color:#fbbf24">${formatMeasuredAge(age)}. Older than ${formatHours(METRIC_STALE_AFTER_SECONDS)}.</span>`
     : `<br/>${formatMeasuredAge(age)}`;
 }
 
 function isStaleMetric(m: Metric, ageRef: AgeReference | null): boolean {
-  return (m.state === "active" || m.state === "degraded") && isStaleAge(metricAgeSeconds(m.measuredAt, ageRef));
+  return isMeasured(m) && isStaleAge(metricAgeSeconds(m.measuredAt, ageRef));
 }
 
 function couplerTooltip(e: EdgeEntry, ageRef: AgeReference | null): string {
-  const where = e.corridorId
-    ? `corridor ${e.corridorId}`
-    : `intra-chiplet${e.chipletA ? ` ${e.chipletA}` : ""}`;
-  const value = formatMetricValue(e.cz, (v) => formatFidelityPct(v, 2));
-  const error =
-    e.cz.state !== "sentinel" && e.cz.error !== null ? ` ± ${(e.cz.error * 100).toFixed(2)}%` : "";
-  const state = e.presence === "absent" ? stateLabel("absent") : stateLabel(e.cz.state);
-  return `<b>q${e.nodeA}–q${e.nodeB}</b> · ${where}<br/>CZ fidelity ${value}${error}<br/>State: ${state}${measuredLine(e.cz, ageRef)}`;
+  const where = e.corridorId ? `link ${e.corridorId}` : `inside ${e.chipletA ?? "chiplet"}`;
+  const head = `<b>q${e.nodeA}-q${e.nodeB}</b> · ${where}`;
+  if (e.presence === "absent") return `${head}<br/>Absent`;
+  if (!isMeasured(e.cz) || e.cz.value === null) return `${head}<br/>CZ error: ${NOT_MEASURED}`;
+  const error = e.cz.error !== null ? ` ${formatPctErrorBar(e.cz.error)}` : "";
+  const over = couplerBand(e) === "bad" ? "<br/>Below threshold" : "";
+  return `${head}<br/>CZ error: ${formatPct(1 - e.cz.value)}${error}${over}${measuredLine(e.cz, ageRef)}`;
 }
 
 function qubitTooltip(q: QubitEntry, metric: QubitMapMetric, ageRef: AgeReference | null): string {
-  if (q.presence === "absent") {
-    return `<b>q${q.qubitIndex}</b> — absent<br/>Not exposed in the ISA.`;
-  }
+  const head = `<b>q${q.qubitIndex}</b>${q.chipletId ? ` · ${q.chipletId}` : ""}`;
+  if (q.presence === "absent") return `${head}<br/>Absent`;
   const m = metric.source(q);
   const value = formatMetricValue({ ...m, value: metric.displayValue(m) }, metric.format);
-  // Error bars are on the source fidelity/seconds; 1 - x keeps the same magnitude.
-  const error =
-    (m.state === "active" || m.state === "degraded") && m.error !== null ? ` ± ${metric.format(m.error)}` : "";
-  const flag = isDegraded(q, metric) && metric.threshold ? `<br/>⚠ Below threshold (${metric.threshold.label})` : "";
-  return `<b>q${q.qubitIndex}</b> · ${q.chipletId ?? "—"}<br/>${metric.label}: ${value}${error}<br/>State: ${stateLabel(m.state)}${flag}${measuredLine(m, ageRef)}`;
+  // The error bar is on the source value; 1 - x keeps the same magnitude.
+  const errorBar =
+    isMeasured(m) && m.error !== null ? ` ${metric.id === "t1" || metric.id === "t2Star" ? `± ${metric.format(m.error)}` : formatPctErrorBar(m.error)}` : "";
+  const flag = isDegraded(q, metric) ? "<br/>Below threshold" : "";
+  return `${head}<br/>${metric.label}: ${value}${errorBar}${flag}${measuredLine(m, ageRef)}`;
 }
 
 function pct(v: number): string {
   return `${+(v * 100).toFixed(2)}%`;
 }
 
-/** One coupler legend swatch: a short line in that band's stroke. */
+// --- Legend -----------------------------------------------------------------
+
+function LegendGroup({ title, children }: { title?: string; children: ReactNode }) {
+  return (
+    <div>
+      {title && <p className="mb-1.5 text-xs font-medium text-gray-700">{title}</p>}
+      <ul className="flex flex-col gap-1.5">{children}</ul>
+    </div>
+  );
+}
+
+function LegendItem({ swatch, children, ...rest }: { swatch: ReactNode; children: ReactNode; [data: `data-${string}`]: string }) {
+  return (
+    <li className="flex items-center gap-2" {...rest}>
+      <span className="flex w-5 shrink-0 items-center justify-center">{swatch}</span>
+      <span>{children}</span>
+    </li>
+  );
+}
+
 function CouplerSwatch({ band }: { band: CouplerBand }) {
   const s = COUPLER_STYLES[band];
   return (
-    <svg width="18" height="6" aria-hidden>
-      <line x1="1" y1="3" x2="17" y2="3" stroke={s.stroke} strokeWidth={COUPLER_WIDTH} strokeDasharray={s.dash} />
+    <svg width="20" height="6" aria-hidden>
+      <line x1="0" y1="3" x2="20" y2="3" stroke={s.stroke} strokeWidth={s.width} strokeDasharray={s.dash ? fittedDash(20, s.dash) : undefined} />
     </svg>
   );
 }
+
+const cellSwatch = "h-3 w-3 default-radius border";
+
+// --- Card -------------------------------------------------------------------
 
 export default function ProcessorMapCard({
   allCorridors,
@@ -140,23 +163,26 @@ export default function ProcessorMapCard({
   scoreRange,
   selection,
   ageRef,
+  layoutConfirmed,
   actions,
   onSelect,
   onTooltip,
 }: {
   allCorridors: CorridorEntry[];
-  /** Every coupler, intra- and inter-chiplet — each is drawn on the map. */
+  /** Every coupler, intra- and inter-chiplet; each is drawn on the map. */
   edges: EdgeEntry[];
-  /** In display order — row-major physical order when `lattice` is known. */
+  /** In display order: row-major physical order when `lattice` is known. */
   chipletIds: string[];
   qubitsByChiplet: Map<string, QubitEntry[]>;
   lattice: LatticeShape | null;
   scoreRange: { lo: number; hi: number };
-  /** Highlights the selected coupler/corridor on the map. */
+  /** Highlights the selected coupler/link/chiplet on the map. */
   selection: Selection | null;
-  /** Anchors per-metric "measured Xh ago" on the snapshot's server-side age. */
+  /** Anchors per-metric "Measured X ago" on the snapshot's server-side age. */
   ageRef: AgeReference | null;
-  /** Extra controls for the card header (e.g. snapshot export). */
+  /** false when Rigetti hasn't confirmed which qubits form which chiplet (descriptor provenance "inferred"). */
+  layoutConfirmed: boolean;
+  /** Extra controls for the card header (the downloads). */
   actions?: ReactNode;
   onSelect: (s: Selection) => void;
   onTooltip: Dispatch<SetStateAction<TooltipState | null>>;
@@ -166,37 +192,29 @@ export default function ProcessorMapCard({
   const [metricId, setMetricId] = useState<QubitMapMetricId>("frbSimultaneous");
   const metric = QUBIT_MAP_METRICS.find((m) => m.id === metricId) ?? QUBIT_MAP_METRICS[0];
 
-  // 5th–95th percentile of the selected metric's measured values only —
-  // sentinel/absent keep their fixed swatches and are never part of it.
-  // Values beyond it pin to the end color; their tooltip still shows the
-  // real number and the threshold ring is decided on the real number too.
-  const valueRange = useMemo(
+  // Colors span the 5th to 95th percentile of the selected metric's measured
+  // values; values beyond it pin to the end color. The legend's Best/Worst
+  // labels are the true extremes, so they never claim a better or worse
+  // value than the chip has. Unmeasured/absent qubits are never in either.
+  const measuredValues = useMemo(
     () =>
-      clampedRange(
-        Array.from(qubitsByChiplet.values())
-          .flat()
-          .map((q) => colorableValue(q, metric))
-          .filter((v): v is number => v !== null),
-      ),
+      Array.from(qubitsByChiplet.values())
+        .flat()
+        .map((q) => colorableValue(q, metric))
+        .filter((v): v is number => v !== null),
     [qubitsByChiplet, metric],
   );
+  const valueRange = useMemo(() => clampedRange(measuredValues), [measuredValues]);
   const degradedCount = useMemo(
     () => Array.from(qubitsByChiplet.values()).flat().filter((q) => isDegraded(q, metric)).length,
     [qubitsByChiplet, metric],
   );
-  // Legend reads good -> bad, left to right, matching the gradient. An end
-  // with values beyond it gets ≥/≤ — "≥ 12% shown as worst".
-  const legendEnds = valueRange
-    ? metric.better === "higher"
-      ? [
-          `${valueRange.clippedHigh ? "≥ " : ""}${metric.format(valueRange.max)}`,
-          `${valueRange.clippedLow ? "≤ " : ""}${metric.format(valueRange.min)}`,
-        ]
-      : [
-          `${valueRange.clippedLow ? "≤ " : ""}${metric.format(valueRange.min)}`,
-          `${valueRange.clippedHigh ? "≥ " : ""}${metric.format(valueRange.max)}`,
-        ]
-    : null;
+  const extremes =
+    measuredValues.length === 0
+      ? null
+      : metric.better === "higher"
+        ? { best: Math.max(...measuredValues), worst: Math.min(...measuredValues) }
+        : { best: Math.min(...measuredValues), worst: Math.max(...measuredValues) };
   const rangeClipped = !!valueRange && (valueRange.clippedLow || valueRange.clippedHigh);
 
   const tooltipAt = (e: { clientX: number; clientY: number }, html: string) =>
@@ -205,8 +223,8 @@ export default function ProcessorMapCard({
     onTooltip((t) => (t ? { ...t, x: e.clientX + 12, y: e.clientY + 12 } : t));
 
   // Overlay geometry is measured from the rendered cells/boxes (by id), so
-  // it follows whatever the grid does — breakpoints, physical positions,
-  // the fallback order — without restating that layout here.
+  // it follows whatever the grid does (breakpoints, physical positions,
+  // the fallback order) without restating that layout here.
   const [overlay, setOverlay] = useState<Overlay>(EMPTY_OVERLAY);
   const measure = useCallback(() => {
     const wrap = mapWrapRef.current;
@@ -263,13 +281,87 @@ export default function ProcessorMapCard({
   const selectedCorridorId = selection?.kind === "corridor" ? selection.corridor.corridorId : null;
   const selectedChipletId = selection?.kind === "chiplet" ? selection.chipletId : null;
 
+  const legend = (
+    <div
+      className="grid shrink-0 grid-cols-2 gap-x-4 gap-y-4 text-xs text-gray-600 sm:flex sm:w-44 sm:flex-col sm:gap-4 sm:pt-3"
+      data-legend-panel
+    >
+      <LegendGroup title="Qubits">
+        <li data-legend="metric-range">
+          <div
+            className="h-2 w-full rounded-sm"
+            style={{ background: GRADIENT_CSS }}
+            aria-label={rangeClipped ? "A few extreme values share the end colors, so the rest are easier to tell apart." : undefined}
+            onMouseEnter={(e: MouseEvent) =>
+              rangeClipped &&
+              tooltipAt(e, "A few extreme values share the end colors, so the rest are easier to tell apart.")
+            }
+            onMouseMove={moveTooltip}
+            onMouseLeave={() => onTooltip(null)}
+          />
+          <div className="mt-1 flex justify-between gap-2 text-gray-500">
+            {extremes ? (
+              <>
+                <span className="whitespace-nowrap">Best {metric.format(extremes.best)}</span>
+                <span className="whitespace-nowrap">Worst {metric.format(extremes.worst)}</span>
+              </>
+            ) : (
+              <span>{NOT_MEASURED}</span>
+            )}
+          </div>
+        </li>
+        {metric.threshold && (
+          <LegendItem
+            data-legend="degraded"
+            swatch={<span className={`${cellSwatch} border-gray-200 bg-gray-100`} style={{ boxShadow: DEGRADED_RING }} />}
+          >
+            {metric.threshold.label} ({degradedCount})
+          </LegendItem>
+        )}
+        <LegendItem swatch={<span className={`${cellSwatch} border-dashed border-purple-400 bg-purple-200`} />}>
+          {NOT_MEASURED}
+        </LegendItem>
+        <LegendItem swatch={<span className={`${cellSwatch} border-dashed border-gray-300`} />}>Absent</LegendItem>
+      </LegendGroup>
+
+      <LegendGroup title="Couplers">
+        <LegendItem swatch={<CouplerSwatch band="good" />}>Under {pct(CZ_ERROR_BANDS.goodBelow)} error</LegendItem>
+        <LegendItem swatch={<CouplerSwatch band="warn" />}>
+          {+(CZ_ERROR_BANDS.goodBelow * 100).toFixed(2)} to {pct(CZ_ERROR_BANDS.warnUpTo)} error
+        </LegendItem>
+        <LegendItem swatch={<CouplerSwatch band="bad" />}>Over {pct(CZ_ERROR_BANDS.warnUpTo)} error</LegendItem>
+        <LegendItem swatch={<CouplerSwatch band="uncalibrated" />}>{NOT_MEASURED}</LegendItem>
+      </LegendGroup>
+
+      <LegendGroup title="Between chiplets">
+        <LegendItem
+          swatch={<span className="h-3 w-5 rounded-sm" style={{ background: GRADIENT_CSS, opacity: CORRIDOR_FILL_OPACITY + 0.15 }} />}
+        >
+          Link quality
+        </LegendItem>
+        <LegendItem
+          swatch={<span className="h-3 w-5 rounded-sm border-[1.5px] border-dashed" style={{ borderColor: UNSCORED_CORRIDOR_COLOR }} />}
+        >
+          {NOT_MEASURED}
+        </LegendItem>
+      </LegendGroup>
+
+      <LegendGroup>
+        <LegendItem
+          data-legend="stale"
+          swatch={<span className={`${cellSwatch} border-[#27728B] bg-[#27728B]`} style={{ opacity: STALE_OPACITY }} />}
+        >
+          Older than {formatHours(METRIC_STALE_AFTER_SECONDS)}
+        </LegendItem>
+      </LegendGroup>
+    </div>
+  );
+
   return (
     <div className="default-radius border-2 border-gray-50 bg-white p-4">
-      <div className="mb-3 flex flex-col gap-2">
+      <div className="mb-3 flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="block text-md font-semibold text-gray-400">
-            Processor map
-          </h2>
+          <h2 className="block text-md font-semibold text-gray-400">Processor map</h2>
           {actions}
         </div>
         <div
@@ -292,240 +384,167 @@ export default function ProcessorMapCard({
             </button>
           ))}
         </div>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-          <span className="font-medium text-gray-600">Qubits</span>
-          <span className="flex flex-wrap items-center gap-1" data-legend="metric-range">
-            {metric.label} ({metric.better === "higher" ? "higher" : "lower"} is better)
-            {legendEnds ? (
-              <>
-                <span className="whitespace-nowrap">{legendEnds[0]}</span>
-                <MdArrowRight className="text-xl" />
-                <span
-                  style={{ display: "block", width: 44, height: 8, borderRadius: 2, background: GRADIENT_CSS }}
-                />
-                <MdArrowLeft className="text-xl" />
-                <span className="whitespace-nowrap">{legendEnds[1]}</span>
-                {rangeClipped && (
-                  <span className="text-gray-400">(5th–95th percentile; beyond shown as end color)</span>
-                )}
-              </>
-            ) : (
-              <span>not measured</span>
-            )}
-          </span>
-          {/* The four-state model's DEGRADED: measured and below the §3
-              threshold. Assigned here from thresholds.ts (ingest never
-              assigns it), so the legend entry is the threshold marker. */}
-          <span className="flex items-center gap-1" data-legend="degraded">
-            <span className="h-2.5 w-2.5 default-radius bg-gray-200" style={{ boxShadow: DEGRADED_RING }} />
-            {metric.threshold
-              ? `Degraded: ${metric.threshold.label} (${degradedCount})`
-              : `Degraded: no threshold defined for ${metric.label}`}
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2.5 w-2.5 default-radius border border-dashed border-purple-400 bg-purple-100" />
-            Sentinel (unmeasured)
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2.5 w-2.5 default-radius border border-dashed border-gray-300" />
-            Absent
-          </span>
-        </div>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-          <span className="font-medium text-gray-600">Couplers (CZ error)</span>
-          <span className="flex items-center gap-1">
-            <CouplerSwatch band="good" />
-            &lt; {pct(CZ_ERROR_BANDS.goodBelow)}
-          </span>
-          <span className="flex items-center gap-1">
-            <CouplerSwatch band="warn" />
-            {pct(CZ_ERROR_BANDS.goodBelow)}–{pct(CZ_ERROR_BANDS.warnUpTo)}
-          </span>
-          <span className="flex items-center gap-1">
-            <CouplerSwatch band="bad" />
-            &gt; {pct(CZ_ERROR_BANDS.warnUpTo)}
-          </span>
-          <span className="flex items-center gap-1">
-            <CouplerSwatch band="uncalibrated" />
-            Uncalibrated
-          </span>
-          <span className="flex items-center gap-1">
-            <span
-              className="h-2.5 w-4 rounded-sm"
-              style={{ background: "linear-gradient(90deg, #00E494, #27728B, #4E0082)", opacity: CORRIDOR_FILL_OPACITY + 0.15 }}
-            />
-            Corridor (band, by score)
-          </span>
-          <span className="flex items-center gap-1">
-            <span
-              className="h-2.5 w-4 rounded-sm border-[1.5px] border-dashed"
-              style={{ borderColor: UNSCORED_CORRIDOR_COLOR }}
-            />
-            Corridor uncharacterized
-          </span>
-        </div>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-          <span className="flex items-center gap-1" data-legend="stale">
-            <span className="h-2.5 w-2.5 default-radius bg-[#27728B]" style={{ opacity: STALE_OPACITY }} />
-            Faded: measured more than {formatHours(METRIC_STALE_AFTER_SECONDS)} ago
-          </span>
-        </div>
+        {!layoutConfirmed && (
+          <p className="text-xs text-amber-700">
+            Rigetti has not confirmed which qubits belong to which chiplet. The chiplet layout is our estimate.
+          </p>
+        )}
       </div>
 
-      <div className="relative mx-auto max-w-md" ref={mapWrapRef}>
-        <div
-          className="relative grid gap-4 p-3"
-          style={{
-            gridTemplateColumns: `repeat(${lattice?.chipletArrayCols ?? FALLBACK_CHIPLET_GRID_COLS}, 1fr)`,
-          }}
-        >
-          {chipletIds.map((chipletId) => {
-            const chipletQubits = qubitsByChiplet.get(chipletId) ?? [];
-            const activeCount = chipletQubits.filter(
-              (q) => q.presence !== "absent",
-            ).length;
-            return (
-              <ChipletBox
-                key={chipletId}
-                id={`chip-${chipletId}`}
-                label={chipletId}
-                countLabel={`${activeCount}/${chipletQubits.length}`}
-                gridCols={lattice?.chipletSize ?? FALLBACK_CHIPLET_SIZE}
-                cellGapClassName={CELL_GAP_CLASS}
-                selected={chipletId === selectedChipletId}
-                onClick={() => onSelect({ kind: "chiplet", chipletId })}
-                cells={chipletQubits.map((q) => {
-                  const value = colorableValue(q, metric);
-                  const gradientColor =
-                    value !== null && valueRange
-                      ? toCss(qualityRgb(value, valueRange, metric.better), hoveredQubit === q.qubitIndex)
-                      : null;
-                  const degraded = isDegraded(q, metric);
-                  const extra = {
-                    ...(degraded ? { boxShadow: DEGRADED_RING } : {}),
-                    ...(isStaleMetric(metric.source(q), ageRef) ? { opacity: STALE_OPACITY } : {}),
-                  };
-                  return {
-                    key: q.qubitIndex,
-                    id: `qcell-${q.qubitIndex}`,
-                    position: cellPositionInChiplet(q, lattice),
-                    className: gradientColor
-                      ? "transition-colors duration-150"
-                      : q.presence === "absent"
-                        ? STATE_CLASSES.absent.cell
-                        : STATE_CLASSES[metric.source(q).state].cell,
-                    style: gradientColor
-                      ? { backgroundColor: gradientColor, borderColor: gradientColor, ...extra }
-                      : extra,
-                    onClick: (e) => {
-                      e.stopPropagation();
-                      onSelect({ kind: "qubit", qubit: q });
-                    },
-                    onMouseEnter: (e) => {
-                      setHoveredQubit(q.qubitIndex);
-                      tooltipAt(e, qubitTooltip(q, metric, ageRef));
-                    },
-                    onMouseMove: moveTooltip,
-                    onMouseLeave: () => {
-                      setHoveredQubit(null);
-                      onTooltip(null);
-                    },
-                  };
-                })}
-              />
-            );
-          })}
-        </div>
-
-        {/* Overlay above the chiplets, but everything in it sits in the gaps
-            (see mapGeometry.ts), so it never covers a cell or a label. The
-            svg itself ignores the pointer; each shape opts back in. */}
-        <svg
-          className="pointer-events-none absolute inset-0 z-20 overflow-visible"
-          width={overlay.width}
-          height={overlay.height}
-          viewBox={`0 0 ${overlay.width} ${overlay.height}`}
-        >
-          {/* Corridors first and translucent — couplers cross them on top. */}
-          {overlay.corridors.map(({ corridor, band }) => {
-            // Unscored is an outline with no fill: a translucent fill from the
-            // purple (low-score) end of the gradient would look the same as a
-            // lavender "uncharacterized" fill.
-            const unscored = corridor.score === null;
-            const fill = unscored ? "none" : scoreColor(corridor.score as number, scoreRange);
-            const selected = corridor.corridorId === selectedCorridorId;
-            return (
-              <rect
-                key={corridor.corridorId}
-                data-corridor={corridor.corridorId}
-                x={band.left + CORRIDOR_INSET}
-                y={band.top + CORRIDOR_INSET}
-                width={Math.max(0, band.width - 2 * CORRIDOR_INSET)}
-                height={Math.max(0, band.height - 2 * CORRIDOR_INSET)}
-                rx={3}
-                fill={fill}
-                fillOpacity={CORRIDOR_FILL_OPACITY}
-                stroke={selected ? SELECTED_STROKE : unscored ? UNSCORED_CORRIDOR_COLOR : "none"}
-                strokeWidth={selected ? 2 : 1.5}
-                strokeDasharray={!selected && unscored ? "3 2" : undefined}
-                // fill="none" isn't hit-testable by default; keep the whole band clickable.
-                style={{ pointerEvents: "all" }}
-                className="cursor-pointer"
-                onClick={() => onSelect({ kind: "corridor", corridor })}
-                onMouseEnter={(e) =>
-                  tooltipAt(
-                    e,
-                    unscored
-                      ? `<b>${corridor.corridorId} — uncharacterized</b><br/>${corridor.sentinelLinks}/${corridor.expectedLinks} links sentinel.`
-                      : `<b>Corridor ${corridor.corridorId}</b><br/>score ${formatScore(corridor.score, 3)} · mean fCZ ${formatFidelityPct(corridor.meanFcz, 2)} · ${corridor.validLinks}/${corridor.expectedLinks} links`,
-                  )
-                }
-                onMouseMove={moveTooltip}
-                onMouseLeave={() => onTooltip(null)}
-              />
-            );
-          })}
-
-          {overlay.couplers.map(({ edge, segment, band }) => {
-            const style = COUPLER_STYLES[band];
-            const key = edgeKey(edge);
-            const selected = key === selectedEdgeKey;
-            return (
-              <g key={key}>
-                {selected && (
-                  <line
-                    {...segment}
-                    stroke={SELECTED_STROKE}
-                    strokeWidth={COUPLER_WIDTH + 3}
-                    strokeLinecap="round"
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+        <div className="min-w-0 flex-1">
+          <div className="relative mx-auto max-w-md" ref={mapWrapRef}>
+            <div
+              className="relative grid gap-4 p-3"
+              style={{
+                gridTemplateColumns: `repeat(${lattice?.chipletArrayCols ?? FALLBACK_CHIPLET_GRID_COLS}, 1fr)`,
+              }}
+            >
+              {chipletIds.map((chipletId) => {
+                const chipletQubits = qubitsByChiplet.get(chipletId) ?? [];
+                const activeCount = chipletQubits.filter((q) => q.presence !== "absent").length;
+                return (
+                  <ChipletBox
+                    key={chipletId}
+                    id={`chip-${chipletId}`}
+                    label={chipletId}
+                    countLabel={`${activeCount}/${chipletQubits.length}`}
+                    gridCols={lattice?.chipletSize ?? FALLBACK_CHIPLET_SIZE}
+                    cellGapClassName={CELL_GAP_CLASS}
+                    selected={chipletId === selectedChipletId}
+                    onClick={() => onSelect({ kind: "chiplet", chipletId })}
+                    cells={chipletQubits.map((q) => {
+                      const value = colorableValue(q, metric);
+                      const gradientColor =
+                        value !== null && valueRange
+                          ? toCss(qualityRgb(value, valueRange, metric.better), hoveredQubit === q.qubitIndex)
+                          : null;
+                      const extra = {
+                        ...(isDegraded(q, metric) ? { boxShadow: DEGRADED_RING } : {}),
+                        ...(isStaleMetric(metric.source(q), ageRef) ? { opacity: STALE_OPACITY } : {}),
+                      };
+                      return {
+                        key: q.qubitIndex,
+                        id: `qcell-${q.qubitIndex}`,
+                        position: cellPositionInChiplet(q, lattice),
+                        className: gradientColor
+                          ? "transition-colors duration-150"
+                          : q.presence === "absent"
+                            ? STATE_CLASSES.absent.cell
+                            : STATE_CLASSES[metric.source(q).state].cell,
+                        style: gradientColor
+                          ? { backgroundColor: gradientColor, borderColor: gradientColor, ...extra }
+                          : extra,
+                        onClick: (e) => {
+                          e.stopPropagation();
+                          onSelect({ kind: "qubit", qubit: q });
+                        },
+                        onMouseEnter: (e) => {
+                          setHoveredQubit(q.qubitIndex);
+                          tooltipAt(e, qubitTooltip(q, metric, ageRef));
+                        },
+                        onMouseMove: moveTooltip,
+                        onMouseLeave: () => {
+                          setHoveredQubit(null);
+                          onTooltip(null);
+                        },
+                      };
+                    })}
                   />
-                )}
-                <line
-                  {...segment}
-                  data-band={band}
-                  stroke={style.stroke}
-                  strokeWidth={COUPLER_WIDTH}
-                  strokeDasharray={style.dash}
-                  strokeLinecap={style.dash ? "butt" : "round"}
-                  strokeOpacity={isStaleMetric(edge.cz, ageRef) ? STALE_OPACITY : undefined}
-                />
-                {/* Invisible, wider hit target — the visible stroke is too thin to hover reliably. */}
-                <line
-                  {...segment}
-                  data-coupler={key}
-                  stroke="transparent"
-                  strokeWidth={COUPLER_HIT_WIDTH}
-                  className="cursor-pointer"
-                  style={{ pointerEvents: "stroke" }}
-                  onClick={() => onSelect({ kind: "edge", edge })}
-                  onMouseEnter={(e) => tooltipAt(e, couplerTooltip(edge, ageRef))}
-                  onMouseMove={moveTooltip}
-                  onMouseLeave={() => onTooltip(null)}
-                />
-              </g>
-            );
-          })}
-        </svg>
+                );
+              })}
+            </div>
+
+            {/* Overlay above the chiplets, but everything in it sits in the gaps
+                (see mapGeometry.ts), so it never covers a cell or a label. The
+                svg itself ignores the pointer; each shape opts back in. */}
+            <svg
+              className="pointer-events-none absolute inset-0 z-20 overflow-visible"
+              width={overlay.width}
+              height={overlay.height}
+              viewBox={`0 0 ${overlay.width} ${overlay.height}`}
+            >
+              {/* Links first and translucent; couplers cross them on top. */}
+              {overlay.corridors.map(({ corridor, band }) => {
+                // Not measured is an outline with no fill: a translucent fill
+                // from the purple (low-score) end of the gradient would look
+                // the same as a lavender fill.
+                const unscored = corridor.score === null;
+                const fill = unscored ? "none" : scoreColor(corridor.score as number, scoreRange);
+                const selected = corridor.corridorId === selectedCorridorId;
+                return (
+                  <rect
+                    key={corridor.corridorId}
+                    data-corridor={corridor.corridorId}
+                    x={band.left + CORRIDOR_INSET}
+                    y={band.top + CORRIDOR_INSET}
+                    width={Math.max(0, band.width - 2 * CORRIDOR_INSET)}
+                    height={Math.max(0, band.height - 2 * CORRIDOR_INSET)}
+                    rx={3}
+                    fill={fill}
+                    fillOpacity={CORRIDOR_FILL_OPACITY}
+                    stroke={selected ? SELECTED_STROKE : unscored ? UNSCORED_CORRIDOR_COLOR : "none"}
+                    strokeWidth={selected ? 2 : 1.5}
+                    strokeDasharray={!selected && unscored ? "3 2" : undefined}
+                    // fill="none" isn't hit-testable by default; keep the whole band clickable.
+                    style={{ pointerEvents: "all" }}
+                    className="cursor-pointer"
+                    onClick={() => onSelect({ kind: "corridor", corridor })}
+                    onMouseEnter={(e) =>
+                      tooltipAt(
+                        e,
+                        unscored
+                          ? `<b>Link ${corridor.corridorId}</b><br/>${NOT_MEASURED}`
+                          : `<b>Link ${corridor.corridorId}</b><br/>Score ${formatPct(corridor.score)}<br/>${corridor.validLinks} of ${corridor.expectedLinks} couplers measured`,
+                      )
+                    }
+                    onMouseMove={moveTooltip}
+                    onMouseLeave={() => onTooltip(null)}
+                  />
+                );
+              })}
+
+              {overlay.couplers.map(({ edge, segment, band }) => {
+                const style = COUPLER_STYLES[band];
+                const key = edgeKey(edge);
+                const selected = key === selectedEdgeKey;
+                const length = Math.hypot(segment.x2 - segment.x1, segment.y2 - segment.y1);
+                return (
+                  <g key={key}>
+                    {selected && (
+                      <line {...segment} stroke={SELECTED_STROKE} strokeWidth={style.width + 3} strokeLinecap="round" />
+                    )}
+                    {/* Butt caps on every coupler, so dashed and solid lines
+                        cover exactly the same gap. */}
+                    <line
+                      {...segment}
+                      data-band={band}
+                      stroke={style.stroke}
+                      strokeWidth={style.width}
+                      strokeDasharray={style.dash ? fittedDash(length, style.dash) : undefined}
+                      strokeLinecap="butt"
+                      strokeOpacity={isStaleMetric(edge.cz, ageRef) ? STALE_OPACITY : undefined}
+                    />
+                    {/* Invisible, wider hit target: the visible stroke is too thin to hover reliably. */}
+                    <line
+                      {...segment}
+                      data-coupler={key}
+                      stroke="transparent"
+                      strokeWidth={COUPLER_HIT_WIDTH}
+                      className="cursor-pointer"
+                      style={{ pointerEvents: "stroke" }}
+                      onClick={() => onSelect({ kind: "edge", edge })}
+                      onMouseEnter={(e) => tooltipAt(e, couplerTooltip(edge, ageRef))}
+                      onMouseMove={moveTooltip}
+                      onMouseLeave={() => onTooltip(null)}
+                    />
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+        </div>
+        {legend}
       </div>
     </div>
   );

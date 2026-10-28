@@ -9,7 +9,7 @@ import { useMemo } from "react";
 // the compact header size needs Tailwind 4's important modifier.
 const COMPACT = "py-1! pl-2! pr-2.5! gap-1! text-xs!";
 
-/** Downloads of the snapshot the map is showing — built in the browser from data already fetched. */
+/** Downloads of the calibration data the map is showing, built in the browser from data already fetched. */
 export default function SnapshotExport({
   qubitsEnvelope,
   edges,
@@ -29,7 +29,7 @@ export default function SnapshotExport({
 
   return (
     <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500" data-export>
-      <span>Export snapshot</span>
+      <span>Download</span>
       <DownloadButton value={files.json.value} filename={files.json.name} mimeType="application/json" label="JSON" className={COMPACT} />
       <DownloadButton value={files.qubits.value} filename={files.qubits.name} mimeType="text/csv" label="Qubits CSV" className={COMPACT} />
       <DownloadButton value={files.couplers.value} filename={files.couplers.name} mimeType="text/csv" label="Couplers CSV" className={COMPACT} />

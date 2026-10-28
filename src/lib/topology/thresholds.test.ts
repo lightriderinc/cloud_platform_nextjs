@@ -47,8 +47,9 @@ describe("couplerBand", () => {
 });
 
 describe("qubit map metrics", () => {
-  test("four metrics in order, T2 labelled T2*", () => {
-    expect(QUBIT_MAP_METRICS.map((m) => m.label)).toEqual(["fRB (simultaneous)", "Readout error", "T1", "T2*"]);
+  test("four metrics in order, T2 labelled T2*; ring labels for the legend", () => {
+    expect(QUBIT_MAP_METRICS.map((m) => m.label)).toEqual(["1Q fidelity", "Readout error", "T1", "T2*"]);
+    expect(QUBIT_MAP_METRICS.map((m) => m.threshold?.label ?? null)).toEqual(["Below 99.5%", "Over 10%", null, null]);
   });
 
   test("direction: only readout error is lower-is-better", () => {

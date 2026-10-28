@@ -6,13 +6,13 @@ import {
   fetchEdges,
   fetchQubits,
   fetchTopologyStatus,
-  type CorridorEntry,
+  type EdgeEntry,
   type QubitEntry,
   type TopologyEnvelope,
 } from "@/lib/topology/client";
 import { summarizeChiplets } from "@/lib/topology/chipletSummary";
 import { orderChipletsByPosition } from "@/lib/topology/layout";
-import type { AgeReference } from "@/lib/topology/thresholds";
+import { couplerBand, type AgeReference } from "@/lib/topology/thresholds";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import CorridorRankingCard from "./CorridorRankingCard";
@@ -157,21 +157,24 @@ export default function TopologyExplorer({
     return { lo: range.min, hi: range.max };
   }, [allCorridors]);
 
-  // The top-strip answer: "best corridor" (composite score) and "best
-  // coupler" (raw fCZ) are deliberately kept as two separate stats, since
-  // they can name different corridors — that gap is the entire point of
-  // scoring by mean x coverage instead of best-link alone.
+  // The top-strip answer: "best chiplet link" (composite score) and "best
+  // coupler" (lowest CZ error) are deliberately separate stats, since the
+  // best single coupler need not sit on the best link. That gap is the point
+  // of scoring links by mean x coverage instead of by their best coupler.
   const topCorridor = corridors?.ranked[0] ?? null;
+  // Best over ALL measured couplers, inside chiplets and between them (the
+  // corridors' bestLink only covers between-chiplet couplers).
   const bestCoupler = useMemo(() => {
-    let best: CorridorEntry | null = null;
-    for (const c of allCorridors) {
-      if (c.bestLinkFcz !== null && (!best || c.bestLinkFcz > (best.bestLinkFcz as number))) best = c;
+    let best: EdgeEntry | null = null;
+    for (const e of edges) {
+      if (couplerBand(e) === "uncalibrated") continue;
+      if (!best || (e.cz.value as number) > (best.cz.value as number)) best = e;
     }
     return best;
-  }, [allCorridors]);
+  }, [edges]);
 
   if (isError) {
-    return <p className="text-sm text-red-500">Failed to load topology data. Try again later.</p>;
+    return <p className="text-sm text-red-500">Couldn&apos;t load the processor map. Try again later.</p>;
   }
 
   if (isLoading) {
@@ -202,6 +205,7 @@ export default function TopologyExplorer({
             scoreRange={scoreRange}
             selection={selection}
             ageRef={ageRef}
+            layoutConfirmed={envelope?.topologyProvenance !== "inferred"}
             actions={
               qubitsQuery.data && <SnapshotExport qubitsEnvelope={qubitsQuery.data} edges={edges} />
             }
