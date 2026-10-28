@@ -6,14 +6,19 @@ import {
   fetchEdges,
   fetchQubits,
   fetchTopologyStatus,
-  type CorridorEntry,
+  type EdgeEntry,
   type QubitEntry,
   type TopologyEnvelope,
 } from "@/lib/topology/client";
+import { summarizeChiplets } from "@/lib/topology/chipletSummary";
+import { orderChipletsByPosition } from "@/lib/topology/layout";
+import { couplerBand, type AgeReference } from "@/lib/topology/thresholds";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import CorridorRankingCard from "./CorridorRankingCard";
+import { clampedRange } from "./errorGradient";
 import ProcessorMapCard from "./ProcessorMapCard";
+import SnapshotExport from "./SnapshotExport";
 import TopologyDetailPanel from "./TopologyDetailPanel";
 import TopologyExplorerSkeleton from "./TopologyExplorerSkeleton";
 import TopologyScoringExplainer from "./TopologyScoringExplainer";
@@ -68,6 +73,14 @@ export default function TopologyExplorer({
   // call is made just for that.
   const envelope: TopologyEnvelope<unknown> | undefined =
     qubitsQuery.data ?? corridorsQuery.data ?? edgesQuery.data;
+  // Same snapshot for every endpoint, so one reference dates every metric.
+  const ageRef = useMemo<AgeReference | null>(
+    () =>
+      envelope
+        ? { sourceTimestamp: envelope.sourceTimestamp, snapshotAgeSeconds: envelope.snapshotAgeSeconds }
+        : null,
+    [envelope],
+  );
 
   // Poller health, not Rigetti's calibration age (envelope.snapshotAgeSeconds)
   // — deliberately kept separate. A stopped poller and a healthy one look
@@ -97,7 +110,8 @@ export default function TopologyExplorer({
     ? pollStatus.consecutiveFailures > 0 || pollStatus.pollingEnabled === false || pollDiverged
     : false;
 
-  const qubits = useMemo(() => qubitsQuery.data?.data ?? [], [qubitsQuery.data]);
+  const qubits = useMemo(() => qubitsQuery.data?.data.qubits ?? [], [qubitsQuery.data]);
+  const lattice = qubitsQuery.data?.data.lattice ?? null;
   const edges = useMemo(() => edgesQuery.data?.data ?? [], [edgesQuery.data]);
   const corridors = corridorsQuery.data?.data;
 
@@ -113,10 +127,18 @@ export default function TopologyExplorer({
     return map;
   }, [qubits]);
 
+  // Physical order (row-major by chiplet block) when the snapshot carries
+  // lattice positions; numeric id order otherwise.
   const chipletIds = useMemo(
-    () => Array.from(qubitsByChiplet.keys()).sort((a, b) => chipletSortKey(a) - chipletSortKey(b)),
-    [qubitsByChiplet],
+    () =>
+      orderChipletsByPosition(qubitsByChiplet, lattice) ??
+      Array.from(qubitsByChiplet.keys()).sort((a, b) => chipletSortKey(a) - chipletSortKey(b)),
+    [qubitsByChiplet, lattice],
   );
+
+  // One pass over the qubits/edges already fetched — the chiplet card reads
+  // from this, nothing is re-fetched.
+  const chipletSummaries = useMemo(() => summarizeChiplets(qubits, edges), [qubits, edges]);
 
   const allCorridors = useMemo(
     () => [...(corridors?.ranked ?? []), ...(corridors?.unranked ?? [])],
@@ -126,27 +148,33 @@ export default function TopologyExplorer({
   // Drives corridor color (map lines + ranking bars) — keyed to score, the
   // same number shown as "Score %" in the ranking table, so color always
   // matches what's displayed.
+  // Clamped to the 5th–95th percentile like the qubit colors, so one outlier
+  // corridor doesn't flatten the rest; scoreColor already pins beyond-range
+  // scores to the end color. Unscored corridors are never part of it.
   const scoreRange = useMemo(() => {
-    const values = allCorridors.map((c) => c.score).filter((v): v is number => v !== null);
-    if (values.length === 0) return { lo: 0, hi: 1 };
-    return { lo: Math.min(...values), hi: Math.max(...values) };
+    const range = clampedRange(allCorridors.map((c) => c.score).filter((v): v is number => v !== null));
+    if (!range) return { lo: 0, hi: 1 };
+    return { lo: range.min, hi: range.max };
   }, [allCorridors]);
 
-  // The top-strip answer: "best corridor" (composite score) and "best
-  // coupler" (raw fCZ) are deliberately kept as two separate stats, since
-  // they can name different corridors — that gap is the entire point of
-  // scoring by mean x coverage instead of best-link alone.
+  // The top-strip answer: "best chiplet link" (composite score) and "best
+  // coupler" (lowest CZ error) are deliberately separate stats, since the
+  // best single coupler need not sit on the best link. That gap is the point
+  // of scoring links by mean x coverage instead of by their best coupler.
   const topCorridor = corridors?.ranked[0] ?? null;
+  // Best over ALL measured couplers, inside chiplets and between them (the
+  // corridors' bestLink only covers between-chiplet couplers).
   const bestCoupler = useMemo(() => {
-    let best: CorridorEntry | null = null;
-    for (const c of allCorridors) {
-      if (c.bestLinkFcz !== null && (!best || c.bestLinkFcz > (best.bestLinkFcz as number))) best = c;
+    let best: EdgeEntry | null = null;
+    for (const e of edges) {
+      if (couplerBand(e) === "uncalibrated") continue;
+      if (!best || (e.cz.value as number) > (best.cz.value as number)) best = e;
     }
     return best;
-  }, [allCorridors]);
+  }, [edges]);
 
   if (isError) {
-    return <p className="text-sm text-red-500">Failed to load topology data. Try again later.</p>;
+    return <p className="text-sm text-red-500">Couldn&apos;t load the processor map. Try again later.</p>;
   }
 
   if (isLoading) {
@@ -170,9 +198,17 @@ export default function TopologyExplorer({
         <div className="flex flex-col gap-4">
           <ProcessorMapCard
             allCorridors={allCorridors}
+            edges={edges}
             chipletIds={chipletIds}
             qubitsByChiplet={qubitsByChiplet}
+            lattice={lattice}
             scoreRange={scoreRange}
+            selection={selection}
+            ageRef={ageRef}
+            layoutConfirmed={envelope?.topologyProvenance !== "inferred"}
+            actions={
+              qubitsQuery.data && <SnapshotExport qubitsEnvelope={qubitsQuery.data} edges={edges} />
+            }
             onSelect={setSelection}
             onTooltip={setTooltip}
           />
@@ -186,7 +222,13 @@ export default function TopologyExplorer({
           <TopologyScoringExplainer />
         </div>
 
-        <TopologyDetailPanel selection={selection} edges={edges} onSelect={setSelection} />
+        <TopologyDetailPanel
+          selection={selection}
+          edges={edges}
+          chipletSummaries={chipletSummaries}
+          ageRef={ageRef}
+          onSelect={setSelection}
+        />
       </div>
 
       <TopologyTooltip tooltip={tooltip} />

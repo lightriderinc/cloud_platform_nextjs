@@ -7,6 +7,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "stripe:listen": "stripe listen --forward-to localhost:3000/api/webhooks/stripe"
@@ -53,7 +54,8 @@
     "prisma": "^6.19.3",
     "semantic-release": "^25.0.5",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.12"
   },
   "allowScripts": {
     "sharp@0.34.5": true,
