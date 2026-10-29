@@ -11,8 +11,12 @@ import {
   METRIC_STALE_AFTER_SECONDS,
   metricAgeSeconds,
   QUBIT_MAP_METRICS,
+  isFeedPaused,
+  secondsUntilNextCheck,
+  typicalMeasuredAt,
   type QubitMapMetricId,
 } from "./thresholds";
+import { formatNextCheck } from "./format";
 
 const cz = (value: number | null, state: MetricState = "active", presence: MetricState = "active") =>
   edge(1, 2, metric(value, state, null, value === null ? null : 0.002), { presence });
@@ -119,5 +123,62 @@ describe("measurement age", () => {
     expect(isStaleAge(36 * 3600)).toBe(false);
     expect(isStaleAge(36 * 3600 + 1)).toBe(true);
     expect(isStaleAge(null)).toBe(false);
+  });
+});
+
+describe("typicalMeasuredAt", () => {
+  // A run stamps each qubit a few seconds or minutes apart.
+  const run = (start: string, n: number, stepSec = 2) =>
+    Array.from({ length: n }, (_, i) => metric(0.99, "active", new Date(Date.parse(start) + i * stepSec * 1000).toISOString()));
+
+  test("the end of the run that covers the most of the chip", () => {
+    const metrics = [...run("2026-10-28T02:20:00Z", 100), ...run("2026-10-27T14:20:00Z", 7)];
+    expect(typicalMeasuredAt(metrics)).toBe("2026-10-28T02:23:18.000Z"); // 100th stamp, 198 s after start
+  });
+
+  test("one stale qubit (q76's T1) never decides it", () => {
+    const metrics = [metric(30e-6, "active", "2026-09-14T14:24:11Z"), ...run("2026-10-28T02:20:00Z", 106)];
+    expect(typicalMeasuredAt(metrics)?.startsWith("2026-10-28T02:2")).toBe(true);
+  });
+
+  test("a run spread over 40 minutes (CZ) still counts as one run", () => {
+    const cz = run("2026-10-28T02:38:00Z", 193, 12); // 193 couplers x 12 s ~ 38 min
+    const older = run("2026-10-27T14:38:00Z", 150, 12);
+    expect(typicalMeasuredAt([...older, ...cz])).toBe(cz[cz.length - 1].measuredAt);
+  });
+
+  test("ties go to the more recent run", () => {
+    const metrics = [...run("2026-10-27T14:20:00Z", 5), ...run("2026-10-28T02:20:00Z", 5)];
+    expect(typicalMeasuredAt(metrics)?.startsWith("2026-10-28")).toBe(true);
+  });
+
+  test("only measured values with a time count; none -> null", () => {
+    expect(typicalMeasuredAt([])).toBeNull();
+    expect(typicalMeasuredAt([metric(0.99), metric(null, "sentinel", "2026-10-28T02:20:00Z")])).toBeNull();
+    expect(typicalMeasuredAt([metric(0.99, "active", "garbage")])).toBeNull();
+    // a not-measured value's timestamp is ignored even when it would form the biggest run
+    const metrics = [...run("2026-10-28T02:20:00Z", 3), ...Array.from({ length: 9 }, () => metric(null, "sentinel", "2026-10-27T02:20:00Z"))];
+    expect(typicalMeasuredAt(metrics)?.startsWith("2026-10-28")).toBe(true);
+  });
+});
+
+describe("poller status", () => {
+  test("next check comes from the server's interval, so hourly polls read in minutes", () => {
+    expect(secondsUntilNextCheck({ pollIntervalSeconds: 3600, secondsSinceLastSuccess: 360 })).toBe(3240);
+    expect(formatNextCheck(secondsUntilNextCheck({ pollIntervalSeconds: 3600, secondsSinceLastSuccess: 360 }) as number)).toBe(
+      "Next check in 54 minutes",
+    );
+    expect(secondsUntilNextCheck({ pollIntervalSeconds: 14400, secondsSinceLastSuccess: 3600 })).toBe(10800);
+    expect(secondsUntilNextCheck({ pollIntervalSeconds: 3600, secondsSinceLastSuccess: 5000 })).toBe(0); // overdue, never negative
+    expect(secondsUntilNextCheck(undefined)).toBeNull();
+  });
+
+  test("feed paused only once the server's threshold is reached", () => {
+    // 36 hours at hourly polls is 36 polls; the count comes from the server.
+    expect(isFeedPaused({ consecutiveStalledSourcePolls: 35, stalledSourcePollThreshold: 36 })).toBe(false);
+    expect(isFeedPaused({ consecutiveStalledSourcePolls: 36, stalledSourcePollThreshold: 36 })).toBe(true);
+    expect(isFeedPaused({ consecutiveStalledSourcePolls: 9, stalledSourcePollThreshold: 9 })).toBe(true);
+    expect(isFeedPaused({ consecutiveStalledSourcePolls: 9, stalledSourcePollThreshold: null })).toBe(false);
+    expect(isFeedPaused(undefined)).toBe(false);
   });
 });

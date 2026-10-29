@@ -1,5 +1,6 @@
 import type { CorridorEntry, EdgeEntry, TopologyEnvelope, TopologyStatusData } from "@/lib/topology/client";
 import { formatAgo, formatCalibrationShort, formatNextCheck, formatPct } from "@/lib/topology/format";
+import { isFeedPaused } from "@/lib/topology/thresholds";
 
 const card = "default-radius relative overflow-hidden bg-gray-50 p-4";
 const title = "block text-sm font-semibold text-gray-300";
@@ -24,12 +25,7 @@ export default function TopologyStatCards({
   pollerUnhealthy: boolean;
   pollStatus: TopologyStatusData | undefined;
 }) {
-  // Same rule as the poller's own STALLED_SOURCE_POLL_THRESHOLD check: the
-  // calibration data hasn't changed for that many checks in a row.
-  const feedPaused =
-    pollStatus?.consecutiveStalledSourcePolls != null &&
-    pollStatus.stalledSourcePollThreshold != null &&
-    pollStatus.consecutiveStalledSourcePolls >= pollStatus.stalledSourcePollThreshold;
+  const feedPaused = isFeedPaused(pollStatus);
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
       <div className={card}>
@@ -47,9 +43,11 @@ export default function TopologyStatCards({
         </p>
       </div>
       <div className={card}>
-        {/* When Rigetti last calibrated the chip. "Last checked" below is
-            when we last fetched it; the two answer different questions. */}
-        <p className={title}>Last calibrated</p>
+        {/* When Rigetti last updated the chip's calibration data (its newest
+            measurement; each metric's own time is in the map legend).
+            "Last checked" below is when we last fetched it; the two answer
+            different questions. */}
+        <p className={title}>Last updated</p>
         <p className="mt-2 block text-xl font-semibold text-gray-900">
           {envelope ? formatAgo(envelope.snapshotAgeSeconds) : "Unknown"}
         </p>
