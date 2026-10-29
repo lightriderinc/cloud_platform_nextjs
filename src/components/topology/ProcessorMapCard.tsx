@@ -2,6 +2,7 @@
 
 import type { CorridorEntry, EdgeEntry, LatticeShape, Metric, QubitEntry } from "@/lib/topology/client";
 import {
+  formatAgo,
   formatHours,
   formatMeasuredAge,
   formatMetricValue,
@@ -19,6 +20,7 @@ import {
   METRIC_STALE_AFTER_SECONDS,
   metricAgeSeconds,
   QUBIT_MAP_METRICS,
+  typicalMeasuredAt,
   type AgeReference,
   type CouplerBand,
   type QubitMapMetric,
@@ -123,9 +125,9 @@ function pct(v: number): string {
 
 // --- Legend -----------------------------------------------------------------
 
-function LegendGroup({ title, children }: { title?: string; children: ReactNode }) {
+function LegendGroup({ title, className, children }: { title?: string; className?: string; children: ReactNode }) {
   return (
-    <div>
+    <div className={className}>
       {title && <p className="mb-1.5 text-xs font-medium text-gray-700">{title}</p>}
       <ul className="flex flex-col gap-1.5">{children}</ul>
     </div>
@@ -216,6 +218,21 @@ export default function ProcessorMapCard({
         ? { best: Math.max(...measuredValues), worst: Math.min(...measuredValues) }
         : { best: Math.min(...measuredValues), worst: Math.max(...measuredValues) };
   const rangeClipped = !!valueRange && (valueRange.clippedLow || valueRange.clippedHigh);
+
+  // "Last measured" per metric: when most of the chip was measured (the
+  // biggest measurement run), so one stale qubit can't move it.
+  const lastMeasured = useMemo(() => {
+    const present = Array.from(qubitsByChiplet.values())
+      .flat()
+      .filter((q) => q.presence !== "absent");
+    const rows: { id: QubitMapMetricId | "cz"; label: string; at: string | null }[] = QUBIT_MAP_METRICS.map((m) => ({
+      id: m.id,
+      label: m.label,
+      at: typicalMeasuredAt(present.map(m.source)),
+    }));
+    rows.push({ id: "cz", label: "CZ", at: typicalMeasuredAt(edges.filter((e) => e.presence !== "absent").map((e) => e.cz)) });
+    return rows;
+  }, [qubitsByChiplet, edges]);
 
   const tooltipAt = (e: { clientX: number; clientY: number }, html: string) =>
     onTooltip({ html, x: e.clientX + 12, y: e.clientY + 12 });
@@ -344,6 +361,26 @@ export default function ProcessorMapCard({
         >
           {NOT_MEASURED}
         </LegendItem>
+      </LegendGroup>
+
+      {/* Full width on narrow screens, where the legend is two columns, so
+          metric names and times stay on one line. */}
+      <LegendGroup title="Last measured" className="col-span-2 sm:col-span-1">
+        {lastMeasured.map((row) => {
+          const age = metricAgeSeconds(row.at, ageRef);
+          const selected = row.id === metric.id;
+          return (
+            <li
+              key={row.id}
+              data-legend-measured={row.id}
+              data-selected={selected || undefined}
+              className={`-mx-1 flex justify-between gap-2 rounded px-1 ${selected ? "bg-gray-100 font-medium text-gray-800" : ""}`}
+            >
+              <span>{row.label}</span>
+              <span className="whitespace-nowrap">{age === null ? "Not recorded" : formatAgo(age)}</span>
+            </li>
+          );
+        })}
       </LegendGroup>
 
       <LegendGroup>

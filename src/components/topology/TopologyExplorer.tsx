@@ -12,7 +12,7 @@ import {
 } from "@/lib/topology/client";
 import { summarizeChiplets } from "@/lib/topology/chipletSummary";
 import { orderChipletsByPosition } from "@/lib/topology/layout";
-import { couplerBand, type AgeReference } from "@/lib/topology/thresholds";
+import { couplerBand, secondsUntilNextCheck, type AgeReference } from "@/lib/topology/thresholds";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import CorridorRankingCard from "./CorridorRankingCard";
@@ -92,9 +92,7 @@ export default function TopologyExplorer({
   // lastSuccessAt — avoids client/server clock skew and a re-render-staleness
   // concern entirely.
   const lastPollAgoSeconds = pollStatus?.secondsSinceLastSuccess ?? null;
-  const nextPollEtaSeconds = pollStatus
-    ? Math.max(0, pollStatus.pollIntervalSeconds - pollStatus.secondsSinceLastSuccess)
-    : null;
+  const nextPollEtaSeconds = secondsUntilNextCheck(pollStatus);
   // lastPollAt vs lastSuccessAt: identical while healthy, diverge the
   // moment a poll runs but fails — checked independently of
   // consecutiveFailures so this doesn't rely on a single counter being

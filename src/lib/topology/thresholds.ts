@@ -1,4 +1,4 @@
-import type { EdgeEntry, Metric, QubitEntry } from "./client";
+import type { EdgeEntry, Metric, QubitEntry, TopologyStatusData } from "./client";
 import { formatPct, formatSeconds } from "./format";
 
 // Every quality threshold the topology views color or flag by lives here —
@@ -179,4 +179,67 @@ export function metricAgeSeconds(measuredAt: string | null, ref: AgeReference | 
 
 export function isStaleAge(ageSeconds: number | null): boolean {
   return ageSeconds !== null && ageSeconds > METRIC_STALE_AFTER_SECONDS;
+}
+
+/** Timestamps further apart than this belong to different measurement runs. */
+const RUN_SPLIT_MS = 60 * 60 * 1000;
+
+/**
+ * When a metric was measured for most of the chip: the end of the
+ * measurement run that covers the most qubits or couplers.
+ *
+ * Rigetti stamps each qubit/coupler in a run a few seconds apart (a CZ run
+ * spreads over ~40 minutes), so the mode is taken over runs, not over exact
+ * timestamps: times are grouped into runs split by gaps of more than an
+ * hour. One qubit left behind by many runs (q76's T1) never decides it. Ties
+ * go to the more recent run. Only measured values count; null when none
+ * has a recorded time.
+ */
+export function typicalMeasuredAt(metrics: Metric[]): string | null {
+  const times = metrics
+    .filter((m) => (m.state === "active" || m.state === "degraded") && m.measuredAt)
+    .map((m) => ({ iso: m.measuredAt as string, ms: Date.parse(m.measuredAt as string) }))
+    .filter((t) => !Number.isNaN(t.ms))
+    .sort((a, b) => a.ms - b.ms);
+  if (times.length === 0) return null;
+  let best = { count: 0, end: times[0] };
+  let count = 0;
+  for (let i = 0; i < times.length; i++) {
+    count = i > 0 && times[i].ms - times[i - 1].ms <= RUN_SPLIT_MS ? count + 1 : 1;
+    const runEnds = i === times.length - 1 || times[i + 1].ms - times[i].ms > RUN_SPLIT_MS;
+    if (runEnds && count >= best.count) best = { count, end: times[i] };
+  }
+  return best.end.iso;
+}
+
+// ---------------------------------------------------------------------------
+// Poller status
+// ---------------------------------------------------------------------------
+
+/**
+ * Seconds until our next check of Rigetti's data. Uses the interval the
+ * server reports (hourly by default, configurable on the server), never a
+ * constant here, and the server's own time since the last success, so the
+ * browser clock never enters into it.
+ */
+export function secondsUntilNextCheck(
+  status: Pick<TopologyStatusData, "pollIntervalSeconds" | "secondsSinceLastSuccess"> | undefined,
+): number | null {
+  if (!status) return null;
+  return Math.max(0, status.pollIntervalSeconds - status.secondsSinceLastSuccess);
+}
+
+/**
+ * "Data feed paused": Rigetti's data hasn't changed for the server's stall
+ * threshold. The threshold arrives as a poll count the server derives from
+ * 36 hours at its current interval, so it stays 36 hours at any interval.
+ */
+export function isFeedPaused(
+  status: Pick<TopologyStatusData, "consecutiveStalledSourcePolls" | "stalledSourcePollThreshold"> | undefined,
+): boolean {
+  return (
+    status?.consecutiveStalledSourcePolls != null &&
+    status.stalledSourcePollThreshold != null &&
+    status.consecutiveStalledSourcePolls >= status.stalledSourcePollThreshold
+  );
 }
