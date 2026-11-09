@@ -1,5 +1,5 @@
+import SignInRequired from "@/components/auth/SignInRequired";
 import JobsList from "@/components/jobs/JobsList";
-import JobsLoginPrompt from "@/components/jobs/JobsLoginPrompt";
 import { getSession } from "@/lib/auth/session";
 
 export default async function JobsPage() {
@@ -12,7 +12,7 @@ export default async function JobsPage() {
         Track and manage your submitted jobs.
       </p>
 
-      {!isAuthenticated && <JobsLoginPrompt />}
+      {!isAuthenticated && <SignInRequired target="your jobs" />}
       {isAuthenticated && <JobsList />}
     </div>
   );
