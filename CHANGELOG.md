@@ -1,3 +1,10 @@
+## [2.3.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v2.3.0...v2.3.1) (2026-11-09)
+
+
+### Bug Fixes
+
+* no signed-out flash on settings, jobs and classroom ([bbef29d](https://github.com/lightriderinc/cloud_platform_nextjs/commit/bbef29d6a12e8da14cf705b2251fc3c59c412bd4))
+
 # [2.3.0](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v2.2.1...v2.3.0) (2026-10-13)
 
 
