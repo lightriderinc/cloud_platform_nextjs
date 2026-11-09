@@ -2,8 +2,10 @@ import { logtoConfig } from "@/app/logto";
 import {
   CONSENT_RETRY_PARAM,
   SERVER_COOLDOWN_SECONDS,
+  SILENT_RETURN_COOKIE_SECONDS,
   consentRetryCookieName,
   sanitizeReturnTo,
+  silentReturnCookieName,
   silentSsoCookieName,
 } from "@/lib/auth/silent-sso";
 import { Prompt } from "@logto/node";
@@ -59,6 +61,16 @@ export async function GET(request: NextRequest) {
     // which would defeat the guard exactly when it matters most.
     sameSite: "lax",
     httpOnly: false,
+    secure: logtoConfig.cookieSecure,
+  });
+
+  // Where to come back to if Logto answers with an error (that answer carries
+  // no returnTo of its own; see the callback).
+  cookieStore.set(silentReturnCookieName(logtoConfig.appId), returnTo, {
+    maxAge: SILENT_RETURN_COOKIE_SECONDS,
+    path: "/",
+    sameSite: "lax",
+    httpOnly: true,
     secure: logtoConfig.cookieSecure,
   });
 
