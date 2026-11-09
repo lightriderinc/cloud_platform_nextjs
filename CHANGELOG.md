@@ -1,3 +1,10 @@
+## [2.3.2](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v2.3.1...v2.3.2) (2026-11-09)
+
+
+### Bug Fixes
+
+* return to page after sign-in check, close open redirect ([4abc59e](https://github.com/lightriderinc/cloud_platform_nextjs/commit/4abc59e30cf3a86018127036293a3437cfd7b19d))
+
 ## [2.3.1](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v2.3.0...v2.3.1) (2026-11-09)
 
 
