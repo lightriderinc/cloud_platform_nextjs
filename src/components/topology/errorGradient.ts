@@ -31,6 +31,49 @@ export function errorRateRgb(
     : mixRgb(ERROR_STOPS[1], ERROR_STOPS[2], (t - 0.5) / 0.5);
 }
 
+/** Percentile band the color scales are clamped to — outliers pin to the end color instead of compressing everyone else into one shade. */
+export const COLOR_CLAMP_PERCENTILES = { low: 0.05, high: 0.95 } as const;
+
+export interface ClampedRange {
+  /** The clamped ends the gradient spans. */
+  min: number;
+  max: number;
+  /** Whether any value lies beyond each clamped end (so the legend can say "≤"/"≥"). */
+  clippedLow: boolean;
+  clippedHigh: boolean;
+}
+
+function percentile(sorted: number[], p: number): number {
+  const pos = (sorted.length - 1) * p;
+  const lo = Math.floor(pos);
+  const hi = Math.ceil(pos);
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
+}
+
+/** 5th–95th percentile range (linear interpolation) of the values given — callers pass measured values only, never sentinels. null for no values. */
+export function clampedRange(values: number[]): ClampedRange | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const min = percentile(sorted, COLOR_CLAMP_PERCENTILES.low);
+  const max = percentile(sorted, COLOR_CLAMP_PERCENTILES.high);
+  return { min, max, clippedLow: sorted[0] < min, clippedHigh: sorted[sorted.length - 1] > max };
+}
+
+/**
+ * Same gradient for any metric, oriented so the GOOD end is always cyan:
+ * for higher-is-better (fidelity, T1, T2*) the max is cyan; for
+ * lower-is-better (an error rate) the min is cyan.
+ */
+export function qualityRgb(
+  value: number,
+  range: { min: number; max: number },
+  better: "higher" | "lower",
+): [number, number, number] {
+  return better === "lower"
+    ? errorRateRgb(value, range.min, range.max)
+    : errorRateRgb(-value, -range.max, -range.min);
+}
+
 // Hover swaps to a brighter tint of the same color rather than a fixed hover
 // class, since the base color varies per entity's own error rate.
 export function toCss(

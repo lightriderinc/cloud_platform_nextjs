@@ -1,6 +1,10 @@
 import PaymentMethodCard from "@/components/billing/PaymentMethodCard";
 import PurchaseHistoryTable from "@/components/billing/PurchaseHistoryTable";
 
+export const metadata = {
+  title: "Payment & History | Light Rider Quantum",
+};
+
 export default function PaymentAndHistoryPage() {
   return (
     <div>

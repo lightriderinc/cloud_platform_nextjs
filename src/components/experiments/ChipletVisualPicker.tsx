@@ -5,7 +5,8 @@ import { errorRateRgb, toCss } from "@/components/topology/errorGradient";
 import { STATE_CLASSES } from "@/components/topology/stateStyles";
 import TopologyTooltip from "@/components/topology/TopologyTooltip";
 import type { TooltipState } from "@/components/topology/types";
-import { DEFAULT_TOPOLOGY_BACKEND_ID, fetchQubits, type QubitEntry } from "@/lib/topology/client";
+import { summarizeChiplets } from "@/lib/topology/chipletSummary";
+import { DEFAULT_TOPOLOGY_BACKEND_ID, fetchQubits } from "@/lib/topology/client";
 import { formatFidelityPct } from "@/lib/topology/format";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -113,25 +114,18 @@ export default function ChipletVisualPicker({
     enabled: qualityEnabled,
   });
 
+  // Mean fRB (simultaneous) per chiplet from the shared chiplet summary —
+  // the same measured-only rule (sentinel/absent never averaged in) the
+  // topology page's chiplet card uses. No edges needed for this figure.
   const chipletQuality = useMemo(() => {
-    const byChiplet = new Map<string, QubitEntry[]>();
-    for (const q of qualityQuery.data?.data ?? []) {
-      if (!q.chipletId) continue;
-      const list = byChiplet.get(q.chipletId) ?? [];
-      list.push(q);
-      byChiplet.set(q.chipletId, list);
-    }
+    const summaries = summarizeChiplets(qualityQuery.data?.data.qubits ?? [], []);
     const out: Record<string, { meanErrorPct: number | null; meanFrbPct: number | null }> = {};
     for (const cid of CHIPLET_IDS) {
-      const activeValues = (byChiplet.get(cid) ?? [])
-        .filter((q) => q.presence !== "absent" && q.frbSimultaneous.state === "active" && q.frbSimultaneous.value !== null)
-        .map((q) => q.frbSimultaneous.value as number);
-      if (activeValues.length === 0) {
-        out[cid] = { meanErrorPct: null, meanFrbPct: null };
-        continue;
-      }
-      const meanFrb = activeValues.reduce((a, b) => a + b, 0) / activeValues.length;
-      out[cid] = { meanErrorPct: (1 - meanFrb) * 100, meanFrbPct: meanFrb * 100 };
+      const meanFrb = summaries.get(cid)?.frbSimultaneous.mean ?? null;
+      out[cid] =
+        meanFrb === null
+          ? { meanErrorPct: null, meanFrbPct: null }
+          : { meanErrorPct: (1 - meanFrb) * 100, meanFrbPct: meanFrb * 100 };
     }
     return out;
   }, [qualityQuery.data]);

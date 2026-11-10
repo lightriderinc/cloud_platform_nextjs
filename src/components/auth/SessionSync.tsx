@@ -13,6 +13,7 @@ import {
   SILENT_SSO_STORAGE_KEY,
   isSilentSsoAllowedPath,
 } from "@/lib/auth/silent-sso";
+import { setSilentSsoStatus } from "@/lib/auth/silent-sso-status";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 
@@ -83,38 +84,41 @@ export default function SessionSync({ initialAuthenticated }: Props) {
    * `cooldownSeconds` differs by trigger: long for the automatic page-load
    * check (the only one that could re-fire unattended), near-zero for a
    * deliberate return to the tab.
+   *
+   * Returns whether it actually navigated, so the page-load check can tell a
+   * signed-out page to stop showing its neutral "checking" state.
    */
   const attemptSilentCheck = useCallback(
-    (cooldownSeconds: number) => {
+    (cooldownSeconds: number): boolean => {
       // Never interrupt work that only exists in the browser. This redirect
       // reloads the document, so firing it here would throw away a selected
       // file or a finished scan; the session is re-checked when that work is
       // submitted instead. See @/lib/auth/protected-work.
-      if (isProtectedWorkInProgress()) return;
+      if (isProtectedWorkInProgress()) return false;
       // Blanket guard for every ordinary form that never opted in above. A
       // half-typed transfer, lead form or search box is exactly the work this
       // redirect used to destroy, and the cheap /api/auth/session poll keeps
       // running regardless — so all that is deferred here is cross-app
       // propagation, until the field is submitted or cleared.
-      if (hasUnsavedInput()) return;
-      if (!isSilentSsoAllowedPath(pathnameRef.current)) return;
+      if (hasUnsavedInput()) return false;
+      if (!isSilentSsoAllowedPath(pathnameRef.current)) return false;
 
       let storage: Storage;
       try {
         storage = window.sessionStorage;
         const last = Number(storage.getItem(SILENT_SSO_STORAGE_KEY)) || 0;
-        if (Date.now() - last < cooldownSeconds * 1000) return;
+        if (Date.now() - last < cooldownSeconds * 1000) return false;
       } catch {
-        return; // Storage unreadable — never attempt.
+        return false; // Storage unreadable — never attempt.
       }
 
       const stamp = String(Date.now());
       try {
         storage.setItem(SILENT_SSO_STORAGE_KEY, stamp);
         // Read back: some browsers accept the write and silently discard it.
-        if (storage.getItem(SILENT_SSO_STORAGE_KEY) !== stamp) return;
+        if (storage.getItem(SILENT_SSO_STORAGE_KEY) !== stamp) return false;
       } catch {
-        return; // Could not record the attempt — never attempt.
+        return false; // Could not record the attempt — never attempt.
       }
 
       const returnTo = `${window.location.pathname}${window.location.search}`;
@@ -141,10 +145,12 @@ export default function SessionSync({ initialAuthenticated }: Props) {
       // no-location-assign-relative-destination, exists only in the newer
       // eslint-config-next, and naming it breaks lint in the repo on the
       // older one. This file is kept byte-identical across both apps.
+      setSilentSsoStatus("redirecting");
       // eslint-disable-next-line
       window.location.assign(
         `/api/auth/silent-check?returnTo=${encodeURIComponent(returnTo)}`,
       );
+      return true;
     },
     [],
   );
@@ -167,13 +173,17 @@ export default function SessionSync({ initialAuthenticated }: Props) {
     }
   }, []);
 
+  /** Resolves to whether it navigated away for a silent check. */
   const syncNow = useCallback(
-    async (options: { allowSilentCheck: boolean; cooldownSeconds: number }) => {
-      if (inFlight.current) return;
+    async (options: {
+      allowSilentCheck: boolean;
+      cooldownSeconds: number;
+    }): Promise<boolean> => {
+      if (inFlight.current) return false;
       inFlight.current = true;
       try {
         const observed = await readAuthState();
-        if (observed === null) return;
+        if (observed === null) return false;
 
         if (observed !== knownAuthenticated.current) {
           // Confirm before acting: router.refresh() re-renders the entire
@@ -182,14 +192,14 @@ export default function SessionSync({ initialAuthenticated }: Props) {
             window.setTimeout(resolve, CHANGE_CONFIRM_DELAY_MS),
           );
           const confirmed = await readAuthState();
-          if (confirmed !== observed) return; // Disagreed — treat as noise.
+          if (confirmed !== observed) return false; // Disagreed — treat as noise.
 
           knownAuthenticated.current = observed;
           // Re-render the server tree, layouts included, so the header and
           // sidebars stop disagreeing with the page body.
           router.refresh();
           // State just changed; no need to also bounce through Logto.
-          return;
+          return false;
         }
 
         // THE RULE: only a signed-OUT visitor is ever sent on the redirect.
@@ -210,11 +220,12 @@ export default function SessionSync({ initialAuthenticated }: Props) {
         // Consequence worth stating plainly: while signed in, SessionSync
         // NEVER navigates the document. No reloads, no lost form state, no
         // swallowed clicks. Those were all one behaviour, not four bugs.
-        if (observed) return;
+        if (observed) return false;
 
-        if (options.allowSilentCheck) {
-          attemptSilentCheck(options.cooldownSeconds);
-        }
+        return (
+          options.allowSilentCheck &&
+          attemptSilentCheck(options.cooldownSeconds)
+        );
       } finally {
         inFlight.current = false;
       }
@@ -249,13 +260,28 @@ export default function SessionSync({ initialAuthenticated }: Props) {
   }, []);
 
   useEffect(() => {
-    // Page-load check. On a brand-new session sessionStorage holds no marker,
-    // so the cooldown below can never block the first attempt however long it
-    // is — which is exactly why this must not be reachable while signed in.
-    void syncNow({
-      allowSilentCheck: true,
-      cooldownSeconds: SIGNED_OUT_LOAD_COOLDOWN_SECONDS,
-    });
+    // Page-load check, for signed-OUT renders only. On a brand-new session
+    // sessionStorage holds no marker, so the cooldown below can never block
+    // the first attempt however long it is — which is exactly why this must
+    // not be reachable while signed in.
+    //
+    // A signed-in render skips the read entirely: the server answered moments
+    // ago, revocation included, so re-asking now only costs another userinfo
+    // and database round trip on every page load. The poll and the focus
+    // handler below still catch a later change.
+    //
+    // Whatever the outcome, unless it navigated away, tell a signed-out page
+    // (SignInRequired) to stop showing its neutral "checking" state.
+    if (knownAuthenticated.current) {
+      setSilentSsoStatus("settled");
+    } else {
+      void syncNow({
+        allowSilentCheck: true,
+        cooldownSeconds: SIGNED_OUT_LOAD_COOLDOWN_SECONDS,
+      }).then((navigated) => {
+        if (!navigated) setSilentSsoStatus("settled");
+      });
+    }
 
     // Only a genuine visibility change counts as being away. Window blur must
     // NOT: a native file picker (and any other OS-level dialog) blurs the

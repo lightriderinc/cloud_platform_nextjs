@@ -3,6 +3,10 @@ import BackButton from "@/components/ui/BackButton";
 import { getSession } from "@/lib/auth/session";
 import { Suspense } from "react";
 
+export const metadata = {
+  title: "Rigetti Cepheus 1-108Q | Light Rider Quantum",
+};
+
 export default async function RigettiCepheusOnePage() {
   const { isAuthenticated } = await getSession();
 

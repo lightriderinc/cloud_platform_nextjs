@@ -1,6 +1,10 @@
+import SignInRequired from "@/components/auth/SignInRequired";
 import JobsList from "@/components/jobs/JobsList";
-import JobsLoginPrompt from "@/components/jobs/JobsLoginPrompt";
 import { getSession } from "@/lib/auth/session";
+
+export const metadata = {
+  title: "Jobs | Light Rider Quantum",
+};
 
 export default async function JobsPage() {
   const { isAuthenticated } = await getSession();
@@ -12,7 +16,7 @@ export default async function JobsPage() {
         Track and manage your submitted jobs.
       </p>
 
-      {!isAuthenticated && <JobsLoginPrompt />}
+      {!isAuthenticated && <SignInRequired target="your jobs" />}
       {isAuthenticated && <JobsList />}
     </div>
   );

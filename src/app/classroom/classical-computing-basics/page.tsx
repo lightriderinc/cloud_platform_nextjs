@@ -1,6 +1,10 @@
+import SignInRequired from "@/components/auth/SignInRequired";
 import ClassicalComputingCourse from "@/components/classroom/classical-computing/ClassicalComputingCourse";
-import ClassroomSignInPrompt from "@/components/classroom/course/ClassroomSignInPrompt";
 import { getSession } from "@/lib/auth/session";
+
+export const metadata = {
+  title: "Classical Computing Basics | Light Rider Quantum",
+};
 
 export default async function ClassicalComputingBasicsPage() {
   const { isAuthenticated } = await getSession();
@@ -11,7 +15,9 @@ export default async function ClassicalComputingBasicsPage() {
         <h1 className="text-2xl font-semibold text-gray-700">
           Classical computing basics
         </h1>
-        <ClassroomSignInPrompt label="this course" />
+        <div className="mt-6">
+          <SignInRequired target="this course" />
+        </div>
       </div>
     );
   }

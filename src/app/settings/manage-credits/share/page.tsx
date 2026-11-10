@@ -2,6 +2,10 @@ import ShareCredits from "@/components/billing/ShareCredits";
 import TransferHistory from "@/components/billing/TransferHistory";
 import BackButton from "@/components/ui/BackButton";
 
+export const metadata = {
+  title: "Share Credits | Light Rider Quantum",
+};
+
 export default function SharePage() {
   return (
     <div>

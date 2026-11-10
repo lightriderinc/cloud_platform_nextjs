@@ -2,6 +2,10 @@ import CreditsTopUp from "@/components/billing/CreditsTopUp";
 import InfoBox from "@/components/InfoBox";
 import BackButton from "@/components/ui/BackButton";
 
+export const metadata = {
+  title: "Purchase Credits | Light Rider Quantum",
+};
+
 // Current pricing metric: $0.002/shot ($2 per 1,000 shots) = 0.2 credits/shot.
 const IQM_RUNTIME_TIERS = [
   { range: "5K shots", rate: "1K credits" },

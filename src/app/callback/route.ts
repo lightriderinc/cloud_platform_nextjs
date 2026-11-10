@@ -4,10 +4,12 @@ import {
   CONSENT_RETRY_PARAM,
   consentRetryCookieName,
   sanitizeReturnTo,
+  silentReturnCookieName,
 } from '@/lib/auth/silent-sso';
 import { linkInviteOnSignIn } from '@/lib/billing/acceptInvite';
 import { INVITE_TOKEN_COOKIE } from '@/lib/billing/inviteCookie';
 import { getLogtoContext, handleSignIn } from '@logto/next/server-actions';
+import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { NextRequest, NextResponse } from 'next/server';
@@ -25,7 +27,12 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const error = searchParams.get('error');
-  const returnTo = sanitizeReturnTo(searchParams.get('returnTo'));
+  // Logto's error answers carry no returnTo; the silent check left the page
+  // it started from in a cookie.
+  const returnCookie = silentReturnCookieName(logtoConfig.appId);
+  const returnTo = sanitizeReturnTo(
+    searchParams.get('returnTo') ?? (await cookies()).get(returnCookie)?.value,
+  );
 
   if (error) {
     const target = new URL(returnTo, request.nextUrl.origin);
@@ -38,6 +45,7 @@ export async function GET(request: NextRequest) {
       // where back-channel logout exists this is the slower backstop.
       const response = NextResponse.redirect(target);
       response.cookies.delete({ name: `logto_${logtoConfig.appId}`, path: '/' });
+      response.cookies.delete({ name: returnCookie, path: '/' });
       return response;
     }
 
@@ -81,7 +89,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(target);
   }
 
-  await handleSignIn(logtoConfig, searchParams);
+  // The SDK finishes a sign-in that carried a postRedirectUri (every Log in
+  // click and silent check here; see app/actions/auth.ts) by THROWING Next's
+  // redirect to it. Hold that redirect until the invite linking below has run,
+  // so it still covers every sign-in. Any other error is a real sign-in
+  // failure and propagates unchanged.
+  let pendingRedirect: unknown = null;
+  try {
+    await handleSignIn(logtoConfig, searchParams);
+  } catch (err) {
+    if (!isRedirectError(err)) throw err;
+    pendingRedirect = err;
+  }
 
   // Link any invite this sign-in completes. Runs after handleSignIn so the
   // session exists and the Logto subject is readable.
@@ -121,5 +140,6 @@ export async function GET(request: NextRequest) {
     console.error('[callback] invite linking failed; sign-in unaffected:', err);
   }
 
+  if (pendingRedirect) throw pendingRedirect;
   redirect('/');
 }

@@ -6,7 +6,8 @@ import type { CorridorEntry, EdgeEntry, QubitEntry } from "@/lib/topology/client
 export type Selection =
   | { kind: "qubit"; qubit: QubitEntry }
   | { kind: "edge"; edge: EdgeEntry }
-  | { kind: "corridor"; corridor: CorridorEntry };
+  | { kind: "corridor"; corridor: CorridorEntry }
+  | { kind: "chiplet"; chipletId: string };
 
 export interface TooltipState {
   html: string;

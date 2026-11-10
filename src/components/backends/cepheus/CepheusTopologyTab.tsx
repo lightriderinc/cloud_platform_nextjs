@@ -19,7 +19,7 @@ export default function CepheusTopologyTab({
         >
           Log in
         </button>{" "}
-        to view topology & calibration data.
+        to see the processor map.
       </p>
     );
   }
