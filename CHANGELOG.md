@@ -1,3 +1,10 @@
+## [2.3.3](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v2.3.2...v2.3.3) (2026-11-10)
+
+
+### Bug Fixes
+
+* updated page titles ([7938411](https://github.com/lightriderinc/cloud_platform_nextjs/commit/7938411660211df954db7418a84dad34a25a0192))
+
 ## [2.3.2](https://github.com/lightriderinc/cloud_platform_nextjs/compare/v2.3.1...v2.3.2) (2026-11-09)
 
 
