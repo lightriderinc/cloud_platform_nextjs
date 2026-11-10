@@ -4,14 +4,14 @@ import CurrentPlanBadge from "@/components/billing/CurrentPlanBadge";
 import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { attempt, type ActionResult } from "@/lib/actionResult";
-import { validateBirthdate } from "@/lib/birthdate";
-import { AVATAR_FORM_FIELD, resolveAvatarSources } from "@/lib/avatar";
 import {
   getAccountProfile,
   getDisplayName,
   getSession,
   requireLogtoUser,
 } from "@/lib/auth/session";
+import { AVATAR_FORM_FIELD, resolveAvatarSources } from "@/lib/avatar";
+import { validateBirthdate } from "@/lib/birthdate";
 import {
   bindTotp,
   deleteMfaVerification,
@@ -26,16 +26,20 @@ import {
   verifyEmailCode,
   verifyPassword,
 } from "@/lib/logto-account";
-import { deleteAvatar, uploadAvatar } from "@/lib/supabase/avatars";
 import {
   findUserByPrimaryEmail,
   getUserAccountFacts,
   isManagementApiConfigured,
   type LogtoUserSummary,
 } from "@/lib/logto/management";
+import { deleteAvatar, uploadAvatar } from "@/lib/supabase/avatars";
 import { getAccessToken, signOut } from "@logto/next/server-actions";
 import { refresh, revalidatePath } from "next/cache";
 import ProfileActions from "./ProfileActions";
+
+export const metadata = {
+  title: "Account | Light Rider Quantum",
+};
 
 export default async function AccountPage() {
   const { userInfo, claims } = await getSession();

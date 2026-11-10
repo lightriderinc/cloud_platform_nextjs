@@ -1,6 +1,10 @@
 import BackendCatalog from "@/components/backends/BackendCatalog";
 import { getSession } from "@/lib/auth/session";
 
+export const metadata = {
+  title: "Backends | Light Rider Quantum",
+};
+
 export default async function BackendsPage() {
   const { isAuthenticated } = await getSession();
 

@@ -1,6 +1,10 @@
 import InfoBox from "@/components/InfoBox";
 import AccessTokensPanel from "./AccessTokensPanel";
 
+export const metadata = {
+  title: "API Keys | Light Rider Quantum",
+};
+
 export default function TokensPage() {
   return (
     <div>

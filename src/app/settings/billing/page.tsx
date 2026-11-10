@@ -2,6 +2,10 @@ import SubscriptionsList from "@/components/billing/SubscriptionsList";
 import UsageSummary from "@/components/billing/UsageSummary";
 import { ValidationCheckoutButton } from "@/components/billing/ValidationCheckoutButton";
 
+export const metadata = {
+  title: "Billing | Light Rider Quantum",
+};
+
 export default function BillingPage() {
   const isDev = process.env.NODE_ENV === "development";
 

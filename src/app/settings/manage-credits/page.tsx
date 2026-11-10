@@ -3,6 +3,10 @@ import PricingNavCard from "@/components/pricing/PricingNavCard";
 import { LuHandCoins } from "react-icons/lu";
 import { PiCoinsFill } from "react-icons/pi";
 
+export const metadata = {
+  title: "Manage Credits | Light Rider Quantum",
+};
+
 const PRICING_PAGES = [
   {
     href: "/settings/manage-credits/purchase",
