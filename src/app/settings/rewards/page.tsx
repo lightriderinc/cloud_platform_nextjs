@@ -2,6 +2,10 @@ import InviteHistory from "@/components/billing/InviteHistory";
 import SendInvite from "@/components/billing/SendInvite";
 import RewardsBanner from "@/components/rewards/RewardsBanner";
 
+export const metadata = {
+  title: "Rewards | Light Rider Quantum",
+};
+
 export default function RewardsPage() {
   return (
     <div>

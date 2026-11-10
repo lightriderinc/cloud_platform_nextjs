@@ -5,7 +5,12 @@ import SidebarSecondary from "@/components/sidebar/SidebarSecondary";
 import SidebarSecondaryGate from "@/components/sidebar/SidebarSecondaryGate";
 import { getSession } from "@/lib/auth/session";
 import type { Metadata } from "next";
-import { Gamja_Flower, IBM_Plex_Mono, IBM_Plex_Sans, Science_Gothic } from "next/font/google";
+import {
+  Gamja_Flower,
+  IBM_Plex_Mono,
+  IBM_Plex_Sans,
+  Science_Gothic,
+} from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
 
@@ -32,8 +37,9 @@ const gamjaFlower = Gamja_Flower({
 });
 
 export const metadata: Metadata = {
-  title: "Cloud quantum computing",
-  description: "Light Rider cloud quantum platform.",
+  title: "Light Rider Quantum | Your gateway to quantum computing",
+  description:
+    "Run quantum circuits on simulators and real QPUs, book dedicated hardware time, and build on managed quantum services and applications.",
 };
 
 export default async function RootLayout({

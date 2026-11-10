@@ -2,6 +2,10 @@ import SignInRequired from "@/components/auth/SignInRequired";
 import JobsList from "@/components/jobs/JobsList";
 import { getSession } from "@/lib/auth/session";
 
+export const metadata = {
+  title: "Jobs | Light Rider Quantum",
+};
+
 export default async function JobsPage() {
   const { isAuthenticated } = await getSession();
 

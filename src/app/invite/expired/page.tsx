@@ -1,3 +1,4 @@
+import LRButton from "@/components/ui/LRButton";
 import Link from "next/link";
 
 /**
@@ -22,11 +23,8 @@ export default async function InviteExpiredPage({
         Ask whoever invited you to send a new one, or sign up directly.
       </p>
       <div className="mt-8">
-        <Link
-          href="/"
-          className="default-radius bg-[var(--brand-primary)] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
-        >
-          Go to Light Rider
+        <Link href="/">
+          <LRButton variant="primary">Take me back home</LRButton>
         </Link>
       </div>
     </div>

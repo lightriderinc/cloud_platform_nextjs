@@ -2,6 +2,10 @@ import UserPlansGrid from "@/components/billing/UserPlansGrid";
 import InfoBox from "@/components/InfoBox";
 import BackButton from "@/components/ui/BackButton";
 
+export const metadata = {
+  title: "User Plans | Light Rider Quantum",
+};
+
 export default function UserPricingPage() {
   return (
     <div>

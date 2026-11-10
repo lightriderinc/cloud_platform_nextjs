@@ -2,6 +2,10 @@ import SignInRequired from "@/components/auth/SignInRequired";
 import ClassicalComputingCourse from "@/components/classroom/classical-computing/ClassicalComputingCourse";
 import { getSession } from "@/lib/auth/session";
 
+export const metadata = {
+  title: "Classical Computing Basics | Light Rider Quantum",
+};
+
 export default async function ClassicalComputingBasicsPage() {
   const { isAuthenticated } = await getSession();
 

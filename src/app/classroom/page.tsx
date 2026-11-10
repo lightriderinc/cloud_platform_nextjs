@@ -1,6 +1,10 @@
 import ClassroomPageContent from "@/components/classroom/ClassroomPageContent";
 import { getSession } from "@/lib/auth/session";
 
+export const metadata = {
+  title: "Classroom | Light Rider Quantum",
+};
+
 export default async function ClassroomPage() {
   const { isAuthenticated } = await getSession();
 

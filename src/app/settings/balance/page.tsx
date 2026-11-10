@@ -1,6 +1,10 @@
 import CreditsSummary from "@/components/billing/CreditsSummary";
 import { ProRoleToggle } from "@/components/dev/ProRoleToggle";
 
+export const metadata = {
+  title: "Balance | Light Rider Quantum",
+};
+
 export default function BalancePage() {
   const isDev = process.env.NODE_ENV === "development";
 

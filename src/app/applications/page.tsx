@@ -1,5 +1,9 @@
 import ApplicationsGrid from "@/components/applications/ApplicationsGrid";
 
+export const metadata = {
+  title: "Applications | Light Rider Quantum",
+};
+
 export default function ApplicationsPage() {
   return (
     <div className="animate-fade-in-up">

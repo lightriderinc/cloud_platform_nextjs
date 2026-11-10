@@ -2,6 +2,10 @@ import SignInRequired from "@/components/auth/SignInRequired";
 import QuantumComputingCourse from "@/components/classroom/quantum-computing/QuantumComputingCourse";
 import { getSession } from "@/lib/auth/session";
 
+export const metadata = {
+  title: "Quantum Computing Basics | Light Rider Quantum",
+};
+
 export default async function QuantumComputingBasicsPage() {
   const { isAuthenticated } = await getSession();
 
