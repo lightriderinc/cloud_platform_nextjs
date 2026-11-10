@@ -134,7 +134,7 @@ export default function BackendModal({
 
         <div className="mb-6 flex flex-wrap items-end gap-x-6 gap-y-2 pr-12">
           <h1 className="text-2xl font-semibold">{name}</h1>
-          <BackendStatusBadge status={status} />
+          <BackendStatusBadge status={status} info={backend.statusInfo} />
           {/* Only the real Cepheus-1-108Q device (not its mock or the
               reservation card) has topology/calibration data — LR-TECH-001
               Phase 6. */}

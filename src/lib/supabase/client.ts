@@ -16,3 +16,6 @@ export const supabase = createClient(
 );
 
 export const AVATAR_BUCKET = process.env.SUPABASE_AVATAR_BUCKET || "avatars";
+
+// Storage bucket holding archived legal-document text (private).
+export const LEGAL_BUCKET = process.env.SUPABASE_LEGAL_BUCKET || "legal";

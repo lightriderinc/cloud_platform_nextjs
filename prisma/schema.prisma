@@ -411,3 +411,57 @@ model RevokedLogtoSession {
 
   @@index([expiresAt])
 }
+
+// ---------------------------------------------------------------------------
+// Backend status light
+//
+// Written only by the status poller (GET /api/cron/backend-status, Vercel Cron,
+// once a minute) and read by GET /api/backends/status. The decision logic is
+// the pure state machine in src/lib/backends/status/stateMachine.ts; these
+// tables hold its memory and an audit trail, so every server instance and every
+// visitor sees the same verdict. Operational data rather than Stripe-facing
+// state; it lives here because this is the app's only database.
+// ---------------------------------------------------------------------------
+
+// One row per backend: the current verdict plus the evidence the state machine
+// needs to make the next one.
+model BackendStatusState {
+  backendId            String    @id // catalog Backend.id, e.g. "iqm.garnet"
+  state                String // StatusState: online | not_accepting | offline | checking | unreachable
+  reason               String? // human-readable "why", shown as the badge tooltip
+  since                DateTime // when `state` was entered
+  lastCheckedAt        DateTime // poll that last wrote this row; doubles as the optimistic-concurrency token
+  lastReadingKind      String
+  lastHealthyAt        DateTime?
+  consecutiveHealthy   Int       @default(0)
+  consecutiveUnhealthy Int       @default(0)
+  firstUnhealthyAt     DateTime?
+  lastUnhealthyAt      DateTime?
+  unhealthyReason      String?
+  unreachableSince     DateTime?
+  healthStamp          String? // provider's own freshness stamp (IQM `updated_at`); only ever compared with itself
+  healthStampChangedAt DateTime?
+  acceptingJobs        Boolean? // inside an availability window; null = provider didn't say
+  calibrationOk        Boolean? // calibrated gates available; null = last check inconclusive
+  calibrationCheckedAt DateTime?
+  calibrationSetId     String?
+  lastExecutionAt      DateTime? // most recent customer job seen COMPLETED on this backend
+  updatedAt            DateTime  @updatedAt
+}
+
+// Append-only log of every reading the poller took, for tuning thresholds and
+// auditing a verdict after the fact. Pruned after 7 days by the poller itself.
+model BackendStatusObservation {
+  id         String   @id @default(cuid())
+  backendId  String
+  observedAt DateTime @default(now())
+  kind       String // ReadingKind as classified by the probe
+  state      String // verdict after applying this reading
+  httpStatus Int?
+  latencyMs  Int?
+  detail     String?
+  raw        Json? // small upstream body (IQM health), kept to confirm its undocumented shape
+
+  @@index([backendId, observedAt])
+  @@index([observedAt])
+}

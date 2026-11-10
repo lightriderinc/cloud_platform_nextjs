@@ -1,4 +1,5 @@
 import { createProxyRoute } from "@/lib/createProxyRoute";
+import { IQM_BASE_URL } from "@/lib/iqm/machines";
 
 // Proxy to IQM Resonance (Cocos REST API). Forwards /api/iqm/<path> with the
 // server-side IQM_TOKEN bearer header so the token never reaches the browser.
@@ -19,7 +20,7 @@ const isLivePath = (path: string[]) => {
 };
 
 export const GET = createProxyRoute({
-  baseUrl: "https://resonance.iqm.tech",
+  baseUrl: IQM_BASE_URL,
   token: process.env.IQM_TOKEN,
   cacheTtlMs: (path) => (isLivePath(path) ? 5_000 : 30_000),
   maxStaleMs: (path) => (isLivePath(path) ? 10_000 : Infinity),

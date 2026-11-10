@@ -12,6 +12,20 @@ export type BackendStatus =
 
 export type BackendType = "QPU" | "Simulator";
 
+/** Extra context for the status badge, set when the status comes from the
+ *  server-side status light (lib/backends/status). Absent for providers that
+ *  report a status directly (IBM) or are hardcoded. */
+export interface BackendStatusInfo {
+  /** Overrides the badge's default label, e.g. "Checking" or "Outside window". */
+  label?: string;
+  /** Why the status is what it is, shown as the badge tooltip. */
+  reason?: string;
+  /** How long ago the server last checked this backend, in ms. */
+  checkedAgeMs?: number;
+  /** How long ago the backend last reported healthy, in ms (null = never seen). */
+  lastHealthyAgeMs?: number | null;
+}
+
 export interface BackendPricing {
   creditsPerSecond: number;
   creditsPerHour: number;
@@ -93,6 +107,8 @@ export interface Backend {
   name: string;
   type: BackendType;
   status: BackendStatus;
+  /** Reason and freshness behind `status`, when known. */
+  statusInfo?: BackendStatusInfo;
   qubits: number;
   provider: string;
   /** Jobs currently queued, or null when unknown (e.g. coming soon). */

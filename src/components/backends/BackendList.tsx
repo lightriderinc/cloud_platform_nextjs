@@ -95,7 +95,10 @@ export default function BackendList({
                     </span>
                   )}
                   {!comingSoon && (
-                    <BackendStatusBadge status={backend.status} />
+                    <BackendStatusBadge
+                      status={backend.status}
+                      info={backend.statusInfo}
+                    />
                   )}
                 </td>
               </tr>

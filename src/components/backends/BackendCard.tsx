@@ -48,7 +48,9 @@ export default function BackendCard({
             Coming soon
           </span>
         )}
-        {!comingSoon && <BackendStatusBadge status={status} />}
+        {!comingSoon && (
+          <BackendStatusBadge status={status} info={backend.statusInfo} />
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">
