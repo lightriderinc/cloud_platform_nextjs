@@ -185,7 +185,8 @@ export default function JobResultView({ job, footer }: Props) {
 
       {(currentStatus === "FAILED" || currentStatus === "ABORTED") && (
         <div className="default-radius border border-dashed border-red-200 p-5 text-center text-sm text-red-500">
-          Job {currentStatus.toLowerCase()}.
+          <p>Job {currentStatus.toLowerCase()}.</p>
+          {detail?.error && <p className="mt-1 break-words text-xs text-red-400" data-job-error>{detail.error}</p>}
         </div>
       )}
 

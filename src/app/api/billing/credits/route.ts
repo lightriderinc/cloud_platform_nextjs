@@ -2,7 +2,7 @@ import { requireLogtoUser } from "@/lib/auth/session";
 import { db } from "@/lib/billing/db";
 import { getOrCreateCustomer } from "@/lib/billing/customer";
 import { REFERRAL_REWARD_PREFIX } from "@/lib/billing/referrals";
-import { ENTROPY_REFUND_PREFIX } from "@/lib/billing/ledgerReasons";
+import { ENTROPY_REFUND_PREFIX, QUANTUM_JOB_REFUND_PREFIX } from "@/lib/billing/ledgerReasons";
 import { TRANSFER_RECEIVED_PREFIX } from "@/lib/billing/transferCredits";
 import { NextResponse } from "next/server";
 
@@ -49,8 +49,10 @@ export async function GET() {
           OR: [
             { reason: { startsWith: TRANSFER_RECEIVED_PREFIX } },
             { reason: { startsWith: REFERRAL_REWARD_PREFIX } },
-            // An entropy refund returns spent credits; it was never bought.
+            // An entropy refund, or a refunded IonQ job charge, returns spent
+            // credits; it was never bought.
             { reason: { startsWith: ENTROPY_REFUND_PREFIX } },
+            { reason: { startsWith: QUANTUM_JOB_REFUND_PREFIX } },
           ],
         },
       },
@@ -69,10 +71,16 @@ export async function GET() {
       },
       _sum: { amountCents: true },
     }),
-    // Refunds of undelivered entropy draws, netted out of "used" below: a
-    // draw that was refunded did not use anything.
+    // Refunds of undelivered entropy draws and of IonQ jobs that were never
+    // sent, netted out of "used" below: a refunded charge did not use anything.
     db.creditLedgerEntry.aggregate({
-      where: { customerId: customer.id, reason: { startsWith: ENTROPY_REFUND_PREFIX } },
+      where: {
+        customerId: customer.id,
+        OR: [
+          { reason: { startsWith: ENTROPY_REFUND_PREFIX } },
+          { reason: { startsWith: QUANTUM_JOB_REFUND_PREFIX } },
+        ],
+      },
       _sum: { amountCents: true },
     }),
   ]);

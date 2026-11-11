@@ -58,6 +58,39 @@ function normalizeJob(data: Record<string, unknown>): QuantumJobHandle {
   };
 }
 
+/** The server re-quoted a per-job priced (IonQ Forte) job higher than the price the user confirmed. Nothing was charged or sent. */
+export class PriceChangedError extends Error {
+  constructor(
+    public priceCredits: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "PriceChangedError";
+  }
+}
+
+export interface JobPriceQuote {
+  priceCredits: number;
+  balanceCredits: number;
+}
+
+/** The credit price of one job on a per-job priced backend (IonQ Forte), before submitting it. Charges nothing. */
+export async function fetchJobPrice(
+  backend: QuantumBackendId,
+  circuit: QuantumCircuitPayload,
+  shots: number,
+): Promise<JobPriceQuote> {
+  const res = await fetch("/api/lr/quantum/estimate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ backend, circuit, shots }),
+  });
+  if (!res.ok) {
+    throw new Error(await parseErrorMessage(res));
+  }
+  return res.json();
+}
+
 export class BackendBusyError extends Error {
   constructor(public nextAvailableAt: string, deviceLabel: string) {
     super(
@@ -77,12 +110,25 @@ export async function submitQuantumJob(
   backend: QuantumBackendId,
   circuit: QuantumCircuitPayload,
   shots: number,
+  /** Required for per-job priced backends (IonQ Forte): the price the user confirmed. The server charges its own re-quote, never more than this. */
+  confirmedPriceCredits?: number,
 ): Promise<QuantumJobHandle> {
   const res = await fetch("/api/lr/quantum/submit", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ backend, circuit, shots }),
+    body: JSON.stringify(
+      confirmedPriceCredits === undefined
+        ? { backend, circuit, shots }
+        : { backend, circuit, shots, confirmedPriceCredits },
+    ),
   });
+  if (res.status === 409) {
+    const data = await res.json().catch(() => ({}));
+    if (data.error === "price_changed" && typeof data.priceCredits === "number") {
+      throw new PriceChangedError(data.priceCredits, data.message ?? "The price changed.");
+    }
+    throw new Error(data.message ?? data.error ?? "HTTP 409");
+  }
   if (res.status === 503) {
     const data = await res.json().catch(() => ({}));
     if (data.error === "busy" && typeof data.nextAvailableAt === "string") {

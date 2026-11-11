@@ -1,9 +1,11 @@
-import { QUANTUM_BACKENDS, isValidBackend } from "@/lib/quantum/backends";
+import { isPaidBackend, isValidBackend } from "@/lib/quantum/backends";
 
 /** "Mock run" for free/unlimited :mock backends, "Live" for real (credit-metered) hardware. */
 function resolveMode(backend?: string): "Mock run" | "Live" | null {
   if (!backend || !isValidBackend(backend)) return null;
-  return QUANTUM_BACKENDS[backend].costPerShotCents === 0 ? "Mock run" : "Live";
+  // isPaidBackend, not costPerShotCents === 0: per-job priced IonQ Forte QPUs
+  // have costPerShotCents 0 but are real hardware.
+  return isPaidBackend(backend) ? "Live" : "Mock run";
 }
 
 // Small pill marking whether a job ran on a free mock backend or real

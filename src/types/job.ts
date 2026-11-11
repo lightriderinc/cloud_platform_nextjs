@@ -25,6 +25,8 @@ export interface JobDetail {
     alias: string;
     displayName: string;
   };
+  /** Why the job failed, from qpu-proxy's GET /jobs/{uuid} (e.g. IonQ's own failure message). Only on failed jobs. */
+  error?: string;
 }
 
 export type MeasurementCounts = Record<string, number>;

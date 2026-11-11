@@ -4,7 +4,7 @@ import { handleSignIn } from "@/app/actions/auth";
 import BackendConnectSectionSkeleton from "@/components/backends/BackendConnectSectionSkeleton";
 import LRButton from "@/components/ui/LRButton";
 import { COLAB_NOTEBOOKS_BASE_URL } from "@/lib/colab";
-import { getQuantumBackendId } from "@/lib/quantum/backends";
+import { getQuantumBackendId, isPricedPerJob } from "@/lib/quantum/backends";
 import { fetchMyReservations } from "@/lib/quantum/reservations";
 import type { Backend } from "@/types/backend";
 import { useQuery } from "@tanstack/react-query";
@@ -209,7 +209,11 @@ export default function BackendConnectSection({
     return <BackendConnectSectionSkeleton />;
   }
 
-  const snippet = pythonSnippet(quantumBackendId, snippetBaseUrl);
+  // Per-job priced backends (IonQ Forte) need a price confirmation to run,
+  // so the copyable example targets the free IonQ simulator instead; the
+  // note below says how to run the same circuit on Forte.
+  const pricedPerJob = isPricedPerJob(quantumBackendId);
+  const snippet = pythonSnippet(pricedPerJob ? "ionq-simulator" : quantumBackendId, snippetBaseUrl);
 
   async function handleCopy() {
     try {
@@ -226,6 +230,13 @@ export default function BackendConnectSection({
       <p className="text-sm text-gray-600">
         Submit jobs to this backend using your Light Rider API key.
       </p>
+      {pricedPerJob && (
+        <InfoBox>
+          This example runs on the free IonQ simulator. To run on {backend.name}, get the price first
+          from <code>/api/lr/quantum/estimate</code> (same body), then submit
+          with <code>backend: &quot;{quantumBackendId}&quot;</code> and <code>confirmedPriceCredits</code> set to that price.
+        </InfoBox>
+      )}
       {isReservedOnlyBackend && (
         <InfoBox>
           Submitting jobs to Rigetti Cepheus 1-108Q is only possible in reserved

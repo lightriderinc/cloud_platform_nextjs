@@ -5,6 +5,7 @@ import {
   availabilityTextClass,
   formatAvailability,
   formatQueue,
+  formatQueueTime,
 } from "@/lib/backends/availability";
 import { getQuantumBackendId } from "@/lib/quantum/backends";
 import type { Backend } from "@/types/backend";
@@ -51,6 +52,7 @@ export default function BackendModal({
     provider,
     pricing,
     availability,
+    queueTimeMs,
   } = backend;
   const quantumBackendId = getQuantumBackendId(backend.id);
   const d = backend.details ?? {};
@@ -67,6 +69,10 @@ export default function BackendModal({
       {
         label: "Queue",
         value: queueDepth !== null ? formatQueue(queueDepth) : null,
+      },
+      {
+        label: "Queue time",
+        value: queueTimeMs != null ? formatQueueTime(queueTimeMs) : null,
       },
       {
         label: "Availability",

@@ -1,6 +1,6 @@
 import { Customer } from "@prisma/client";
 import { db } from "@/lib/billing/db";
-import { ENTROPY_REFUND_PREFIX } from "@/lib/billing/ledgerReasons";
+import { ENTROPY_REFUND_PREFIX, QUANTUM_JOB_REFUND_PREFIX } from "@/lib/billing/ledgerReasons";
 import { REFERRAL_REWARD_PREFIX } from "@/lib/billing/referrals";
 
 /**
@@ -66,12 +66,14 @@ export async function hasUnlockedCredits(customerId: string): Promise<boolean> {
       // this, inviting one person who pays would unlock the inviter's own
       // signup grant for real hardware without them ever paying.
       //
-      // Same for an entropy refund: it only returns credits a draw had
-      // already spent, so it is not new money and must never unlock.
+      // Same for an entropy refund, or a refunded IonQ job charge: each only
+      // returns credits already spent, so it is not new money and must never
+      // unlock.
       NOT: {
         OR: [
           { reason: { startsWith: REFERRAL_REWARD_PREFIX } },
           { reason: { startsWith: ENTROPY_REFUND_PREFIX } },
+          { reason: { startsWith: QUANTUM_JOB_REFUND_PREFIX } },
         ],
       },
     },

@@ -9,14 +9,19 @@ import ShotsInput from "@/components/quantum/ShotsInput";
 import LRButton from "@/components/ui/LRButton";
 import WarningBox from "@/components/WarningBox";
 import {
-  QUANTUM_BACKENDS,
+  isPaidBackend,
+  isPricedPerJob,
   type QuantumBackendId,
 } from "@/lib/quantum/backends";
 import {
   CIRCUIT_PAYLOADS,
+  fetchJobPrice,
   fetchQuantumJobDetail,
+  PriceChangedError,
   submitQuantumJob,
+  type JobPriceQuote,
 } from "@/lib/quantum/client";
+import Link from "next/link";
 import type { Job } from "@/types/job";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -63,7 +68,12 @@ export default function BackendSubmitModal({
   const [shots, setShots] = useState(1000);
   const [submittedJob, setSubmittedJob] = useState<Job | null>(null);
 
-  const needsCredits = QUANTUM_BACKENDS[backend].costPerShotCents > 0;
+  const needsCredits = isPaidBackend(backend);
+  // IonQ Forte: priced per job. The user gets a quote, sees it against their
+  // balance, and confirms; the submit then carries the confirmed price.
+  const pricedPerJob = isPricedPerJob(backend);
+  const [quote, setQuote] = useState<JobPriceQuote | null>(null);
+  const [priceNotice, setPriceNotice] = useState<string | null>(null);
 
   const { data: credits } = useQuery({
     queryKey: ["billing", "credits"],
@@ -96,8 +106,22 @@ export default function BackendSubmitModal({
   } = useMutation({
     mutationFn: async () => {
       const submitTime = new Date().toISOString();
-      const job = await submitQuantumJob(backend, CIRCUIT_PAYLOADS[circuit], shots);
+      const job = await submitQuantumJob(
+        backend,
+        CIRCUIT_PAYLOADS[circuit],
+        shots,
+        pricedPerJob ? quote?.priceCredits : undefined,
+      );
       return { job, submitTime };
+    },
+    onError: (err) => {
+      // The server re-quoted higher than what was confirmed: show the new
+      // price and ask again. Nothing was charged or sent.
+      if (err instanceof PriceChangedError && quote) {
+        setQuote({ ...quote, priceCredits: err.priceCredits });
+        setPriceNotice(err.message);
+        resetMutation();
+      }
     },
     onSuccess: ({ job, submitTime }) => {
       queryClient.invalidateQueries({ queryKey: ["lr-jobs-list"] });
@@ -142,8 +166,36 @@ export default function BackendSubmitModal({
       }
     : submittedJob;
 
+  const {
+    mutate: requestQuote,
+    isPending: isQuoting,
+    error: quoteError,
+    reset: resetQuote,
+  } = useMutation({
+    mutationFn: () => fetchJobPrice(backend, CIRCUIT_PAYLOADS[circuit], shots),
+    onSuccess: (q) => {
+      setQuote(q);
+      setPriceNotice(null);
+    },
+  });
+
+  // A quote is for one exact circuit and shot count; changing either clears it.
+  function clearQuote() {
+    setQuote(null);
+    setPriceNotice(null);
+    resetQuote();
+  }
+
+  const balanceCredits = credits?.remainingCents ?? quote?.balanceCredits ?? null;
+  const priceAboveBalance = !!quote && balanceCredits !== null && quote.priceCredits > balanceCredits;
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (pricedPerJob && !quote) {
+      requestQuote();
+      return;
+    }
+    if (pricedPerJob && priceAboveBalance) return;
     mutate();
   }
 
@@ -224,9 +276,10 @@ export default function BackendSubmitModal({
                     </label>
                     <select
                       value={circuit}
-                      onChange={(e) =>
-                        setCircuit(e.target.value as CircuitType)
-                      }
+                      onChange={(e) => {
+                        setCircuit(e.target.value as CircuitType);
+                        clearQuote();
+                      }}
                       className="default-radius w-full border border-gray-100 bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-300"
                     >
                       {CIRCUITS.map((c) => (
@@ -237,7 +290,51 @@ export default function BackendSubmitModal({
                     </select>
                   </div>
 
-                  <ShotsInput value={shots} onChange={setShots} />
+                  <ShotsInput
+                    value={shots}
+                    onChange={(n) => {
+                      setShots(n);
+                      clearQuote();
+                    }}
+                  />
+
+                  {pricedPerJob && quoteError && (
+                    <p className="text-sm text-red-500">
+                      {quoteError instanceof Error && quoteError.message
+                        ? quoteError.message
+                        : "Couldn't get a price for this job. Please try again."}
+                    </p>
+                  )}
+
+                  {pricedPerJob && quote && (
+                    <div className="default-radius border border-gray-100 bg-gray-50 p-4 text-sm" data-job-price>
+                      {priceNotice && <p className="mb-2 text-amber-700">{priceNotice}</p>}
+                      <div className="flex justify-between gap-4">
+                        <span className="text-gray-600">Price for this job</span>
+                        <span className="font-semibold text-gray-900">{quote.priceCredits.toLocaleString()} credits</span>
+                      </div>
+                      {balanceCredits !== null && (
+                        <div className="mt-1 flex justify-between gap-4">
+                          <span className="text-gray-600">Your balance</span>
+                          <span className="text-gray-900">{balanceCredits.toLocaleString()} credits</span>
+                        </div>
+                      )}
+                      {priceAboveBalance ? (
+                        <p className="mt-3 text-red-600" data-price-blocked>
+                          You need {quote.priceCredits.toLocaleString()} credits for this job but have{" "}
+                          {balanceCredits!.toLocaleString()}.{" "}
+                          <Link href="/settings/manage-credits/purchase" className="brand-link">
+                            Buy credits
+                          </Link>{" "}
+                          to submit it.
+                        </p>
+                      ) : (
+                        <p className="mt-3 text-gray-500">
+                          The price is charged when you submit. It is not adjusted after the job runs.
+                        </p>
+                      )}
+                    </div>
+                  )}
 
                   {isError && (
                     <p className="text-sm text-red-500">
@@ -260,9 +357,17 @@ export default function BackendSubmitModal({
                     <LRButton
                       variant="primary"
                       type="submit"
-                      disabled={isPending}
+                      disabled={isPending || isQuoting || (pricedPerJob && priceAboveBalance)}
                     >
-                      {isPending ? "Submitting…" : "Submit Job"}
+                      {pricedPerJob && !quote
+                        ? isQuoting
+                          ? "Getting price…"
+                          : "Get price"
+                        : isPending
+                          ? "Submitting…"
+                          : pricedPerJob
+                            ? `Confirm and submit (${quote!.priceCredits.toLocaleString()} credits)`
+                            : "Submit Job"}
                     </LRButton>
                   </div>
                 </form>

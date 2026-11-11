@@ -113,6 +113,9 @@ export interface Backend {
   provider: string;
   /** Jobs currently queued, or null when unknown (e.g. coming soon). */
   queueDepth: number | null;
+  /** Typical wait before a job starts, in ms, for providers that report a
+   *  queue time instead of a depth (IonQ). Undefined/null when not reported. */
+  queueTimeMs?: number | null;
   /** Live availability windows, or undefined when the provider doesn't report
    *  it. */
   availability?: BackendAvailability;

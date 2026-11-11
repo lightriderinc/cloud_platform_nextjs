@@ -9,6 +9,20 @@
 // that registry, not assumed. Without it, iqm-proxy falls back to whatever
 // its own IQM_SERVER env var's trailing alias is, which is exactly the
 // single-hardcoded-device behavior this is meant to replace.
+interface QuantumBackendConfig {
+  proxyPath: "/jobs";
+  deviceInstance: string;
+  /** Flat per-shot price in credits (1 credit = 1 cent). 0 for free simulators. */
+  costPerShotCents: number;
+  /**
+   * Priced per job instead of per shot: the price is qpu-proxy's
+   * POST /jobs/estimate for this exact job, times IONQ_PRICE_MARKUP, quoted to
+   * the user before submit (see lib/quantum/ionqPricing.ts). costPerShotCents
+   * is 0 on these but they are NOT free; always check isPaidBackend().
+   */
+  pricedPerJob?: true;
+}
+
 export const QUANTUM_BACKENDS = {
   "iqm-garnet-mock": {
     proxyPath: "/jobs",
@@ -54,12 +68,52 @@ export const QUANTUM_BACKENDS = {
     // exposes it. Do not treat this figure as final.
     costPerShotCents: 0.2,
   },
-} as const;
+  // IonQ (trapped ion, all-to-all connectivity), via qpu-proxy's IonQ adapter.
+  // Simulators are free like every other simulator here. The Forte QPUs are
+  // priced per job from IonQ's own estimate, never per shot.
+  "ionq-simulator": {
+    proxyPath: "/jobs",
+    deviceInstance: "ionq:mock",
+    costPerShotCents: 0, // free — IonQ cloud simulator, ideal (noiseless)
+  },
+  "ionq-forte-1-simulator": {
+    proxyPath: "/jobs",
+    deviceInstance: "forte-1:mock",
+    costPerShotCents: 0, // free — IonQ cloud simulator with the Forte-1 noise model
+  },
+  "ionq-forte-1": {
+    proxyPath: "/jobs",
+    deviceInstance: "forte-1",
+    costPerShotCents: 0,
+    pricedPerJob: true,
+  },
+  "ionq-forte-enterprise-1": {
+    proxyPath: "/jobs",
+    deviceInstance: "forte-enterprise-1",
+    costPerShotCents: 0,
+    pricedPerJob: true,
+  },
+} as const satisfies Record<string, QuantumBackendConfig>;
 
 export type QuantumBackendId = keyof typeof QUANTUM_BACKENDS;
 
 export function isValidBackend(id: string): id is QuantumBackendId {
   return id in QUANTUM_BACKENDS;
+}
+
+/** Priced per job from IonQ's estimate (the Forte QPUs). */
+export function isPricedPerJob(id: QuantumBackendId): boolean {
+  const config: QuantumBackendConfig = QUANTUM_BACKENDS[id];
+  return config.pricedPerJob === true;
+}
+
+/**
+ * Real hardware that costs credits: per-shot priced above 0, or per-job
+ * priced. The single test for "is this free" — never read costPerShotCents
+ * alone, which is 0 for the per-job Forte QPUs too.
+ */
+export function isPaidBackend(id: QuantumBackendId): boolean {
+  return QUANTUM_BACKENDS[id].costPerShotCents > 0 || isPricedPerJob(id);
 }
 
 // Maps a /backends catalog card's Backend.id (e.g. "iqm.garnet", from
@@ -99,6 +153,12 @@ const CATALOG_ID_TO_QUANTUM_BACKEND: Partial<Record<string, QuantumBackendId>> =
   "iqm.sirius:mock": "iqm-sirius-mock",
   "rigetti.qpu.Cepheus-1-108Q:mock": "rigetti-cepheus-mock",
   "rigetti.qpu.Cepheus-1-108Q": "rigetti-cepheus",
+  // IonQ catalog ids (lib/ionq/client.ts), named like IQM's: provider prefix,
+  // then the qpu-proxy device name.
+  "ionq.ionq:mock": "ionq-simulator",
+  "ionq.forte-1:mock": "ionq-forte-1-simulator",
+  "ionq.forte-1": "ionq-forte-1",
+  "ionq.forte-enterprise-1": "ionq-forte-enterprise-1",
 };
 
 export function getQuantumBackendId(catalogBackendId: string): QuantumBackendId | null {

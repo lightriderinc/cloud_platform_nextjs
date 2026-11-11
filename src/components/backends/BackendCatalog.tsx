@@ -2,6 +2,7 @@
 
 import ReservationBackendModal from "@/components/reservations/ReservationBackendModal";
 import { useIbmBackends } from "@/hooks/useIbmBackends";
+import { useIonqBackends } from "@/hooks/useIonqBackends";
 import { useIqmBackends } from "@/hooks/useIqmBackends";
 import { useRigettiBackends } from "@/hooks/useRigettiBackends";
 import {
@@ -96,13 +97,14 @@ export default function BackendCatalog({
   const { data: rigettiBackends = [], isLoading: rigettiLoading } =
     useRigettiBackends();
   const { data: ibmBackends = [], isLoading: ibmLoading } = useIbmBackends();
+  const { data: ionqBackends = [], isLoading: ionqLoading } = useIonqBackends();
 
-  const anyLoading = iqmLoading || rigettiLoading || ibmLoading;
+  const anyLoading = iqmLoading || rigettiLoading || ibmLoading || ionqLoading;
   // RESERVED_CEPHEUS_BACKEND_CARD is a synthetic, UI-only entry for the same
   // physical device as the real "rigetti.qpu.Cepheus-1-108Q" card above —
   // temporary, alongside it, until one of the two access models ships (see
   // the reservation-vs-on-demand branch in the modal render below).
-  const allBackends = [...iqmBackends, ...rigettiBackends, ...ibmBackends];
+  const allBackends = [...iqmBackends, ...rigettiBackends, ...ionqBackends, ...ibmBackends];
   const providerOptions: FilterOption[] = Array.from(
     new Set(allBackends.map((b) => b.provider)),
   )
