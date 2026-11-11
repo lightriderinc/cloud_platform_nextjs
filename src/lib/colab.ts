@@ -46,7 +46,7 @@ export const COLAB_NOTEBOOK_BRANCH = rawBranch.trim() || "main";
  * (`feature/thing`) has to stay a slash for GitHub to resolve the path;
  * percent-encoding it produces a 404.
  */
-export const COLAB_NOTEBOOKS_BASE_URL = `https://colab.research.google.com/github/lightriderinc/cloud_platform_nextjs/blob/${COLAB_NOTEBOOK_BRANCH}/docs/notebooks`;
+export const COLAB_NOTEBOOKS_BASE_URL = `https://colab.research.google.com/github/lightriderinc/lr_quantum_platform/blob/${COLAB_NOTEBOOK_BRANCH}/docs/notebooks`;
 
 /** Full Colab URL for one notebook file, e.g. "quantum-quickstart.ipynb". */
 export function colabNotebookUrl(notebook: string): string {
