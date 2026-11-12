@@ -3,6 +3,7 @@ import {
   availabilityTextClass,
   formatAvailability,
   formatQueue,
+  formatQueueTime,
 } from "@/lib/backends/availability";
 import { getQuantumBackendId } from "@/lib/quantum/backends";
 import { isReservationCatalogId } from "@/lib/quantum/reservations";
@@ -22,8 +23,11 @@ export default function BackendCard({
   backend: Backend;
   onSelect?: (backend: Backend) => void;
 }) {
-  const { name, type, status, qubits, provider, queueDepth, availability } =
+  const { name, type, status, qubits, provider, queueDepth, availability, queueTimeMs, noiseModel } =
     backend;
+  // Providers that report a predicted queue time (IonQ) show that instead of
+  // the availability line, which would only repeat the status badge.
+  const hasQueueTime = queueTimeMs !== undefined;
   // The reservation card is a real, bookable access path today even though
   // it has no QUANTUM_BACKENDS submission mapping of its own (see
   // reservations.ts) — it isn't "coming soon" like a genuinely unmapped card.
@@ -59,7 +63,14 @@ export default function BackendCard({
         {queueDepth !== null && (
           <BackendSpec label="Queue" value={formatQueue(queueDepth)} />
         )}
-        {availabilityLabel && (
+        {hasQueueTime && (
+          <BackendSpec
+            label="Predicted queue time"
+            value={queueTimeMs === null ? "Unknown" : formatQueueTime(queueTimeMs)}
+          />
+        )}
+        {noiseModel && <BackendSpec label="Noise model" value={noiseModel} />}
+        {!hasQueueTime && availabilityLabel && (
           <BackendSpec
             label="Availability"
             value={
@@ -71,8 +82,12 @@ export default function BackendCard({
         )}
       </div>
 
+      {type === "Simulator" && noiseModel && backend.details?.description && (
+        <p className="text-xs leading-relaxed text-gray-600">{backend.details.description}</p>
+      )}
+
       <div className="mt-auto flex items-center gap-2">
-        <BackendTypeTag type={type} />
+        <BackendTypeTag type={type} label={backend.tagLabel} />
       </div>
     </TiltCard>
   );

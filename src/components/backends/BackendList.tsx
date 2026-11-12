@@ -82,7 +82,7 @@ export default function BackendList({
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <BackendTypeTag type={backend.type} />
+                    <BackendTypeTag type={backend.type} label={backend.tagLabel} />
                   </div>
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">

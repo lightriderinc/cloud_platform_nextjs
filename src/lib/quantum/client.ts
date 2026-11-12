@@ -69,6 +69,23 @@ export class PriceChangedError extends Error {
   }
 }
 
+/**
+ * The server wants a confirmed price before running this job: a backend that
+ * isn't priced per job normally but has a price set right now (the IonQ
+ * noisy simulator with IONQ_NOISY_SIM_PRICE_PER_SHOT_USD above 0). Nothing
+ * was charged or sent; show the price and resubmit with it.
+ */
+export class PriceConfirmationRequiredError extends Error {
+  constructor(
+    public priceCredits: number,
+    public balanceCredits: number | null,
+    message: string,
+  ) {
+    super(message);
+    this.name = "PriceConfirmationRequiredError";
+  }
+}
+
 export interface JobPriceQuote {
   priceCredits: number;
   balanceCredits: number;
@@ -126,6 +143,13 @@ export async function submitQuantumJob(
     const data = await res.json().catch(() => ({}));
     if (data.error === "price_changed" && typeof data.priceCredits === "number") {
       throw new PriceChangedError(data.priceCredits, data.message ?? "The price changed.");
+    }
+    if (data.error === "price_confirmation_required" && typeof data.priceCredits === "number") {
+      throw new PriceConfirmationRequiredError(
+        data.priceCredits,
+        typeof data.balanceCredits === "number" ? data.balanceCredits : null,
+        data.message ?? "Confirm the price to submit this job.",
+      );
     }
     throw new Error(data.message ?? data.error ?? "HTTP 409");
   }

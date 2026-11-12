@@ -3,7 +3,8 @@ import { QUANTUM_JOB_PREFIX, QUANTUM_JOB_REFUND_PREFIX } from "@/lib/billing/led
 import { hasEnoughCredits, hasUnlockedCredits } from "@/lib/billing/planCheck";
 import { db } from "@/lib/billing/db";
 import { grantReferralRewardIfEligible } from "@/lib/billing/referrals";
-import { IonqQuoteError, quoteIonqJob } from "@/lib/quantum/ionqPricing";
+import { canUseIonqQpu } from "@/lib/quantum/ionqAccess";
+import { IONQ_NOISY_SIM_BACKEND, IonqQuoteError, noisySimPriceCredits, quoteIonqJob } from "@/lib/quantum/ionqPricing";
 import { isPricedPerJob, isValidBackend, QUANTUM_BACKENDS, type QuantumBackendId } from "@/lib/quantum/backends";
 import type { Customer } from "@prisma/client";
 import { NextResponse } from "next/server";
@@ -59,7 +60,24 @@ export async function POST(req: Request) {
   }
 
   if (isPricedPerJob(backend)) {
-    return submitPricedPerJob(customer, backend, circuit, shots ?? 1, confirmedPriceCredits, submitStartedAt);
+    const deviceInstance = QUANTUM_BACKENDS[backend].deviceInstance;
+    return submitWithConfirmedPrice(customer, backend, circuit, shots ?? 1, confirmedPriceCredits, submitStartedAt, {
+      canSubmit: () => canUseIonqQpu(customer.id),
+      quote: async () => (await quoteIonqJob(deviceInstance, circuit, shots ?? 1)).priceCredits,
+    });
+  }
+
+  // IonQ's noisy simulator: free (and handled like any free simulator below)
+  // unless IONQ_NOISY_SIM_PRICE_PER_SHOT_USD sets a price. With a price it
+  // takes the same confirm-then-charge path, without the real-QPU gate.
+  if (backend === IONQ_NOISY_SIM_BACKEND) {
+    const priceCredits = noisySimPriceCredits(shots ?? 1);
+    if (priceCredits > 0) {
+      return submitWithConfirmedPrice(customer, backend, circuit, shots ?? 1, confirmedPriceCredits, submitStartedAt, {
+        canSubmit: async () => true,
+        quote: async () => priceCredits,
+      });
+    }
   }
 
   const config = QUANTUM_BACKENDS[backend];
@@ -196,11 +214,13 @@ export async function POST(req: Request) {
 }
 
 /**
- * Per-job priced backends (IonQ Forte). The order is what the user agreed
- * to: they saw a quoted price and confirmed it, the credits come off, then
- * the job is sent.
+ * Jobs whose price the user confirms before submitting: per-job priced
+ * backends (IonQ Forte) and the IonQ noisy simulator when it has a price.
+ * The order is what the user agreed to: they saw a quoted price and
+ * confirmed it, the credits come off, then the job is sent.
  *
- *   1. Re-quote server-side (POST /jobs/estimate). The client's figure is
+ *   0. `canSubmit`: who may use this backend at all (canUseIonqQpu for Forte).
+ *   1. Re-quote server-side (`quote`; POST /jobs/estimate for Forte). The client's figure is
  *      only an upper bound the user agreed to: a higher price is refused
  *      (409 price_changed) so they can review it; a missing confirmation is
  *      refused too (409 price_confirmation_required, with the price), so an
@@ -213,23 +233,24 @@ export async function POST(req: Request) {
  *      refunded at once, under QUANTUM_JOB_REFUND_PREFIX. A job that was
  *      sent is never adjusted afterwards, whatever its outcome.
  */
-async function submitPricedPerJob(
+async function submitWithConfirmedPrice(
   customer: Customer,
   backend: QuantumBackendId,
   circuit: unknown,
   shots: number,
   confirmedPriceCredits: unknown,
   submitStartedAt: Date,
+  pricing: { canSubmit: () => Promise<boolean>; quote: () => Promise<number> },
 ) {
   const config = QUANTUM_BACKENDS[backend];
 
-  if (!(await hasUnlockedCredits(customer.id))) {
+  if (!(await pricing.canSubmit())) {
     return NextResponse.json(PURCHASE_REQUIRED, { status: 402 });
   }
 
   let priceCredits: number;
   try {
-    ({ priceCredits } = await quoteIonqJob(config.deviceInstance, circuit, shots));
+    priceCredits = await pricing.quote();
   } catch (err) {
     if (err instanceof IonqQuoteError) {
       return NextResponse.json({ error: "estimate_failed", message: err.message }, { status: err.status });
@@ -242,7 +263,8 @@ async function submitPricedPerJob(
       {
         error: "price_confirmation_required",
         priceCredits,
-        message: `This backend is priced per job. This job costs ${priceCredits} credits; resubmit with confirmedPriceCredits: ${priceCredits} to run it.`,
+        balanceCredits: customer.creditsBalanceCents,
+        message: `This job costs ${priceCredits} credits; resubmit with confirmedPriceCredits: ${priceCredits} to run it.`,
       },
       { status: 409 },
     );

@@ -49,15 +49,16 @@ export function formatQueue(queueDepth: number | null): string {
   return `${queueDepth} ${queueDepth === 1 ? "job" : "jobs"}`;
 }
 
-// "No wait" / "Under a minute" / "About 12 minutes" / "About 3 hours", for
-// providers that report a typical queue time (IonQ) rather than a depth.
+// Predicted queue time for providers that report one (IonQ) rather than a
+// depth, phrased like IonQ Cloud: "0 min", "12 min", "1 hr 5 min",
+// "16 hrs 59 min", "3 hrs". Rounded to the nearest minute.
 export function formatQueueTime(ms: number): string {
-  if (ms <= 0) return "No wait";
-  const minutes = Math.round(ms / 60_000);
-  if (minutes < 1) return "Under a minute";
-  if (minutes < 90) return `About ${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
-  const hours = Math.round(minutes / 60);
-  return `About ${hours} hours`;
+  const totalMinutes = Number.isFinite(ms) && ms > 0 ? Math.round(ms / 60_000) : 0;
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours === 0) return `${minutes} min`;
+  const hrs = `${hours} ${hours === 1 ? "hr" : "hrs"}`;
+  return minutes === 0 ? hrs : `${hrs} ${minutes} min`;
 }
 
 // Short label for a card/modal row: "Available now", "Available at 8:00 PM"

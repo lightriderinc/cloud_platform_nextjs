@@ -2,7 +2,9 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import {
   DEFAULT_IONQ_PRICE_MARKUP,
   IonqQuoteError,
+  ionqNoisySimPricePerShotUsd,
   ionqPriceMarkup,
+  noisySimPriceCredits,
   priceCreditsFromEstimate,
   quoteIonqJob,
 } from "./ionqPricing";
@@ -44,6 +46,34 @@ describe("IONQ_PRICE_MARKUP", () => {
   test("reads the env var", () => {
     vi.stubEnv("IONQ_PRICE_MARKUP", "2");
     expect(ionqPriceMarkup()).toBe(2);
+  });
+});
+
+describe("IONQ_NOISY_SIM_PRICE_PER_SHOT_USD", () => {
+  test("defaults to 0: the noisy simulator stays free", () => {
+    expect(ionqNoisySimPricePerShotUsd(undefined)).toBe(0);
+    expect(ionqNoisySimPricePerShotUsd("")).toBe(0);
+    expect(ionqNoisySimPricePerShotUsd("0")).toBe(0);
+    expect(noisySimPriceCredits(1000, 0)).toBe(0);
+  });
+
+  test("invalid or negative stays free", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    expect(ionqNoisySimPricePerShotUsd("abc")).toBe(0);
+    expect(ionqNoisySimPricePerShotUsd("-0.01")).toBe(0);
+    warn.mockRestore();
+  });
+
+  test("above 0: shots x price x 100, rounded up, at least 1 credit", () => {
+    expect(ionqNoisySimPricePerShotUsd("0.0003")).toBe(0.0003);
+    expect(noisySimPriceCredits(1000, 0.0003)).toBe(30);
+    expect(noisySimPriceCredits(1, 0.0003)).toBe(1);
+    expect(noisySimPriceCredits(333, 0.001)).toBe(34); // 33.3 -> 34
+  });
+
+  test("reads the env var", () => {
+    vi.stubEnv("IONQ_NOISY_SIM_PRICE_PER_SHOT_USD", "0.001");
+    expect(noisySimPriceCredits(1000)).toBe(100);
   });
 });
 

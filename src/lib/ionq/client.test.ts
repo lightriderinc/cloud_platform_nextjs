@@ -66,6 +66,16 @@ describe("IonQ catalog cards", () => {
     expect(c["ionq.forte-1:mock"].status).toBe("maintenance");
   });
 
+  test("labels and noise models: ionq:mock is Simulator, the rest Cloud; no location", () => {
+    const c = byId(listing());
+    expect(Object.values(c).map((b) => [b.id, b.tagLabel, b.noiseModel])).toEqual([
+      ["ionq.ionq:mock", "Simulator", "Ideal"],
+      ["ionq.forte-1:mock", "Cloud", "Forte"],
+      ["ionq.forte-1", "Cloud", undefined],
+      ["ionq.forte-enterprise-1", "Cloud", undefined],
+    ]);
+  });
+
   test("queue time comes through in ms", () => {
     const c = byId(listing());
     expect(c["ionq.forte-1"].queueTimeMs).toBe(1_181_215);

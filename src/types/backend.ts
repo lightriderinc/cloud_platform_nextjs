@@ -116,6 +116,11 @@ export interface Backend {
   /** Typical wait before a job starts, in ms, for providers that report a
    *  queue time instead of a depth (IonQ). Undefined/null when not reported. */
   queueTimeMs?: number | null;
+  /** Text for the card's tag pill when it should differ from `type`, e.g.
+   *  "Cloud" on IonQ's Forte noise simulator. The tabs still go by `type`. */
+  tagLabel?: string;
+  /** Simulator noise model ("Ideal", "Forte"), for providers that report one (IonQ). */
+  noiseModel?: string;
   /** Live availability windows, or undefined when the provider doesn't report
    *  it. */
   availability?: BackendAvailability;

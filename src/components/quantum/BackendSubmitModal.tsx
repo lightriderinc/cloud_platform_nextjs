@@ -18,6 +18,7 @@ import {
   fetchJobPrice,
   fetchQuantumJobDetail,
   PriceChangedError,
+  PriceConfirmationRequiredError,
   submitQuantumJob,
   type JobPriceQuote,
 } from "@/lib/quantum/client";
@@ -71,6 +72,10 @@ export default function BackendSubmitModal({
   const needsCredits = isPaidBackend(backend);
   // IonQ Forte: priced per job. The user gets a quote, sees it against their
   // balance, and confirms; the submit then carries the confirmed price.
+  // The same price panel also appears when the server asks for a price on a
+  // backend that is normally free (the IonQ noisy simulator once
+  // IONQ_NOISY_SIM_PRICE_PER_SHOT_USD is set): a quote is then set from the
+  // server's answer, and the next submit confirms it.
   const pricedPerJob = isPricedPerJob(backend);
   const [quote, setQuote] = useState<JobPriceQuote | null>(null);
   const [priceNotice, setPriceNotice] = useState<string | null>(null);
@@ -110,7 +115,7 @@ export default function BackendSubmitModal({
         backend,
         CIRCUIT_PAYLOADS[circuit],
         shots,
-        pricedPerJob ? quote?.priceCredits : undefined,
+        quote?.priceCredits,
       );
       return { job, submitTime };
     },
@@ -120,6 +125,14 @@ export default function BackendSubmitModal({
       if (err instanceof PriceChangedError && quote) {
         setQuote({ ...quote, priceCredits: err.priceCredits });
         setPriceNotice(err.message);
+        resetMutation();
+      }
+      if (err instanceof PriceConfirmationRequiredError) {
+        setQuote({
+          priceCredits: err.priceCredits,
+          balanceCredits: err.balanceCredits ?? credits?.remainingCents ?? 0,
+        });
+        setPriceNotice("This job has a price. Review it and confirm to submit.");
         resetMutation();
       }
     },
@@ -195,7 +208,7 @@ export default function BackendSubmitModal({
       requestQuote();
       return;
     }
-    if (pricedPerJob && priceAboveBalance) return;
+    if (quote && priceAboveBalance) return;
     mutate();
   }
 
@@ -306,13 +319,18 @@ export default function BackendSubmitModal({
                     </p>
                   )}
 
-                  {pricedPerJob && quote && (
+                  {quote && (
                     <div className="default-radius border border-gray-100 bg-gray-50 p-4 text-sm" data-job-price>
                       {priceNotice && <p className="mb-2 text-amber-700">{priceNotice}</p>}
                       <div className="flex justify-between gap-4">
                         <span className="text-gray-600">Price for this job</span>
                         <span className="font-semibold text-gray-900">{quote.priceCredits.toLocaleString()} credits</span>
                       </div>
+                      {pricedPerJob && (
+                        <p className="mt-1 text-right text-xs text-gray-500" data-forte-minimum>
+                          Minimum ~$25 per job
+                        </p>
+                      )}
                       {balanceCredits !== null && (
                         <div className="mt-1 flex justify-between gap-4">
                           <span className="text-gray-600">Your balance</span>
@@ -357,7 +375,7 @@ export default function BackendSubmitModal({
                     <LRButton
                       variant="primary"
                       type="submit"
-                      disabled={isPending || isQuoting || (pricedPerJob && priceAboveBalance)}
+                      disabled={isPending || isQuoting || (!!quote && priceAboveBalance)}
                     >
                       {pricedPerJob && !quote
                         ? isQuoting
@@ -365,8 +383,8 @@ export default function BackendSubmitModal({
                           : "Get price"
                         : isPending
                           ? "Submitting…"
-                          : pricedPerJob
-                            ? `Confirm and submit (${quote!.priceCredits.toLocaleString()} credits)`
+                          : quote
+                            ? `Confirm and submit (${quote.priceCredits.toLocaleString()} credits)`
                             : "Submit Job"}
                     </LRButton>
                   </div>

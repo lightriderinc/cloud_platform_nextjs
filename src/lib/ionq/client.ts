@@ -17,6 +17,10 @@ interface IonqDevice {
   type: BackendType;
   qubits: number;
   description: string;
+  /** Text on the card's tag pill: "Simulator" for the ideal simulator, "Cloud" for the rest. */
+  tagLabel: string;
+  /** Simulators only. Static, so the card can show it without a details call; the modal shows IonQ's live value. */
+  noiseModel?: string;
 }
 
 const IONQ_DEVICES: IonqDevice[] = [
@@ -26,7 +30,9 @@ const IONQ_DEVICES: IonqDevice[] = [
     name: "IonQ Simulator",
     type: "Simulator",
     qubits: 29,
-    description: "IonQ's cloud simulator, noiseless. Free and unlimited.",
+    description: "Ideal simulator with no noise.",
+    tagLabel: "Simulator",
+    noiseModel: "Ideal",
   },
   {
     device: "forte-1:mock",
@@ -34,7 +40,9 @@ const IONQ_DEVICES: IonqDevice[] = [
     name: "IonQ Forte-1 (simulator)",
     type: "Simulator",
     qubits: 29,
-    description: "IonQ's cloud simulator with the Forte-1 noise model. Free and unlimited.",
+    description: "Simulator with the noise model of IonQ Forte.",
+    tagLabel: "Cloud",
+    noiseModel: "Forte",
   },
   {
     device: "forte-1",
@@ -44,6 +52,7 @@ const IONQ_DEVICES: IonqDevice[] = [
     qubits: 36,
     description:
       "IonQ Forte-1 is a trapped-ion quantum computer with all-to-all connectivity. Priced per job: you see the price in credits before you submit.",
+    tagLabel: "Cloud",
   },
   {
     device: "forte-enterprise-1",
@@ -53,6 +62,7 @@ const IONQ_DEVICES: IonqDevice[] = [
     qubits: 36,
     description:
       "IonQ Forte Enterprise-1 is a trapped-ion quantum computer with all-to-all connectivity. Priced per job: you see the price in credits before you submit.",
+    tagLabel: "Cloud",
   },
 ];
 
@@ -113,6 +123,8 @@ export function mapIonqBackends(response: IonqStatusResponse | null): Backend[] 
       provider: "IonQ",
       queueDepth: null,
       queueTimeMs: typeof queueTime === "number" && queueTime >= 0 ? queueTime : null,
+      tagLabel: d.tagLabel,
+      ...(d.noiseModel ? { noiseModel: d.noiseModel } : {}),
       availability: { availableNow: status === "online", nextWindowStart: null },
       details: { description: d.description, topology: "All-to-all connectivity" },
     };

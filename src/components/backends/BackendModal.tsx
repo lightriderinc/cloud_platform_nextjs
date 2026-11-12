@@ -7,6 +7,7 @@ import {
   formatQueue,
   formatQueueTime,
 } from "@/lib/backends/availability";
+import { ionqDeviceFromCatalogId } from "@/lib/ionq/details";
 import { getQuantumBackendId } from "@/lib/quantum/backends";
 import type { Backend } from "@/types/backend";
 import Link from "next/link";
@@ -16,6 +17,7 @@ import { RiExpandDiagonalFill } from "react-icons/ri";
 import InfoBox from "../InfoBox";
 import BackendConnectSection from "./BackendConnectSection";
 import BackendStatusBadge from "./BackendStatusBadge";
+import IonqBackendDetails from "./IonqBackendDetails";
 import QubitMap from "./QubitMap";
 
 type Spec = { label: string; value: React.ReactNode };
@@ -55,6 +57,9 @@ export default function BackendModal({
     queueTimeMs,
   } = backend;
   const quantumBackendId = getQuantumBackendId(backend.id);
+  // IonQ devices get their own section (live details from IonQ) in place of
+  // the generic description and spec grid below.
+  const ionqDevice = ionqDeviceFromCatalogId(backend.id);
   const d = backend.details ?? {};
 
   const pct = (n?: number) => (n != null ? `${n} %` : undefined);
@@ -71,7 +76,7 @@ export default function BackendModal({
         value: queueDepth !== null ? formatQueue(queueDepth) : null,
       },
       {
-        label: "Queue time",
+        label: "Predicted queue time",
         value: queueTimeMs != null ? formatQueueTime(queueTimeMs) : null,
       },
       {
@@ -157,6 +162,10 @@ export default function BackendModal({
           )}
         </div>
 
+        {ionqDevice ? (
+          <IonqBackendDetails backend={backend} device={ionqDevice} />
+        ) : (
+        <>
         <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           {d.description && (
             <p className="max-w-2xl text-sm leading-relaxed text-gray-600">
@@ -183,6 +192,8 @@ export default function BackendModal({
             </div>
           ))}
         </div>
+        </>
+        )}
 
         {d.qubitMap && d.qubitMap.nodes.length > 0 && (
           <div className="mt-8">

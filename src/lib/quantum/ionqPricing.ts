@@ -96,3 +96,35 @@ export async function quoteIonqJob(
   }
   return { priceCredits: priceCreditsFromEstimate(usd, ionqPriceMarkup()) };
 }
+
+// --- IonQ noisy simulator (forte-1:mock) --------------------------------
+//
+// Free today. IONQ_NOISY_SIM_PRICE_PER_SHOT_USD turns on a per-shot price
+// without a code change: 0, unset or invalid means free (the current
+// behaviour, nothing is quoted or charged). Above 0, a job costs
+// ceil(shots x price x 100) credits, at least 1, and goes through the same
+// confirm-then-charge path as a Forte job (quote shown before submit,
+// guarded debit, ledger entry, refund if it isn't sent).
+
+/** The QUANTUM_BACKENDS id of IonQ's Forte noise-model simulator. */
+export const IONQ_NOISY_SIM_BACKEND = "ionq-forte-1-simulator";
+
+export function ionqNoisySimPricePerShotUsd(
+  raw: string | undefined = process.env.IONQ_NOISY_SIM_PRICE_PER_SHOT_USD,
+): number {
+  if (raw === undefined || raw.trim() === "") return 0;
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value < 0) {
+    console.warn(`[ionq-pricing] ignoring IONQ_NOISY_SIM_PRICE_PER_SHOT_USD=${JSON.stringify(raw)}; the noisy simulator stays free`);
+    return 0;
+  }
+  return value;
+}
+
+/** Credits for a noisy-simulator job: 0 when the simulator is free, otherwise at least 1. */
+export function noisySimPriceCredits(shots: number, pricePerShotUsd: number = ionqNoisySimPricePerShotUsd()): number {
+  if (!(pricePerShotUsd > 0)) return 0;
+  const safeShots = Number.isFinite(shots) && shots > 0 ? Math.floor(shots) : 1;
+  const cents = Math.round(safeShots * pricePerShotUsd * 100 * 1e6) / 1e6;
+  return Math.max(1, Math.ceil(cents));
+}

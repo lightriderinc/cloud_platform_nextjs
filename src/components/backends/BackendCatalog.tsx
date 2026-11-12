@@ -12,6 +12,13 @@ import {
   type FilterCategory,
 } from "@/lib/backends/filters";
 import {
+  backendTab,
+  BACKEND_TABS,
+  countByTab,
+  isBackendTab,
+  type BackendTab,
+} from "@/lib/backends/tabs";
+import {
   sortBackends,
   type BackendSortKey,
   type SortDirection,
@@ -70,6 +77,7 @@ export default function BackendCatalog({
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [filters, setFilters] =
     useState<BackendFilterState>(createEmptyFilters);
+  const [tab, setTab] = useState<BackendTab>("qpus");
 
   // Restore the previous choice after mount (not in the initializer) so the
   // server-rendered markup and first client render still match. Persisting
@@ -78,15 +86,35 @@ export default function BackendCatalog({
   // this same restore and stomp the just-restored value with the stale
   // pre-restore state, since its closure predates the setState above.
   useEffect(() => {
+    // The tab lives in the URL (?tab=simulators) so a link opens the right
+    // one. Read here rather than with useSearchParams, which would need a
+    // Suspense boundary around the whole catalog.
+    const urlTab = new URLSearchParams(window.location.search).get("tab");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (isBackendTab(urlTab)) setTab(urlTab);
     const storedView = sessionStorage.getItem(VIEW_KEY);
     const storedSortKey = sessionStorage.getItem(SORT_KEY_KEY);
     const storedSortDirection = sessionStorage.getItem(SORT_DIRECTION_KEY);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (isView(storedView)) setView(storedView);
     if (isSortKey(storedSortKey)) setSortKey(storedSortKey);
     if (isSortDirection(storedSortDirection))
       setSortDirection(storedSortDirection);
   }, []);
+
+  // replaceState, as on the Cepheus detail tabs: switching tabs doesn't add
+  // history entries or re-render the page through the router.
+  function changeTab(next: BackendTab) {
+    setTab(next);
+    const params = new URLSearchParams(window.location.search);
+    if (next === "qpus") params.delete("tab");
+    else params.set("tab", next);
+    const query = params.toString();
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`,
+    );
+  }
 
   function changeView(next: View) {
     setView(next);
@@ -110,7 +138,11 @@ export default function BackendCatalog({
   )
     .sort((a, b) => a.localeCompare(b))
     .map((provider) => ({ value: provider, label: provider }));
-  const filteredBackends = filterBackends(allBackends, filters);
+  // Filters apply first, then the tab: each tab's count is what that tab
+  // would show with the current filters.
+  const matchingBackends = filterBackends(allBackends, filters);
+  const tabCounts = countByTab(matchingBackends);
+  const filteredBackends = matchingBackends.filter((b) => backendTab(b) === tab);
   const onlineCount = filteredBackends.filter(
     (b) => b.status === "online",
   ).length;
@@ -172,6 +204,31 @@ export default function BackendCatalog({
 
   return (
     <>
+      <div
+        role="tablist"
+        aria-label="Backend type"
+        className="mb-6 flex gap-2 overflow-x-auto border-b border-gray-200"
+      >
+        {BACKEND_TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            id={`backends-tab-${t.id}`}
+            aria-selected={tab === t.id}
+            aria-controls="backends-tab-panel"
+            onClick={() => changeTab(t.id)}
+            className={`shrink-0 px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
+              tab === t.id
+                ? "border-b-2 border-[var(--brand-primary)] text-[var(--brand-primary)]"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            {t.label} ({tabCounts[t.id]})
+          </button>
+        ))}
+      </div>
+
       <div className="mb-6 flex items-center justify-between">
         <p className="text-md text-gray-950">
           {filteredBackends.length} Backends, {onlineCount} Online
@@ -225,9 +282,16 @@ export default function BackendCatalog({
         </div>
       </div>
 
+      <div
+        role="tabpanel"
+        id="backends-tab-panel"
+        aria-labelledby={`backends-tab-${tab}`}
+      >
       {filteredBackends.length === 0 ? (
         <div className="default-radius border border-dashed border-gray-200 bg-gray-50 p-16 text-center text-sm text-gray-500">
-          No backends match the selected filters.
+          {matchingBackends.length === 0
+            ? "No backends match the selected filters."
+            : `No ${tab === "qpus" ? "QPUs" : "simulators"} match the selected filters.`}
         </div>
       ) : view === "list" ? (
         <BackendList
@@ -240,6 +304,7 @@ export default function BackendCatalog({
       ) : (
         <BackendGrid backends={sortedBackends} onSelect={setSelected} />
       )}
+      </div>
 
       {/* Render the freshest copy of the selection so the modal upgrades in
           place when a provider's heavy details (qubit map, fidelities) finish

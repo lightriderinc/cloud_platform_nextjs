@@ -74,6 +74,7 @@ beforeEach(() => {
   vi.stubEnv("QUANTUM_PROXY_URL", PROXY);
   vi.stubEnv("QUANTUM_PROXY_SERVICE_KEY", "lr_test");
   vi.stubEnv("IONQ_PRICE_MARKUP", "");
+  vi.stubEnv("IONQ_NOISY_SIM_PRICE_PER_SHOT_USD", "");
   vi.spyOn(console, "error").mockImplementation(() => {});
   vi.stubGlobal(
     "fetch",
@@ -113,6 +114,53 @@ describe("IonQ simulator (ionq:mock)", () => {
   });
 });
 
+describe("IonQ noisy simulator (forte-1:mock)", () => {
+  test("free by default: no price, no charge, sent as device forte-1:mock", async () => {
+    const r = await submit({ backend: "ionq-forte-1-simulator", circuit: CIRCUIT, shots: 1000 });
+    expect(r.status).toBe(200);
+    expect(state.calls).toEqual(["fetch /jobs", "device forte-1:mock"]);
+    expect(state.ledger).toEqual([]);
+    expect(state.jobs[0]).toMatchObject({ backend: "ionq-forte-1-simulator", costCents: 0 });
+  });
+
+  test("with a price set: 409 with the price first, nothing charged or sent", async () => {
+    vi.stubEnv("IONQ_NOISY_SIM_PRICE_PER_SHOT_USD", "0.0003");
+    const r = await submit({ backend: "ionq-forte-1-simulator", circuit: CIRCUIT, shots: 1000 });
+    expect(r.status).toBe(409);
+    expect(r.body).toMatchObject({ error: "price_confirmation_required", priceCredits: 30, balanceCredits: 10_000 });
+    expect(state.calls).toEqual([]);
+    expect(state.ledger).toEqual([]);
+  });
+
+  test("with a price set and confirmed: guarded debit, ledger entry, then send; no purchase needed", async () => {
+    vi.stubEnv("IONQ_NOISY_SIM_PRICE_PER_SHOT_USD", "0.0003");
+    state.unlocked = false; // the real-QPU gate doesn't apply to a simulator
+    const r = await submit({ backend: "ionq-forte-1-simulator", circuit: CIRCUIT, shots: 1000, confirmedPriceCredits: 30 });
+    expect(r.status).toBe(200);
+    expect(state.calls).toEqual(["debit", "fetch /jobs", "device forte-1:mock"]);
+    expect(state.balance).toBe(10_000 - 30);
+    expect(state.ledger).toEqual([{ amountCents: -30, reason: "quantum_job:ionq-forte-1-simulator" }]);
+    expect(state.jobs[0]).toMatchObject({ backend: "ionq-forte-1-simulator", costCents: 30 });
+  });
+
+  test("estimate route: 0 while free, the price once set", async () => {
+    const { POST } = await import("../estimate/route");
+    const estimate = async () =>
+      (
+        await POST(
+          new Request("http://app.test/api/lr/quantum/estimate", {
+            method: "POST",
+            body: JSON.stringify({ backend: "ionq-forte-1-simulator", circuit: CIRCUIT, shots: 1000 }),
+          }),
+        )
+      ).json();
+    expect(await estimate()).toMatchObject({ priceCredits: 0 });
+    vi.stubEnv("IONQ_NOISY_SIM_PRICE_PER_SHOT_USD", "0.0003");
+    expect(await estimate()).toMatchObject({ priceCredits: 30 });
+    expect(state.calls).toEqual([]);
+  });
+});
+
 describe("IonQ Forte: priced per job, charged before the job is sent", () => {
   test("no confirmed price: 409 with the price, nothing charged or sent", async () => {
     const r = await submit({ backend: "ionq-forte-1", circuit: CIRCUIT, shots: 100 });
@@ -141,7 +189,7 @@ describe("IonQ Forte: priced per job, charged before the job is sent", () => {
     expect(state.calls).not.toContain("fetch /jobs");
   });
 
-  test("not unlocked (signup credit only): 402 purchase_required before any quote", async () => {
+  test("canUseIonqQpu false (signup credit only): 402 purchase_required before any quote", async () => {
     state.unlocked = false;
     const r = await submit({ backend: "ionq-forte-1", circuit: CIRCUIT, shots: 100, confirmedPriceCredits: 130 });
     expect(r.status).toBe(402);

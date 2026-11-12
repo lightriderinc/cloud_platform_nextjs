@@ -1,5 +1,5 @@
 import { resolveCustomerFromRequest } from "@/lib/auth/resolveCustomer";
-import { IonqQuoteError, quoteIonqJob } from "@/lib/quantum/ionqPricing";
+import { IONQ_NOISY_SIM_BACKEND, IonqQuoteError, noisySimPriceCredits, quoteIonqJob } from "@/lib/quantum/ionqPricing";
 import { isPricedPerJob, isValidBackend, QUANTUM_BACKENDS } from "@/lib/quantum/backends";
 import { NextResponse } from "next/server";
 
@@ -8,8 +8,9 @@ export const dynamic = "force-dynamic";
 /**
  * POST /api/lr/quantum/estimate  { backend, circuit, shots }
  *
- * The credit price of one job on a per-job priced backend (IonQ Forte),
- * shown to the user before they confirm. Charges nothing and submits
+ * The credit price of one job on a per-job priced backend (IonQ Forte), or
+ * on the IonQ noisy simulator (0 while it is free; see
+ * IONQ_NOISY_SIM_PRICE_PER_SHOT_USD), shown to the user before they confirm. Charges nothing and submits
  * nothing. The submit route re-quotes server-side and never trusts this
  * response, so the only thing a client can do with it is display it.
  *
@@ -25,6 +26,15 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => ({}));
   const { backend, circuit, shots } = body as { backend?: string; circuit?: unknown; shots?: number };
+
+  if (backend === IONQ_NOISY_SIM_BACKEND) {
+    return NextResponse.json({
+      backend,
+      shots: shots ?? 1,
+      priceCredits: noisySimPriceCredits(shots ?? 1),
+      balanceCredits: customer.creditsBalanceCents,
+    });
+  }
 
   if (!backend || !isValidBackend(backend) || !isPricedPerJob(backend)) {
     return NextResponse.json(
