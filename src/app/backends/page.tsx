@@ -11,8 +11,9 @@ export default async function BackendsPage() {
   return (
     <div className="animate-fade-in-up">
       <h1 className="text-2xl font-semibold text-gray-700">Backends</h1>
-      <p className="mb-12 text-sm text-gray-600">
-        QPUs and simulators available to run circuits.
+      <p className="mb-8 text-sm text-gray-600">
+        Run circuits on real quantum hardware and simulators from IQM, Rigetti
+        and IonQ.
       </p>
 
       <div>

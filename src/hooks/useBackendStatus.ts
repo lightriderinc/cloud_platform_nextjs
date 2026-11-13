@@ -46,6 +46,10 @@ type BackendStatusFields = Pick<Backend, "status" | "statusInfo">;
 export interface BackendStatusView {
   /** Which light the cards should show; null until the first response. */
   source: StatusSource | null;
+  /** True once the first status request has finished, with an answer or an
+   *  error. Until then the cards may still flip, so counts built from their
+   *  statuses (the "Online now" tile) wait for it. */
+  settled: boolean;
   /** Server verdict for a catalog backend id, ready to spread onto a Backend. */
   statusFor: (backendId: string) => BackendStatusFields;
 }
@@ -65,7 +69,7 @@ function useBrowserClock(intervalMs: number) {
 }
 
 export function useBackendStatus(): BackendStatusView {
-  const { data } = useQuery({
+  const { data, isFetched } = useQuery({
     queryKey: ["backends", "status"],
     queryFn: fetchBackendStatus,
     refetchInterval: POLL_MS,
@@ -83,6 +87,7 @@ export function useBackendStatus(): BackendStatusView {
 
     return {
       source: data?.source ?? null,
+      settled: isFetched,
       statusFor(backendId) {
         const payload = data?.backends?.[backendId];
         if (!payload) {
@@ -104,7 +109,7 @@ export function useBackendStatus(): BackendStatusView {
         );
       },
     };
-  }, [data, clock]);
+  }, [data, clock, isFetched]);
 }
 
 /**

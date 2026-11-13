@@ -22,9 +22,7 @@ import {
   type BackendSortKey,
   type SortDirection,
 } from "@/lib/backends/sort";
-import {
-  isReservationCatalogId
-} from "@/lib/quantum/reservations";
+import { isReservationCatalogId } from "@/lib/quantum/reservations";
 import type { Backend } from "@/types/backend";
 import { useEffect, useState } from "react";
 import { MdGridView, MdViewList } from "react-icons/md";
@@ -35,6 +33,7 @@ import BackendList from "./BackendList";
 import BackendModal from "./BackendModal";
 import BackendRowSkeleton from "./BackendRowSkeleton";
 import BackendSortMenu from "./BackendSortMenu";
+import BackendsOverview from "./BackendsOverview";
 import type { FilterOption } from "./FilterSection";
 
 type View = "cards" | "list";
@@ -120,7 +119,11 @@ export default function BackendCatalog({
     sessionStorage.setItem(VIEW_KEY, next);
   }
 
-  const { data: iqmBackends = [], isLoading: iqmLoading } = useIqmBackends();
+  const {
+    data: iqmBackends = [],
+    isLoading: iqmLoading,
+    isStatusLoading: iqmStatusLoading,
+  } = useIqmBackends();
   const { data: rigettiBackends = [], isLoading: rigettiLoading } =
     useRigettiBackends();
   const { data: ionqBackends = [], isLoading: ionqLoading } = useIonqBackends();
@@ -140,7 +143,9 @@ export default function BackendCatalog({
   // would show with the current filters.
   const matchingBackends = filterBackends(allBackends, filters);
   const tabCounts = countByTab(matchingBackends);
-  const filteredBackends = matchingBackends.filter((b) => backendTab(b) === tab);
+  const filteredBackends = matchingBackends.filter(
+    (b) => backendTab(b) === tab,
+  );
   const onlineCount = filteredBackends.filter(
     (b) => b.status === "online",
   ).length;
@@ -178,30 +183,61 @@ export default function BackendCatalog({
     setFilters(createEmptyFilters());
   }
 
+  // Provider strip in the overview: show only that provider, or everything
+  // again when it's already the only one shown.
+  const activeProvider =
+    filters.provider.size === 1 ? [...filters.provider][0] : null;
+  function handleSelectProvider(provider: string) {
+    setFilters((prev) => ({
+      ...prev,
+      provider:
+        prev.provider.size === 1 && prev.provider.has(provider)
+          ? new Set()
+          : new Set([provider]),
+    }));
+  }
+
+  const overview = (
+    <BackendsOverview
+      backends={allBackends}
+      isLoading={anyLoading}
+      isStatusLoading={iqmStatusLoading}
+      activeProvider={activeProvider}
+      onSelectProvider={handleSelectProvider}
+    />
+  );
+
   // Skeleton grid until every provider's cards are ready, so the catalog
   // appears in one piece instead of provider by provider.
   if (anyLoading) {
-    return view === "list" ? (
-      <div className="overflow-x-auto default-radius border border-gray-100">
-        <table className="w-full text-left text-sm">
-          <tbody className="animate-pulse">
+    return (
+      <>
+        {overview}
+        {view === "list" ? (
+          <div className="overflow-x-auto default-radius border border-gray-100">
+            <table className="w-full text-left text-sm">
+              <tbody className="animate-pulse">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <BackendRowSkeleton key={i} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <BackendRowSkeleton key={i} />
+              <BackendCardSkeleton key={i} />
             ))}
-          </tbody>
-        </table>
-      </div>
-    ) : (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <BackendCardSkeleton key={i} />
-        ))}
-      </div>
+          </div>
+        )}
+      </>
     );
   }
 
   return (
     <>
+      {overview}
+
       <div
         role="tablist"
         aria-label="Backend type"
@@ -285,23 +321,23 @@ export default function BackendCatalog({
         id="backends-tab-panel"
         aria-labelledby={`backends-tab-${tab}`}
       >
-      {filteredBackends.length === 0 ? (
-        <div className="default-radius border border-dashed border-gray-200 bg-gray-50 p-16 text-center text-sm text-gray-500">
-          {matchingBackends.length === 0
-            ? "No backends match the selected filters."
-            : `No ${tab === "qpus" ? "QPUs" : "simulators"} match the selected filters.`}
-        </div>
-      ) : view === "list" ? (
-        <BackendList
-          backends={sortedBackends}
-          onSelect={setSelected}
-          sortKey={sortKey}
-          sortDirection={sortDirection}
-          onSort={handleSort}
-        />
-      ) : (
-        <BackendGrid backends={sortedBackends} onSelect={setSelected} />
-      )}
+        {filteredBackends.length === 0 ? (
+          <div className="default-radius border border-dashed border-gray-200 bg-gray-50 p-16 text-center text-sm text-gray-500">
+            {matchingBackends.length === 0
+              ? "No backends match the selected filters."
+              : `No ${tab === "qpus" ? "QPUs" : "simulators"} match the selected filters.`}
+          </div>
+        ) : view === "list" ? (
+          <BackendList
+            backends={sortedBackends}
+            onSelect={setSelected}
+            sortKey={sortKey}
+            sortDirection={sortDirection}
+            onSort={handleSort}
+          />
+        ) : (
+          <BackendGrid backends={sortedBackends} onSelect={setSelected} />
+        )}
       </div>
 
       {/* Render the freshest copy of the selection so the modal upgrades in

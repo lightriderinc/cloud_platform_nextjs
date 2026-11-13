@@ -26,5 +26,7 @@ export function useIqmBackends() {
     () => withServerStatus(catalog.data, serverStatus),
     [catalog.data, serverStatus],
   );
-  return { ...catalog, data };
+  // Statuses can still change until the status light has answered once: in
+  // "server" mode the cards switch from the legacy light to the server's.
+  return { ...catalog, data, isStatusLoading: !serverStatus.settled };
 }
