@@ -1,7 +1,10 @@
 "use client";
 
 import ReservationBackendModal from "@/components/reservations/ReservationBackendModal";
-import { useIbmBackends } from "@/hooks/useIbmBackends";
+import {
+  isIonqComingSoonId,
+  useIonqComingSoonBackends,
+} from "@/hooks/useIonqComingSoonBackends";
 import { useIqmBackends } from "@/hooks/useIqmBackends";
 import { useRigettiBackends } from "@/hooks/useRigettiBackends";
 import {
@@ -53,7 +56,9 @@ function isSortDirection(value: string | null): value is SortDirection {
   return value === "asc" || value === "desc";
 }
 
-// Owns selection state and merges live provider machines (IQM, Rigetti, IBM),
+// Owns selection state and merges live provider machines (IQM, Rigetti), plus
+// IonQ's static "Coming soon" cards. IBM is hidden for now (useIbmBackends and
+// /api/ibm are left in place),
 // each fetched independently via React Query. The grid shows skeletons until
 // every provider's card data has arrived, then all cards appear together;
 // heavy details (fidelities, qubit map) keep streaming in behind the scenes
@@ -95,14 +100,19 @@ export default function BackendCatalog({
   const { data: iqmBackends = [], isLoading: iqmLoading } = useIqmBackends();
   const { data: rigettiBackends = [], isLoading: rigettiLoading } =
     useRigettiBackends();
-  const { data: ibmBackends = [], isLoading: ibmLoading } = useIbmBackends();
+  const { data: ionqBackends } = useIonqComingSoonBackends();
 
-  const anyLoading = iqmLoading || rigettiLoading || ibmLoading;
+  const anyLoading = iqmLoading || rigettiLoading;
   // RESERVED_CEPHEUS_BACKEND_CARD is a synthetic, UI-only entry for the same
   // physical device as the real "rigetti.qpu.Cepheus-1-108Q" card above —
   // temporary, alongside it, until one of the two access models ships (see
   // the reservation-vs-on-demand branch in the modal render below).
-  const allBackends = [...iqmBackends, ...rigettiBackends, ...ibmBackends];
+  const allBackends = [...iqmBackends, ...rigettiBackends, ...ionqBackends];
+
+  // IonQ cards are "Coming soon" placeholders with no detail popup.
+  function selectBackend(backend: Backend) {
+    if (!isIonqComingSoonId(backend.id)) setSelected(backend);
+  }
   const providerOptions: FilterOption[] = Array.from(
     new Set(allBackends.map((b) => b.provider)),
   )
@@ -230,13 +240,13 @@ export default function BackendCatalog({
       ) : view === "list" ? (
         <BackendList
           backends={sortedBackends}
-          onSelect={setSelected}
+          onSelect={selectBackend}
           sortKey={sortKey}
           sortDirection={sortDirection}
           onSort={handleSort}
         />
       ) : (
-        <BackendGrid backends={sortedBackends} onSelect={setSelected} />
+        <BackendGrid backends={sortedBackends} onSelect={selectBackend} />
       )}
 
       {/* Render the freshest copy of the selection so the modal upgrades in
