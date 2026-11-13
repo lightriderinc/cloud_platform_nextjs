@@ -183,27 +183,11 @@ export default function BackendCatalog({
     setFilters(createEmptyFilters());
   }
 
-  // Provider strip in the overview: show only that provider, or everything
-  // again when it's already the only one shown.
-  const activeProvider =
-    filters.provider.size === 1 ? [...filters.provider][0] : null;
-  function handleSelectProvider(provider: string) {
-    setFilters((prev) => ({
-      ...prev,
-      provider:
-        prev.provider.size === 1 && prev.provider.has(provider)
-          ? new Set()
-          : new Set([provider]),
-    }));
-  }
-
   const overview = (
     <BackendsOverview
       backends={allBackends}
       isLoading={anyLoading}
       isStatusLoading={iqmStatusLoading}
-      activeProvider={activeProvider}
-      onSelectProvider={handleSelectProvider}
     />
   );
 
