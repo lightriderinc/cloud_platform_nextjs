@@ -93,6 +93,7 @@ export default function IonqBackendDetails({
   const isSimulator = data ? data.kind === "simulator" : backend.type === "Simulator";
 
   const specs: Row[] = [
+    { label: "Provider", value: backend.providerLabel ?? backend.provider },
     { label: "Qubits", value: String(data?.qubits ?? backend.qubits) },
     { label: "Predicted queue time", value: queueMs === null ? "Unknown" : formatQueueTime(queueMs) },
     {

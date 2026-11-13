@@ -97,7 +97,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error: "insufficient_credits",
-        message: `This job costs $${(costCents / 100).toFixed(2)}, but your account has $${(customer.creditsBalanceCents / 100).toFixed(2)} remaining.`,
+        message: `This job costs ${costCents.toLocaleString("en-US")} credits, but your balance is ${customer.creditsBalanceCents.toLocaleString("en-US")} credits.`,
       },
       { status: 402 },
     );

@@ -1,8 +1,7 @@
 import type { Backend } from "@/types/backend";
 
 // The /backends catalog's two tabs, as on IonQ Cloud. Split by each
-// backend's existing `type`, never by its tag label (IonQ's Forte noise
-// simulator is labelled "Cloud" but is still a simulator).
+// backend's existing `type`.
 
 export type BackendTab = "qpus" | "simulators";
 

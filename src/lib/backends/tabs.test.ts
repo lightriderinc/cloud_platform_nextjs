@@ -3,13 +3,13 @@ import { mapIonqBackends } from "@/lib/ionq/client";
 import { backendTab, countByTab, isBackendTab } from "./tabs";
 
 describe("backend tabs", () => {
-  test("split by type, not by tag label", () => {
+  test("split by type", () => {
     const ionq = mapIonqBackends(null);
-    expect(ionq.map((b) => [b.id, b.tagLabel, backendTab(b)])).toEqual([
+    expect(ionq.map((b) => [b.id, b.type, backendTab(b)])).toEqual([
       ["ionq.ionq:mock", "Simulator", "simulators"],
-      ["ionq.forte-1:mock", "Cloud", "simulators"],
-      ["ionq.forte-1", "Cloud", "qpus"],
-      ["ionq.forte-enterprise-1", "Cloud", "qpus"],
+      ["ionq.forte-1:mock", "Simulator", "simulators"],
+      ["ionq.forte-1", "QPU", "qpus"],
+      ["ionq.forte-enterprise-1", "QPU", "qpus"],
     ]);
     expect(countByTab(ionq)).toEqual({ qpus: 2, simulators: 2 });
   });

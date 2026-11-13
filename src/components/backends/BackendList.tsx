@@ -75,14 +75,14 @@ export default function BackendList({
                   {backend.name}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-gray-700">
-                  {backend.provider}
+                  {backend.providerLabel ?? backend.provider}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-gray-700">
                   {backend.qubits}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <BackendTypeTag type={backend.type} label={backend.tagLabel} />
+                    <BackendTypeTag type={backend.type} />
                   </div>
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">

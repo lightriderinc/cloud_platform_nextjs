@@ -17,8 +17,8 @@ interface IonqDevice {
   type: BackendType;
   qubits: number;
   description: string;
-  /** Text on the card's tag pill: "Simulator" for the ideal simulator, "Cloud" for the rest. */
-  tagLabel: string;
+  /** Jobs run on IonQ Cloud (Forte QPUs and the Forte noise simulator): the Provider row says "IonQ Cloud". */
+  ionqCloud: boolean;
   /** Simulators only. Static, so the card can show it without a details call; the modal shows IonQ's live value. */
   noiseModel?: string;
 }
@@ -31,7 +31,7 @@ const IONQ_DEVICES: IonqDevice[] = [
     type: "Simulator",
     qubits: 29,
     description: "Ideal simulator with no noise.",
-    tagLabel: "Simulator",
+    ionqCloud: false,
     noiseModel: "Ideal",
   },
   {
@@ -41,7 +41,7 @@ const IONQ_DEVICES: IonqDevice[] = [
     type: "Simulator",
     qubits: 29,
     description: "Simulator with the noise model of IonQ Forte.",
-    tagLabel: "Cloud",
+    ionqCloud: true,
     noiseModel: "Forte",
   },
   {
@@ -52,7 +52,7 @@ const IONQ_DEVICES: IonqDevice[] = [
     qubits: 36,
     description:
       "IonQ Forte-1 is a trapped-ion quantum computer with all-to-all connectivity. Priced per job: you see the price in credits before you submit.",
-    tagLabel: "Cloud",
+    ionqCloud: true,
   },
   {
     device: "forte-enterprise-1",
@@ -62,7 +62,7 @@ const IONQ_DEVICES: IonqDevice[] = [
     qubits: 36,
     description:
       "IonQ Forte Enterprise-1 is a trapped-ion quantum computer with all-to-all connectivity. Priced per job: you see the price in credits before you submit.",
-    tagLabel: "Cloud",
+    ionqCloud: true,
   },
 ];
 
@@ -123,7 +123,7 @@ export function mapIonqBackends(response: IonqStatusResponse | null): Backend[] 
       provider: "IonQ",
       queueDepth: null,
       queueTimeMs: typeof queueTime === "number" && queueTime >= 0 ? queueTime : null,
-      tagLabel: d.tagLabel,
+      ...(d.ionqCloud ? { providerLabel: "IonQ Cloud" } : {}),
       ...(d.noiseModel ? { noiseModel: d.noiseModel } : {}),
       availability: { availableNow: status === "online", nextWindowStart: null },
       details: { description: d.description, topology: "All-to-all connectivity" },

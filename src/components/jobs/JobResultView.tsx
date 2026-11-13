@@ -5,6 +5,7 @@ import DownloadButton from "@/components/ui/DownloadButton";
 import JobModeTag from "@/components/jobs/JobModeTag";
 import JobStatusBadge from "@/components/jobs/JobStatusBadge";
 import { formatDuration } from "@/lib/formatDuration";
+import { runsOnIonqCloud } from "@/lib/quantum/backends";
 import { fetchQuantumJobDetail, fetchQuantumJobResult } from "@/lib/quantum/client";
 import type { Job } from "@/types/job";
 import { useQuery } from "@tanstack/react-query";
@@ -72,6 +73,11 @@ export default function JobResultView({ job, footer }: Props) {
         <p className="font-mono text-xs text-gray-400">{job.uuid}</p>
         {isPolling && (
           <span className="inline-block h-2 w-2 animate-ping rounded-full bg-gray-400 opacity-75" />
+        )}
+        {runsOnIonqCloud(job.backend) && (
+          <span className="text-xs text-gray-500" data-ran-on>
+            Ran on IonQ Cloud
+          </span>
         )}
       </div>
 

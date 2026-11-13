@@ -326,9 +326,9 @@ export default function BackendSubmitModal({
                         <span className="text-gray-600">Price for this job</span>
                         <span className="font-semibold text-gray-900">{quote.priceCredits.toLocaleString()} credits</span>
                       </div>
-                      {pricedPerJob && (
+                      {pricedPerJob && quote.minimumCredits != null && quote.minimumCredits > 0 && (
                         <p className="mt-1 text-right text-xs text-gray-500" data-forte-minimum>
-                          Minimum ~$25 per job
+                          Minimum {quote.minimumCredits.toLocaleString()} credits per job
                         </p>
                       )}
                       {balanceCredits !== null && (

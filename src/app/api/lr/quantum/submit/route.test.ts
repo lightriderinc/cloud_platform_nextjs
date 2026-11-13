@@ -83,7 +83,10 @@ beforeEach(() => {
       const path = String(url).slice(PROXY.length);
       state.calls.push(`fetch ${path}`);
       if (path === "/jobs/estimate") {
-        return Response.json({ estimated_cost_usd: estimateUsd });
+        return Response.json({
+          estimated_cost_usd: estimateUsd,
+          ionq: { estimated_unit: "usd", rate_card: { rates: [{ job_cost_minimum: 25.79 }] } },
+        });
       }
       if (path === "/jobs") {
         const body = JSON.parse(init?.body as string);
@@ -223,7 +226,7 @@ describe("IonQ Forte: priced per job, charged before the job is sent", () => {
 });
 
 describe("estimate route", () => {
-  test("prices a Forte job; returns only credits, never IonQ's USD or the markup", async () => {
+  test("prices a Forte job with its minimum; returns only credits, never IonQ's USD or the markup", async () => {
     const { POST } = await import("../estimate/route");
     const res = await POST(
       new Request("http://app.test/api/lr/quantum/estimate", {
@@ -233,7 +236,7 @@ describe("estimate route", () => {
     );
     const body = await res.json();
     expect(res.status).toBe(200);
-    expect(body).toEqual({ backend: "ionq-forte-1", shots: 100, priceCredits: 130, balanceCredits: 10_000 });
+    expect(body).toEqual({ backend: "ionq-forte-1", shots: 100, priceCredits: 130, minimumCredits: 3353, balanceCredits: 10_000 });
     expect(state.calls).toEqual(["fetch /jobs/estimate"]);
   });
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { getQuantumBackendId, isPaidBackend, isPricedPerJob } from "@/lib/quantum/backends";
+import { getQuantumBackendId, isPaidBackend, isPricedPerJob, runsOnIonqCloud } from "@/lib/quantum/backends";
 import { mapIonqBackends, type IonqStatusResponse } from "./client";
 
 // IonQ's GET /backends as qpu-proxy /healthz passes it on (backends.ionq).
@@ -66,14 +66,19 @@ describe("IonQ catalog cards", () => {
     expect(c["ionq.forte-1:mock"].status).toBe("maintenance");
   });
 
-  test("labels and noise models: ionq:mock is Simulator, the rest Cloud; no location", () => {
+  test("provider shown as IonQ Cloud except for ionq:mock; filtering still sees IonQ; noise models", () => {
     const c = byId(listing());
-    expect(Object.values(c).map((b) => [b.id, b.tagLabel, b.noiseModel])).toEqual([
-      ["ionq.ionq:mock", "Simulator", "Ideal"],
-      ["ionq.forte-1:mock", "Cloud", "Forte"],
-      ["ionq.forte-1", "Cloud", undefined],
-      ["ionq.forte-enterprise-1", "Cloud", undefined],
+    expect(Object.values(c).map((b) => [b.id, b.provider, b.providerLabel, b.noiseModel])).toEqual([
+      ["ionq.ionq:mock", "IonQ", undefined, "Ideal"],
+      ["ionq.forte-1:mock", "IonQ", "IonQ Cloud", "Forte"],
+      ["ionq.forte-1", "IonQ", "IonQ Cloud", undefined],
+      ["ionq.forte-enterprise-1", "IonQ", "IonQ Cloud", undefined],
     ]);
+  });
+
+  test("jobs on forte-1, forte-enterprise-1 and forte-1:mock ran on IonQ Cloud; ionq:mock and others didn't", () => {
+    expect(["ionq-forte-1", "ionq-forte-enterprise-1", "ionq-forte-1-simulator"].map(runsOnIonqCloud)).toEqual([true, true, true]);
+    expect(["ionq-simulator", "iqm-garnet", undefined, ""].map(runsOnIonqCloud)).toEqual([false, false, false, false]);
   });
 
   test("queue time comes through in ms", () => {

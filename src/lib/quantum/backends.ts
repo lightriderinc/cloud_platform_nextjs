@@ -107,6 +107,18 @@ export function isPricedPerJob(id: QuantumBackendId): boolean {
   return config.pricedPerJob === true;
 }
 
+/** Backends whose jobs run on IonQ Cloud (the Forte QPUs and the Forte noise simulator; not the ideal simulator). */
+const IONQ_CLOUD_BACKENDS: ReadonlySet<string> = new Set([
+  "ionq-forte-1",
+  "ionq-forte-enterprise-1",
+  "ionq-forte-1-simulator",
+]);
+
+/** True for a job's backend id that runs on IonQ Cloud, for the "Ran on IonQ Cloud" line in job results. */
+export function runsOnIonqCloud(id: string | null | undefined): boolean {
+  return !!id && IONQ_CLOUD_BACKENDS.has(id);
+}
+
 /**
  * Real hardware that costs credits: per-shot priced above 0, or per-job
  * priced. The single test for "is this free" — never read costPerShotCents

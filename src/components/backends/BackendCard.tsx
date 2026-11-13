@@ -59,7 +59,7 @@ export default function BackendCard({
 
       <div className="flex flex-col gap-1.5">
         <BackendSpec label="Qubits" value={qubits} />
-        <BackendSpec label="Provider" value={provider} />
+        <BackendSpec label="Provider" value={backend.providerLabel ?? provider} />
         {queueDepth !== null && (
           <BackendSpec label="Queue" value={formatQueue(queueDepth)} />
         )}
@@ -87,7 +87,7 @@ export default function BackendCard({
       )}
 
       <div className="mt-auto flex items-center gap-2">
-        <BackendTypeTag type={type} label={backend.tagLabel} />
+        <BackendTypeTag type={type} />
       </div>
     </TiltCard>
   );

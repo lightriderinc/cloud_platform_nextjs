@@ -42,6 +42,26 @@ export class IonqQuoteError extends Error {
 
 export interface IonqQuote {
   priceCredits: number;
+  /** IonQ's minimum charge per job on this system, in credits (same markup and rounding as the price); null when the estimate doesn't include a rate card. */
+  minimumCredits: number | null;
+}
+
+/**
+ * IonQ's per-job minimum in USD from a /jobs/estimate response:
+ * rate_card.rates[0].job_cost_minimum. Read at the top level and under
+ * `ionq` (IonQ's own response, as qpu-proxy passes it on). Null if absent.
+ */
+export function jobCostMinimumUsd(data: Record<string, unknown>): number | null {
+  for (const source of [data, data.ionq]) {
+    if (!source || typeof source !== "object") continue;
+    const rateCard = (source as { rate_card?: { rates?: unknown } }).rate_card;
+    const rates = rateCard && typeof rateCard === "object" ? rateCard.rates : undefined;
+    const first = Array.isArray(rates) ? rates[0] : undefined;
+    const min = first && typeof first === "object" ? (first as { job_cost_minimum?: unknown }).job_cost_minimum : undefined;
+    const value = typeof min === "string" ? Number(min) : min;
+    if (typeof value === "number" && Number.isFinite(value) && value > 0) return value;
+  }
+  return null;
 }
 
 /**
@@ -94,7 +114,12 @@ export async function quoteIonqJob(
     console.error("[ionq-pricing] estimate had no USD figure:", JSON.stringify(data).slice(0, 500));
     throw new IonqQuoteError("IonQ didn't return a price for this job, so it can't be submitted right now.", 502);
   }
-  return { priceCredits: priceCreditsFromEstimate(usd, ionqPriceMarkup()) };
+  const markup = ionqPriceMarkup();
+  const minimumUsd = jobCostMinimumUsd(data);
+  return {
+    priceCredits: priceCreditsFromEstimate(usd, markup),
+    minimumCredits: minimumUsd === null ? null : priceCreditsFromEstimate(minimumUsd, markup),
+  };
 }
 
 // --- IonQ noisy simulator (forte-1:mock) --------------------------------

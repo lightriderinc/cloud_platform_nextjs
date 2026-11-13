@@ -88,6 +88,8 @@ export class PriceConfirmationRequiredError extends Error {
 
 export interface JobPriceQuote {
   priceCredits: number;
+  /** IonQ's minimum charge per job, in credits (Forte only); absent or null when unknown. */
+  minimumCredits?: number | null;
   balanceCredits: number;
 }
 

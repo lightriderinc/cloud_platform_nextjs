@@ -15,8 +15,8 @@ export const dynamic = "force-dynamic";
  * response, so the only thing a client can do with it is display it.
  *
  * Same auth as submit: a Logto session or a bearer API key. Returns
- * { priceCredits, balanceCredits }; never IonQ's own USD estimate or the
- * markup.
+ * { priceCredits, minimumCredits, balanceCredits }, all in credits; never
+ * IonQ's own USD figures or the markup.
  */
 export async function POST(req: Request) {
   const customer = await resolveCustomerFromRequest(req, { createIfMissing: true });
@@ -44,8 +44,14 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { priceCredits } = await quoteIonqJob(QUANTUM_BACKENDS[backend].deviceInstance, circuit, shots ?? 1);
-    return NextResponse.json({ backend, shots: shots ?? 1, priceCredits, balanceCredits: customer.creditsBalanceCents });
+    const { priceCredits, minimumCredits } = await quoteIonqJob(QUANTUM_BACKENDS[backend].deviceInstance, circuit, shots ?? 1);
+    return NextResponse.json({
+      backend,
+      shots: shots ?? 1,
+      priceCredits,
+      minimumCredits,
+      balanceCredits: customer.creditsBalanceCents,
+    });
   } catch (err) {
     if (err instanceof IonqQuoteError) {
       return NextResponse.json({ error: "estimate_failed", message: err.message }, { status: err.status });

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import {
   DEFAULT_IONQ_PRICE_MARKUP,
   IonqQuoteError,
+  jobCostMinimumUsd,
   ionqNoisySimPricePerShotUsd,
   ionqPriceMarkup,
   noisySimPriceCredits,
@@ -101,12 +102,31 @@ describe("quoteIonqJob", () => {
     vi.stubEnv("QUANTUM_PROXY_SERVICE_KEY", "lr_test");
     vi.stubEnv("IONQ_PRICE_MARKUP", "1.3");
     const f = fakeFetch(200, { estimated_cost_usd: 2.5, backend: "qpu.forte-1", ionq: { estimated_unit: "usd" } });
-    await expect(quoteIonqJob("forte-1", CIRCUIT, 100, f)).resolves.toEqual({ priceCredits: 325 });
+    await expect(quoteIonqJob("forte-1", CIRCUIT, 100, f)).resolves.toEqual({ priceCredits: 325, minimumCredits: null });
     const [url, init] = f.mock.calls[0];
     expect(url).toBe("http://qpu-proxy.test/jobs/estimate");
     expect(init?.method).toBe("POST");
     expect(JSON.parse(init?.body as string)).toEqual({ circuit: CIRCUIT, shots: 100, device_instance: "forte-1" });
     expect((init?.headers as Record<string, string>).Authorization).toBe("Bearer lr_test");
+  });
+
+  test("the per-job minimum, in credits like the price: job_cost_minimum x markup x 100, rounded up", async () => {
+    vi.stubEnv("IONQ_PRICE_MARKUP", "1.3");
+    const f = fakeFetch(200, {
+      estimated_cost_usd: 30,
+      ionq: { estimated_unit: "usd", rate_card: { rates: [{ job_cost_minimum: 25.79 }] } },
+    });
+    // 25.79 x 1.3 x 100 = 3352.7 -> 3353
+    await expect(quoteIonqJob("forte-1", CIRCUIT, 100, f)).resolves.toEqual({ priceCredits: 3900, minimumCredits: 3353 });
+  });
+
+  test("job_cost_minimum at the top level or under ionq; absent, zero or junk is null", () => {
+    expect(jobCostMinimumUsd({ rate_card: { rates: [{ job_cost_minimum: 25 }] } })).toBe(25);
+    expect(jobCostMinimumUsd({ ionq: { rate_card: { rates: [{ job_cost_minimum: "25.5" }] } } })).toBe(25.5);
+    expect(jobCostMinimumUsd({})).toBeNull();
+    expect(jobCostMinimumUsd({ rate_card: { rates: [] } })).toBeNull();
+    expect(jobCostMinimumUsd({ rate_card: { rates: [{ job_cost_minimum: 0 }] } })).toBeNull();
+    expect(jobCostMinimumUsd({ rate_card: { rates: [{ job_cost_minimum: "abc" }] } })).toBeNull();
   });
 
   test("a non-USD estimate can't be priced", async () => {
